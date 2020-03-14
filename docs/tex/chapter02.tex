@@ -97,7 +97,7 @@ $\bm{B}(\bm{\alpha} ) \in \mathbb{R}^{3 \times m}$可得
 其中，$K_i$可以从推力测量实验(详见\ref{sec:parameters}节)得到。
 
 我们将推力分配问题转化为带有线性约束的二次规划问题(Quadratic Programming)
-\cite{johansen2004constrained}, 目前我们采用Mosek求解器来计算优化解。
+\cite{johansen2004constrained}, 目前我们采用Mosek或osqp求解器来计算优化解。
 \begin{equation}
   \label{eq:qpmin}
     \begin{aligned}
@@ -147,9 +147,9 @@ $\bm{B}(\bm{\alpha} ) \in \mathbb{R}^{3 \times m}$可得
   \begin{aligned}
     & \bm{c}=
     \begin{bmatrix}
-      \bm{B}\left(\bm{\alpha}_0 \right)  &
-      \frac{\partial}{\partial \bm{\alpha}} \left(\bm{B}(\bm{\alpha})
-      \bm{u})\right)_{\bm{u}=\bm{u}_0, \bm{\alpha}=\bm{\alpha}_{0}}
+      \bm{B}\left(\bm{\alpha}_0 \right)  
+      & \frac{\partial}{\partial \bm{\alpha}} \left( \bm{B}(\bm{\alpha})
+      \bm{u} \right) |_{\bm{u}=\bm{u}_{0}, \bm{\alpha}=\bm{\alpha}_{0}}
       & \bm{I}
     \end{bmatrix} \\
     & \bm{b}=
@@ -206,6 +206,88 @@ $\bm{B}(\bm{\alpha} ) \in \mathbb{R}^{3 \times m}$可得
 
 每个推进器的推力变化和角度变化的上下限是实时变化的，针对每种推进器
 ，其约束条件将在下面几小节讨论。
+
+
+\subsection{求解器}
+目前我们采用Mosek或osqp求解器来计算优化解，由于Mosek是商业求解器，之后会逐渐采用开源的求解器来替代Mosek。
+
+\subsubsection{Mosek}
+本节介绍使用Mosek求解器的一些细节。我们用$m$表示推进器的数量，$n$表示推力的维度($n=3$),则优化问题(\ref{eq:qpsimple})中的参数
+$ \bm{z} \in \mathbb{R}^{2 m + n} , \, \bm{b} \in \mathbb{R}^{n} , \, \bm{c} \in 
+\mathbb{R}^{{n}\times (2m+n)}$
+
+\begin{itemize}
+  \item 变量$ \bm{z}$的约束 (对应$\bm{Pz \leq h}$),如表(\ref{tab:mosekvariablebound})
+
+  \item 线性约束 (对应$\bm{cz = b}$), 如表(\ref{tab:moseklinearconstraint})
+
+  \item 目标函数(对应$\bm{z}^{T} \bm{H} \bm{z}+\bm{g}^{T} \bm{z}$)，如表(\ref{tab:mosekobjective})
+\end{itemize}
+
+\begin{table}[htbp]
+  \caption{Mosek中变量约束(RT代表实时变化量)}
+  \centering
+  \begin{tabular}{@{}lllll@{}}
+    \toprule
+    \multirow{2}{*}{Type} & \multirow{2}{*}{Name} & \multicolumn{3}{c}{Index}               \\ \cmidrule(l){3-5} &               & 0:(m-1)               & m:(2m-1)    & 2m:(2m+n-1) \\ \cmidrule(r){1-2}
+    MSKboundeye           & bkx{[}{]}             & MSK\_BK\_RA & MSK\_BK\_RA & MSK\_BK\_FR \\
+    double                & blx{[}{]}             & RT   & RT    & -MSK\_INFI  \\
+    double                & bux{[}{]}             & RT   & RT    & MSK\_INFI   \\ \bottomrule
+    \end{tabular}
+  \label{tab:mosekvariablebound}
+\end{table}
+
+\begin{table}[htbp]
+  \caption{Mosek中线性约束(RT代表实时变化量)}
+  \centering
+  \begin{tabular}{@{}llllllllll@{}}
+  \toprule
+  \multirow{2}{*}{Type} & \multirow{2}{*}{Name} & \multicolumn{8}{l}{Index}   \\ \cmidrule(l){3-10} 
+                        &    & 0  & 1  & 2   & ... & 2m-1  & 2m   & 2m+1 & 2m+2 \\ \cmidrule(r){1-2}
+  MSKint32t & aptrb{[}{]}  & 0   & 3         & 6         & ... & 6m-3      & 6m   & 6m+1 & 6m+2 \\
+  MSKint32t & aptre{[}{]}  & 3   & 6         & 9         & ... & 6m        & 6m+1 & 6m+2 & 6m+3 \\
+ \bottomrule
+  \end{tabular}
+
+  \begin{tabular}{@{}lllllllllllllll@{}}
+  \toprule
+  \multirow{2}{*}{Type} & \multirow{2}{*}{Name} & \multicolumn{13}{l}{Index}    \\ \cmidrule(l){3-15} 
+  &   & 0  & 1  & 2  & 3  & 4  & 5  & ... & 6m-3 & 6m-2 & 6m-1 & 6m & 6m+1 & 6m+2 \\ \cmidrule(r){1-2}
+  MSKint32t  & asub{[}{]}   & 0  & 1  & 2  & 0  & 1  & 2  & ... & 0    & 1    & 2    & 0  & 1    & 2    \\
+  double     & aval{[}{]}   & RT & RT & RT & RT & RT & RT & ... & RT   & RT   & RT   & 1  & 1    & 1    \\ \bottomrule
+  \end{tabular}
+
+  \begin{tabular}{@{}lllll@{}}
+  \toprule
+  \multirow{2}{*}{Type} & \multirow{2}{*}{Name} & \multicolumn{3}{l}{Index}      \\ \cmidrule(l){3-5} 
+                        &               & 0           & 1           & 2           \\ \cmidrule(r){1-2}
+  MSKboundkeye          & bkc{[}{]}             & MSK\_BK\_FX & MSK\_BK\_FX & MSK\_BK\_FX \\
+  double                & blc{[}{]}             & RT          & RT          & RT          \\
+  double                & buc{[}{]}             & blc{[}0{]}  & blc{[}1{]}  & blc{[}2{]}  \\ \bottomrule
+  \end{tabular}
+
+  \label{tab:moseklinearconstraint}
+\end{table}
+
+\begin{table}[htbp]
+  \caption{Mosek中目标函数(RT代表实时变化量)}
+  \centering
+  \begin{tabular}{@{}llllllllllll@{}}
+  \toprule
+  \multirow{2}{*}{Type} & \multirow{2}{*}{Name} & \multicolumn{10}{l}{Index}     \\ \cmidrule(l){3-12} 
+                &  & 0  & 1  & ... & m-1 & m     & ... & 2m-1 & 2m & 2m+1 & 2m+2 \\ \cmidrule(r){1-2}
+  MSKint32t   & qsubi{[}{]}    & 0  & 1  & ... & m-1 & m     & ... & 2m-1 & 2m & 2m+1 & 2m+2 \\
+  MSKint32t   & qsubj{[}{]}    & 0  & 1  & ... & m-1 & m     & ... & 2m-1 & 2m & 2m+1 & 2m+2 \\
+  double      & qval{[}{]}     & RT & RT & ... & RT  & $\bm{\Omega}[0][0]$ & ... &  $\bm{\Omega}[m-1][m-1]$    &  $\bm{Q}[0][0]$  &  $\bm{Q}[1][1]$  & $\bm{Q}[2][2]$  \\ 
+  \bottomrule
+  \end{tabular}
+  \label{tab:mosekobjective}
+\end{table}
+
+
+\subsubsection{osqp}
+osqp是由牛津大学和斯坦福大学合作开发的一款二次规划求解器。
+
 
 \subsection{欠驱动}
 目前大部分船舶是欠驱动的，常见的欠驱动船舶的推进器配置有:(1) 双固定式尾推; (2) 主推配合
