@@ -23,8 +23,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 
 #### TODO: 
-
-1. Hybrid A star
 2. Perception (e.g. Lidar, Marine Radar, camera, etc)
 3. Hardware-in-loop simulation
 4. Finite state machine
@@ -33,6 +31,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 
 近期:
-1. 论文中两张图
+1. Hybrid A star
 3. OSQP
 4. Marine radar visulization, target tracking

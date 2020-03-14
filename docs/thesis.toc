@@ -36,6 +36,7 @@
 \contentsline {subsubsection}{\numberline {3.2.3.2}更新}{19}{subsubsection.3.2.3.2}% 
 \contentsline {subsubsection}{\numberline {3.2.3.3}不变}{20}{subsubsection.3.2.3.3}% 
 \contentsline {subsection}{\numberline {3.2.4}经验}{20}{subsection.3.2.4}% 
+\contentsline {section}{\numberline {3.3}GPS天线修正}{20}{section.3.3}% 
 \contentsline {chapter}{\numberline {第四章\hspace {.3em}}决策与规划}{21}{chapter.4}% 
 \contentsline {section}{\numberline {4.1}路径规划}{21}{section.4.1}% 
 \contentsline {subsection}{\numberline {4.1.1}航道保持}{21}{subsection.4.1.1}% 

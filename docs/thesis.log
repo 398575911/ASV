@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  28 FEB 2020 13:24
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  14 MAR 2020 10:48
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -2869,7 +2869,7 @@ File: figure/chapter03/Basic_concept_of_Kalman_filtering.png Graphic file (type
  bmp)
 <figure/chapter03/Basic_concept_of_Kalman_filtering.png>
 
-Overfull \hbox (2.84544pt too wide) in paragraph at lines 61--65
+Overfull \hbox (2.84544pt too wide) in paragraph at lines 63--72
  [][] 
  []
 
@@ -3048,7 +3048,7 @@ Package pageslts Info: Total number of pages is odd.
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 100.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 100.
 Package rerunfilecheck Info: File `thesis.out' has not changed.
-(rerunfilecheck)             Checksum: A9FABC260ABE0886549DC21449D3E9CE.
+(rerunfilecheck)             Checksum: 16B579FA527071A4FFBA786D6A486025.
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -3059,10 +3059,10 @@ Package logreq Info: Writing requests to 'thesis.run.xml'.
 Here is how much of TeX's memory you used:
  58579 strings out of 492922
  1206863 string characters out of 6133407
- 1794043 words of memory out of 5000000
+ 1795043 words of memory out of 5000000
  61530 multiletter control sequences out of 15000+600000
  543445 words of font info for 261 fonts, out of 8000000 for 9000
  1349 hyphenation exceptions out of 8191
  75i,18n,111p,817b,6859s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on thesis.xdv (85 pages, 747084 bytes).
+Output written on thesis.xdv (85 pages, 749504 bytes).

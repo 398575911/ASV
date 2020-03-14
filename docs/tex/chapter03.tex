@@ -55,13 +55,20 @@
 初始状态以及每一时刻的噪声${\bm{x}_0, \bm{w}_1, \cdots ,
 \bm{w}_k, \bm{v}_1, \cdots \bm{v}_k}$都认为是互相独立的。
 
-实际上，很多真实世界的动态系统都并不确切的符合这个模型；但是由于卡尔曼滤波器被设计在有噪声的情况下工作，一个近似的符合已经可以使这个滤波器非常有用了
+实际上，很多真实世界的动态系统都并不确切的符合这个模型；
+但是由于卡尔曼滤波器被设计在有噪声的情况下工作，
+一个近似的符合已经可以使这个滤波器非常有用了
 \begin{figure}[!htp]
   \centering
   \includegraphics[width=15cm]{chapter03/Basic_concept_of_Kalman_filtering.png}
   \bicaption[卡尔曼滤波的示意图(来自维基百科)]
     {卡尔曼滤波的示意图}
-    {The Kalman filter keeps track of the estimated state of the system and the variance or uncertainty of the estimate. The estimate is updated using a state transition model and measurements. $\hat{\bm{x}}_{k \mid k-1}$ denotes the estimate of the system's state at time step $k$ before the $k$-th measurement $\bm{y}_k$ has been taken into account;
+    {The Kalman filter keeps track of the estimated state of the system 
+    and the variance or uncertainty of the estimate. 
+    The estimate is updated using a state transition model and measurements. 
+    $\hat{\bm{x}}_{k \mid k-1}$ denotes the estimate of the system's state 
+    at time step $k$ before the $k$-th measurement $\bm{y}_k$ has been 
+    taken into account;
     $\bm{P}_{k\mid k-1}$ is the corresponding uncertainty.}
   \label{fig:Basic_concept_of_Kalman_filtering}
 \end{figure}
@@ -78,7 +85,9 @@
   \item $\bm{P}_{k|k}$，后验估计误差协方差矩阵，度量估计值的精确程度。
 \end{itemize}
 
-卡尔曼滤波器的操作包括两个阶段：\textbf{预测}与\textbf{更新}。在预测阶段，滤波器使用上一状态的估计，做出对当前状态的估计。在更新阶段，滤波器利用对当前状态的观测值优化在预测阶段获得的预测值，以获得一个更精确的新估计值。
+卡尔曼滤波器的操作包括两个阶段：\textbf{预测}与\textbf{更新}。在预测阶段，
+滤波器使用上一状态的估计，做出对当前状态的估计。在更新阶段，
+滤波器利用对当前状态的观测值优化在预测阶段获得的预测值，以获得一个更精确的新估计值。
 \subsubsection{预测}
 \begin{equation}
   \begin{aligned}
@@ -128,3 +137,7 @@
 卡尔曼滤波器中，Q代表Process Noise Covariance Matrix, R代表Measurement Noise
 Covariance Matrix; R越小， estimation的结果更"信任"测量值，反之，Q越小，
 estimation的结果更"信任"预测值。
+
+
+\section{GPS天线修正}
+由于GPS天线安装的位置不在船体重心处，我们需要对GPS测量结果作修正处理，才能得到重心处的运动。
