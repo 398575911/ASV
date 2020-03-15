@@ -78,3 +78,9 @@ target_link_libraries(testcontroller PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable (testlos testlos.cc ${SOURCE_FILES} )
 target_include_directories(testlos PRIVATE ${HEADER_DIRECTORY})
+
+
+add_executable (testthrust_osqp testthrust_osqp.cc ${SOURCE_FILES})
+target_include_directories(testthrust_osqp PRIVATE ${HEADER_DIRECTORY})
+find_package(osqp REQUIRED)
+target_link_libraries(testthrust_osqp PUBLIC osqp::osqp)

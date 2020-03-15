@@ -6,12 +6,12 @@ project (testtimer)
 set(CMAKE_CXX_STANDARD 17)
 
 
-add_executable (yourTarget test.c)
+add_executable (testOSQP testosqp.cc)
 
 
 # Find OSQP library and headers
 find_package(osqp REQUIRED)
 
 # Link the OSQP shared library
-target_link_libraries(yourTarget PRIVATE osqp::osqp)
+target_link_libraries(testOSQP PRIVATE osqp::osqp)
 

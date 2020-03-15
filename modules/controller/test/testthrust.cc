@@ -225,29 +225,30 @@ void testonestepthrustallocation() {
       _thrustallocationdata, v_tunnelthrusterdata, v_azimuththrusterdata,
       v_ruddermaindata, v_twinfixeddata);
   _thrustallocation.initializapropeller(_controllerRTdata);
+  _thrustallocation.setQ(CONTROLMODE::DYNAMICPOSITION);
 
-  std::cout << _controllerRTdata.command_alpha << std::endl;
-  std::cout << "upper_delta_alpha: " << _thrustallocation.getupper_delta_alpha()
-            << std::endl;
-  std::cout << "lower_delta_alpha: " << _thrustallocation.getlower_delta_alpha()
-            << std::endl;
-  std::cout << "upper_delta_u: " << _thrustallocation.getupper_delta_u()
-            << std::endl;
-  std::cout << "lower_delta_u: " << _thrustallocation.getlower_delta_u()
-            << std::endl;
-  std::cout << "Q: " << _thrustallocation.getQ() << std::endl;
-  std::cout << "Omega: " << _thrustallocation.getOmega() << std::endl;
-  std::cout << "Q_deltau: " << _thrustallocation.getQ_deltau() << std::endl;
-  std::cout << "g_deltau: " << _thrustallocation.getg_deltau() << std::endl;
-  std::cout << "d_rho: " << _thrustallocation.getd_rho() << std::endl;
-  std::cout << "B_alpha: " << _thrustallocation.getB_alpha() << std::endl;
-  std::cout << "d_Balpha_u: " << _thrustallocation.getd_Balpha_u() << std::endl;
-  std::cout << "lx: " << _thrustallocation.getlx() << std::endl;
+  _thrustallocation.onestepthrustallocation(_controllerRTdata);
 
-  Eigen::MatrixXd vvv(2, 3);
-  vvv.setZero();
-  write2csvfile("csvfile.csv", vvv);
-}
+  std::cout << "command_alpha: \n"
+            << _controllerRTdata.command_alpha << std::endl;
+  std::cout << "upper_delta_alpha: \n"
+            << _thrustallocation.getupper_delta_alpha() << std::endl;
+  std::cout << "lower_delta_alpha: \n"
+            << _thrustallocation.getlower_delta_alpha() << std::endl;
+  std::cout << "upper_delta_u: \n"
+            << _thrustallocation.getupper_delta_u() << std::endl;
+  std::cout << "lower_delta_u: \n"
+            << _thrustallocation.getlower_delta_u() << std::endl;
+  std::cout << "Q: \n" << _thrustallocation.getQ() << std::endl;
+  std::cout << "Omega: \n" << _thrustallocation.getOmega() << std::endl;
+  std::cout << "Q_deltau: \n" << _thrustallocation.getQ_deltau() << std::endl;
+  std::cout << "g_deltau: \n" << _thrustallocation.getg_deltau() << std::endl;
+  std::cout << "d_rho: \n" << _thrustallocation.getd_rho() << std::endl;
+  std::cout << "B_alpha: \n" << _thrustallocation.getB_alpha() << std::endl;
+  std::cout << "d_Balpha_u: \n"
+            << _thrustallocation.getd_Balpha_u() << std::endl;
+  std::cout << "lx: \n" << _thrustallocation.getlx() << std::endl;
+}  // testonestepthrustallocation
 
 // test thrust allocation for 3 propellers (fully actuated)
 void test_multiplethrusterallocation() {
@@ -937,10 +938,11 @@ int main() {
   el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
   LOG(INFO) << "The program has started!";
 
+  testonestepthrustallocation();
   // test_multiplethrusterallocation();
   // testrudder();
   // test_twinfixed();
-  testbiling();
+  // testbiling();
   // testoutboard();
 
   LOG(INFO) << "Shutting down.";

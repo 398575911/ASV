@@ -24,7 +24,7 @@
 #include <vector>
 #include "common/logging/include/easylogging++.h"
 #include "controllerdata.h"
-#include "mosek.h"
+#include "osqp.h"
 
 namespace ASV::control {
 // m: # of all thrusters on the vessel
@@ -53,7 +53,8 @@ class thrustallocation {
         num_mainrudder(_thrustallocationdata.num_mainrudder),
         num_twinfixed(_thrustallocationdata.num_twinfixed),
         numvar(2 * m + n),
-        num_constraints(n),
+        num_constraints(numvar + n),
+        A_nnz(2 * (m * n + m + n)),
         index_thrusters(_thrustallocationdata.index_thrusters),
         v_tunnelthrusterdata(_v_tunnelthrusterdata),
         v_azimuththrusterdata(_v_azimuththrusterdata),
@@ -82,16 +83,24 @@ class thrustallocation {
 
   thrustallocation() = delete;
   ~thrustallocation() {
-    MSK_deletetask(&task);
-    MSK_deleteenv(&env);
+    // Clean workspace
+    osqp_cleanup(osqp_work);
+
+    // Cleanup
+    if (osqp_data) {
+      if (osqp_data->P) c_free(osqp_data->P);
+      if (osqp_data->A) c_free(osqp_data->A);
+      c_free(osqp_data);
+    }
+    if (osqp_settings) c_free(osqp_settings);
   }
 
   // perform the thrust allocation using QP solver (one step)
   void onestepthrustallocation(controllerRTdata<m, n> &_RTdata) {
     update_formerstep_feedback(_RTdata);
     updateTAparameters(_RTdata);
-    updateMosekparameters();
-    onestepmosek();
+    updateOSQPparameters();
+    onestepOSQP();
     update_nextstep_command(_RTdata);
   }  // onestepthrustallocation
 
@@ -192,9 +201,9 @@ class thrustallocation {
           break;
       }
     }
-    // update mosek
+    // update OSQP
     for (int j = 0; j != n; ++j) {
-      qval[j + 2 * m] = Q(j, j);
+      osqp_P_x[j + 2 * m] = Q(j, j);
     }
   }  // setQ
 
@@ -226,8 +235,10 @@ class thrustallocation {
   const int num_azimuth;
   const int num_mainrudder;
   const int num_twinfixed;
-  const int numvar;
-  const int num_constraints;
+
+  const int numvar;           // # of variable in QP
+  const int num_constraints;  // # of constraints in QP
+  const int A_nnz;            // # of non-zero elements in A in QP
 
   // types of each thruster
   std::vector<int> index_thrusters;
@@ -266,33 +277,25 @@ class thrustallocation {
   // linearized parameters
   double derivative_dx;  // step size of the derivative
 
-  // parameters for Mosek API
-  MSKint32t aptrb[2 * m + n], aptre[2 * m + n], asub[6 * m + n];
-  double aval[6 * m + n];
-  /* Bounds on constraints. */
-  MSKboundkeye bkc[n];
-  double blc[n];
-  double buc[n];
-  /* Bounds on variables. */
-  MSKboundkeye bkx[2 * m + n];
-  double blx[2 * m + n];
-  double bux[2 * m + n];
-
-  // objective g
-  double g[2 * m + n];
-
-  // The lower triangular part of the quadratic objective Q matrix in the
-  // objective is specified.
-  MSKint32t qsubi[2 * m + n];
-  MSKint32t qsubj[2 * m + n];
-  double qval[2 * m + n];
   // array to store the optimization results
   Eigen::Matrix<double, 2 * m + n, 1> results;
 
-  // mosek environment
-  MSKenv_t env = NULL;
-  MSKtask_t task = NULL;
-  MSKrescodee r;
+  // parameters for OSQP API
+  c_float osqp_P_x[2 * m + n];
+  c_int osqp_P_i[2 * m + n];
+  c_int osqp_P_p[2 * m + n + 1];
+  c_float osqp_q[2 * m + n];
+  c_float osqp_A_x[2 * (m * n + m + n)];
+  c_int osqp_A_i[2 * (m * n + m + n)];
+  c_int osqp_A_p[2 * m + n + 1];
+  c_float osqp_l[2 * (m + n)];
+  c_float osqp_u[2 * (m + n)];
+
+  // OSQP workspace
+  c_int osqp_flag;
+  OSQPWorkspace *osqp_work;
+  OSQPSettings *osqp_settings;
+  OSQPData *osqp_data;
 
   void initializethrusterallocation() {
     assert(num_tunnel + num_azimuth + num_mainrudder + num_twinfixed == m);
@@ -358,80 +361,90 @@ class thrustallocation {
     // quadratic penality matrix for error
     setQ(CONTROLMODE::MANUAL);
 
-    initializemosekvariables();
+    initializeOSQPVariables();
 
-    initializeMosekAPI();
+    initializeOSQPAPI();
   }
 
-  void initializemosekvariables() {
-    int _mdouble = 2 * m;
-    int _mquintuple = 6 * m;
-    // assign value to the bounds on variables
-    for (int i = 0; i != _mdouble; ++i) {
-      bkx[i] = MSK_BK_RA;
-      blx[i] = 0.0;
-      bux[i] = 0.0;
-    }
-    for (int j = 0; j != n; ++j) {
-      int index_n = j + _mdouble;
-      bkx[index_n] = MSK_BK_FR;
-      blx[index_n] = -MSK_INFINITY;
-      bux[index_n] = +MSK_INFINITY;
-    }
-
-    // assign value to the linear constraints
-    for (int i = 0; i != _mdouble; ++i) {
-      int _itriple = 3 * i;
-      aptrb[i] = _itriple;
-      aptre[i] = _itriple + 3;
-
-      for (int j = 0; j != 3; ++j) {
-        asub[_itriple + j] = j;
-        aval[_itriple + j] = 0.0;
-      }
-    }
-    for (int j = 0; j != n; ++j) {
-      aptrb[j + _mdouble] = _mquintuple + j;
-      aptre[j + _mdouble] = _mquintuple + j + 1;
-      asub[j + _mquintuple] = j;
-      aval[j + _mquintuple] = 1.0;
-      bkc[j] = MSK_BK_FX;
-      blc[j] = 0;
-      buc[j] = 0;
-    }
+  void initializeOSQPVariables() {
+    int two_m_m = 2 * m;
+    int eight_m_m = 8 * m;
 
     // assign value to the objective
     for (int i = 0; i != numvar; ++i) {
-      qsubi[i] = i;
-      qsubj[i] = i;
-      g[i] = 0;
+      osqp_P_i[i] = i;
+      osqp_P_p[i] = i;
+      osqp_q[i] = 0;
+    }
+    osqp_P_p[numvar] = numvar;
+    for (int i = 0; i != m; ++i) {
+      osqp_P_x[i] = 0;
     }
     for (int i = 0; i != m; ++i) {
-      qval[i] = 0;
+      osqp_P_x[i + m] = Omega(i, i);
     }
-    for (int i = 0; i != m; ++i) {
-      qval[i + m] = Omega(i, i);
+    for (int i = 0; i != n; ++i) {
+      osqp_P_x[i + 2 * m] = Q(i, i);
     }
-    for (int j = 0; j != n; ++j) {
-      qval[j + 2 * m] = Q(j, j);
-    }
-  }  // initializemosekvariables
 
-  void initializeMosekAPI() {
-    /* Create the mosek environment. */
-    r = MSK_makeenv(&env, NULL);
-    /* Create the optimization task. */
-    r = MSK_maketask(env, num_constraints, numvar, &task);
-    // set up the threads used by mosek
-    const int QP_THREADS_USED = 1;  // # of thread used by mosek
-    r = MSK_putintparam(task, MSK_IPAR_NUM_THREADS, QP_THREADS_USED);
-    // r = MSK_linkfunctotaskstream(task, MSK_STREAM_LOG, NULL, printstr);
-    r = MSK_linkfunctotaskstream(task, MSK_STREAM_LOG, NULL, NULL);
-    // append num_constrainsts empty contraints
-    r = MSK_appendcons(task, num_constraints);
-    // append numvar emtpy variables
-    r = MSK_appendvars(task, numvar);
-  }
+    // assign value to the A in OSQP
+    osqp_A_p[0] = 0;
+    for (int i = 0; i != two_m_m; ++i) {
+      int four_m_i = 4 * i;
+      osqp_A_p[i + 1] = four_m_i + 4;
+      for (int j = 0; j != 3; ++j) {
+        osqp_A_x[four_m_i + j] = 0.0;
+        osqp_A_i[four_m_i + j] = j;
+      }
+      osqp_A_x[four_m_i + 3] = 1.0;
+      osqp_A_i[four_m_i + 3] = i + 3;
+    }
+    for (int i = 0; i != n; ++i) {
+      int two_m_i = 2 * i;
+      osqp_A_p[1 + 2 * m + i] = eight_m_m + 2 + two_m_i;
+      osqp_A_x[two_m_i + eight_m_m] = 1.0;
+      osqp_A_x[two_m_i + 1 + eight_m_m] = 1.0;
+      osqp_A_i[two_m_i + eight_m_m] = i;
+      osqp_A_i[two_m_i + 1 + eight_m_m] = two_m_m + 3 + i;
+    }
+
+    // assign value to l and u in OSQP
+    for (int i = 0; i != numvar; ++i) {
+      osqp_l[i] = 0.0;
+      osqp_u[i] = 0.0;
+    }
+    for (int i = 0; i != n; ++i) {
+      int index_n = i + numvar;
+      osqp_l[index_n] = -OSQP_INFTY;
+      osqp_u[index_n] = OSQP_INFTY;
+    }
+
+  }  // initializeOSQPVariables
+
+  void initializeOSQPAPI() {
+    osqp_flag = 0;
+    osqp_settings = (OSQPSettings *)c_malloc(sizeof(OSQPSettings));
+    osqp_data = (OSQPData *)c_malloc(sizeof(OSQPData));
+
+    // Populate data
+    if (osqp_data) {
+      osqp_data->n = numvar;
+      osqp_data->m = num_constraints;
+      osqp_data->P = csc_matrix(osqp_data->n, osqp_data->n, numvar, osqp_P_x,
+                                osqp_P_i, osqp_P_p);
+      osqp_data->q = osqp_q;
+      osqp_data->A = csc_matrix(osqp_data->m, osqp_data->n, A_nnz, osqp_A_x,
+                                osqp_A_i, osqp_A_p);
+      osqp_data->l = osqp_l;
+      osqp_data->u = osqp_u;
+    }
+
+    // Define solver settings as default
+    if (osqp_settings) {
+      osqp_set_default_settings(osqp_settings);
+    }
+    osqp_flag = osqp_setup(&osqp_work, osqp_data, osqp_settings);
+  }  // initializeOSQPAPI
 
   // calculate the contraints of tunnel thruster
   // depend on the desired force in the Y direction or Mz direction
@@ -1058,34 +1071,42 @@ class thrustallocation {
     if (num_twinfixed > 0)
       calculateconstraints_twinfixed(_RTdata, _RTdata.tau(0), _RTdata.tau(2));
   }
+
   // update parameters in QP for each time step
-  void updateMosekparameters() {
-    // update A values
+  void updateOSQPparameters() {
+    // update objective
+    for (int i = 0; i != m; ++i) {
+      osqp_q[i] = g_deltau(i);
+      osqp_q[i + m] = d_rho(i);
+      osqp_P_x[i] = Q_deltau(i, i);
+    }
+
+    // update A
     for (int i = 0; i != m; ++i) {
       for (int j = 0; j != n; ++j) {
-        aval[n * i + j] = B_alpha(j, i);
-        aval[n * (i + m) + j] = d_Balpha_u(j, i);
+        osqp_A_x[4 * i + j] = B_alpha(j, i);
+        osqp_A_x[4 * (i + m) + j] = d_Balpha_u(j, i);
       }
     }
 
-    // update linear constraints
-    for (int i = 0; i != num_constraints; ++i) {
-      blc[i] = b(i);
-      buc[i] = b(i);
+    // update l and u
+    for (int i = 0; i != n; ++i) {
+      osqp_l[i] = b(i);
+      osqp_u[i] = b(i);
+    }
+    for (int i = 0; i != m; ++i) {
+      osqp_l[n + i] = lower_delta_u(i);
+      osqp_u[n + i] = upper_delta_u(i);
+      osqp_l[n + m + i] = lower_delta_alpha(i);
+      osqp_u[n + m + i] = upper_delta_alpha(i);
     }
 
-    for (int i = 0; i != m; ++i) {
-      // update variable constraints
-      blx[i] = lower_delta_u(i);
-      bux[i] = upper_delta_u(i);
-      blx[m + i] = lower_delta_alpha(i);
-      bux[m + i] = upper_delta_alpha(i);
-      // update objective g and Q
-      g[i] = g_deltau(i);
-      g[i + m] = d_rho(i);
-      qval[i] = Q_deltau(i, i);
-    }
-  }  // updateMosekparameters
+    osqp_update_P(osqp_work, osqp_P_x, OSQP_NULL, numvar);
+    osqp_update_A(osqp_work, osqp_A_x, OSQP_NULL, A_nnz);
+    osqp_update_lin_cost(osqp_work, osqp_q);
+    osqp_update_bounds(osqp_work, osqp_l, osqp_u);
+
+  }  // updateOSQPparameters
 
   // 一元二次方程
   double computeabcvalue(double a, double b, double c, double x) {
@@ -1097,96 +1118,17 @@ class thrustallocation {
   // convert degree to rad
   double degree2rad(int _degree) { return _degree * M_PI / 180.0; }
 
-  // solve QP using Mosek solver
-  void onestepmosek() {
-    MSKint32t i, j;
-    double t_results[2 * m + n];
+  // solve QP using OSQP solver
+  void onestepOSQP() {
     results.setZero();
-    if (r == MSK_RES_OK) {
-      for (j = 0; j < numvar; ++j) {
-        /* Set the linear term g_j in the objective.*/
-        r = MSK_putcj(task, j, g[j]);
 
-        /* Set the bounds on variable j.
-         blx[j] <= x_j <= bux[j] */
-        r = MSK_putvarbound(task, j, /* Index of variable.*/
-                            bkx[j],  /* Bound key.*/
-                            blx[j],  /* Numerical value of lower bound.*/
-                            bux[j]); /* Numerical value of upper bound.*/
+    // Solve Problem
+    osqp_solve(osqp_work);
 
-        /* Input column j of A */
-        r = MSK_putacol(
-            task, j,             /* Variable (column) index.*/
-            aptre[j] - aptrb[j], /* Number of non-zeros in column j.*/
-            asub + aptrb[j],     /* Pointer to row indexes of column j.*/
-            aval + aptrb[j]);    /* Pointer to Values of column j.*/
-      }
+    OSQPSolution *new_sol_data = osqp_work->solution;
+    for (int k = 0; k != numvar; ++k) results(k) = new_sol_data->x[k];
 
-      /* Set the bounds on constraints.
-         for i=1, ...,NUMCON : blc[i] <= constraint i <= buc[i] */
-      for (i = 0; i < num_constraints; ++i)
-        r = MSK_putconbound(task, i, /* Index of constraint.*/
-                            bkc[i],  /* Bound key.*/
-                            blc[i],  /* Numerical value of lower bound.*/
-                            buc[i]); /* Numerical value of upper bound.*/
-
-      /* Input the Q for the objective. */
-      r = MSK_putqobj(task, numvar, qsubi, qsubj, qval);
-
-      if (r == MSK_RES_OK) {
-        MSKrescodee trmcode;
-
-        /* Run optimizer */
-        r = MSK_optimizetrm(task, &trmcode);
-
-        /* Print a summary containing information
-           about the solution for debugging purposes*/
-        // MSK_solutionsummary(task, MSK_STREAM_MSG);
-
-        if (r == MSK_RES_OK) {
-          MSKsolstae solsta;
-          MSK_getsolsta(task, MSK_SOL_ITR, &solsta);
-
-          switch (solsta) {
-            case MSK_SOL_STA_OPTIMAL: {
-              /* Request the interior solution. */
-              MSK_getxx(task, MSK_SOL_ITR, t_results);
-              for (int k = 0; k != numvar; ++k) results(k) = t_results[k];
-              break;
-            }
-
-            case MSK_SOL_STA_DUAL_INFEAS_CER:
-            case MSK_SOL_STA_PRIM_INFEAS_CER: {
-              CLOG(ERROR, "mosek")
-                  << "Primal or dual infeasibility certificate found.";
-              break;
-            }
-            case MSK_SOL_STA_UNKNOWN: {
-              CLOG(ERROR, "mosek") << "The status of the solution could not be "
-                                      "determined.";
-              break;
-            }
-            default: {
-              CLOG(ERROR, "mosek") << "Other solution status.";
-              break;
-            }
-          }
-        } else {
-          CLOG(ERROR, "mosek") << "Error while optimizing.";
-        }
-      }
-      if (r != MSK_RES_OK) {
-        /* In case of an error print error code and description. */
-        char symname[MSK_MAX_STR_LEN];
-        char desc[MSK_MAX_STR_LEN];
-        MSK_getcodedesc(r, symname, desc);
-
-        CLOG(ERROR, "mosek")
-            << "An error occurred while optimizing. " << std::string(symname)
-            << " - " << std::string(desc);
-      }
-    }
-  }  // onestepmosek
+  }  // onestepOSQP
 };   // end class thrustallocation
 }  // namespace ASV::control
 
