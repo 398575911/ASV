@@ -6,28 +6,28 @@
 \addvspace {10.0pt}
 \contentsline {figure}{\numberline {2--1}{\ignorespaces 常见船舶推进器示意图}}{7}{figure.caption.13}% 
 \contentsline {figure}{\numberline {2--2}{\ignorespaces 螺旋桨角度的定义}}{8}{figure.caption.14}% 
-\contentsline {figure}{\numberline {2--3}{\ignorespaces 固定式双尾推螺旋桨的推力曲线}}{14}{figure.caption.18}% 
-\contentsline {figure}{\numberline {2--4}{\ignorespaces 固定式双尾推螺旋桨的推力分配}}{15}{figure.caption.19}% 
-\contentsline {figure}{\numberline {2--5}{\ignorespaces 基于视线的轨迹跟踪算法}}{18}{figure.caption.20}% 
+\contentsline {figure}{\numberline {2--3}{\ignorespaces 固定式双尾推螺旋桨的推力曲线}}{16}{figure.caption.20}% 
+\contentsline {figure}{\numberline {2--4}{\ignorespaces 固定式双尾推螺旋桨的推力分配}}{17}{figure.caption.21}% 
+\contentsline {figure}{\numberline {2--5}{\ignorespaces 基于视线的轨迹跟踪算法}}{20}{figure.caption.22}% 
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {3--1}{\ignorespaces 卡尔曼滤波的示意图(来自维基百科)}}{21}{figure.caption.21}% 
+\contentsline {figure}{\numberline {3--1}{\ignorespaces 卡尔曼滤波的示意图(来自维基百科)}}{23}{figure.caption.23}% 
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {4--1}{\ignorespaces Frenet坐标系下的轨迹生成}}{24}{figure.caption.23}% 
-\contentsline {figure}{\numberline {4--2}{\ignorespaces Frenet坐标系下的最优轨迹线束}}{27}{figure.caption.24}% 
-\contentsline {figure}{\numberline {4--3}{\ignorespaces Frenet坐标系下的最优轨迹生成算法逻辑图}}{30}{figure.caption.25}% 
+\contentsline {figure}{\numberline {4--1}{\ignorespaces Frenet坐标系下的轨迹生成}}{26}{figure.caption.25}% 
+\contentsline {figure}{\numberline {4--2}{\ignorespaces Frenet坐标系下的最优轨迹线束}}{29}{figure.caption.26}% 
+\contentsline {figure}{\numberline {4--3}{\ignorespaces Frenet坐标系下的最优轨迹生成算法逻辑图}}{32}{figure.caption.27}% 
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {5--1}{\ignorespaces 雷达线束的坐标投影}}{32}{figure.caption.26}% 
+\contentsline {figure}{\numberline {5--1}{\ignorespaces 雷达线束的坐标投影}}{34}{figure.caption.28}% 
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {6--1}{\ignorespaces UTM区域的重叠}}{37}{figure.caption.29}% 
-\addvspace {10.0pt}
-\addvspace {10.0pt}
-\contentsline {figure}{\numberline {8--1}{\ignorespaces 出现在插图索引中}}{41}{figure.caption.30}% 
-\contentsline {figure}{\numberline {8--2}{\ignorespaces 中文题图\relax }}{42}{figure.caption.31}% 
-\contentsline {figure}{\numberline {8--3}{\ignorespaces 并排第一个图\relax }}{42}{figure.caption.32}% 
-\contentsline {figure}{\numberline {8--4}{\ignorespaces 并排第二个图\relax }}{42}{figure.caption.32}% 
-\contentsline {figure}{\numberline {8--5}{\ignorespaces 包含子图题的范例（使用 subcaptionbox）\relax }}{43}{figure.caption.33}% 
-\contentsline {figure}{\numberline {8--6}{\ignorespaces 包含子图题的范例（使用 subfigure）\relax }}{43}{figure.caption.34}% 
+\contentsline {figure}{\numberline {6--1}{\ignorespaces UTM区域的重叠}}{39}{figure.caption.31}% 
 \addvspace {10.0pt}
 \addvspace {10.0pt}
+\contentsline {figure}{\numberline {8--1}{\ignorespaces 出现在插图索引中}}{43}{figure.caption.32}% 
+\contentsline {figure}{\numberline {8--2}{\ignorespaces 中文题图\relax }}{44}{figure.caption.33}% 
+\contentsline {figure}{\numberline {8--3}{\ignorespaces 并排第一个图\relax }}{44}{figure.caption.34}% 
+\contentsline {figure}{\numberline {8--4}{\ignorespaces 并排第二个图\relax }}{44}{figure.caption.34}% 
+\contentsline {figure}{\numberline {8--5}{\ignorespaces 包含子图题的范例（使用 subcaptionbox）\relax }}{45}{figure.caption.35}% 
+\contentsline {figure}{\numberline {8--6}{\ignorespaces 包含子图题的范例（使用 subfigure）\relax }}{45}{figure.caption.36}% 
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {B--1}{\ignorespaces 绘制流程图效果\relax }}{57}{figure.caption.40}% 
+\addvspace {10.0pt}
+\addvspace {10.0pt}
+\contentsline {figure}{\numberline {B--1}{\ignorespaces 绘制流程图效果\relax }}{59}{figure.caption.42}% 

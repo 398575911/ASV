@@ -23,14 +23,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 
 #### TODO: 
-2. Perception (e.g. Lidar, Marine Radar, camera, etc)
-3. Hardware-in-loop simulation
-4. Finite state machine
-5. Message broker
-7. export shared library
+1. Perception (e.g. Lidar, Marine Radar, camera, etc)
+2. Hardware-in-loop simulation
+3. Finite state machine
+4. Message broker
+5. export shared library
 
 
 近期:
 1. Hybrid A star
-3. OSQP
-4. Marine radar visulization, target tracking
+2. Marine radar visulization, target tracking

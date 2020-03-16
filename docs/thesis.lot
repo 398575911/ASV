@@ -5,18 +5,20 @@
 \contentsline {table}{\numberline {2--1}{\ignorespaces Mosek中变量约束(RT代表实时变化量)\relax }}{11}{table.caption.15}% 
 \contentsline {table}{\numberline {2--2}{\ignorespaces Mosek中线性约束(RT代表实时变化量)\relax }}{12}{table.caption.16}% 
 \contentsline {table}{\numberline {2--3}{\ignorespaces Mosek中目标函数(RT代表实时变化量)\relax }}{12}{table.caption.17}% 
+\contentsline {table}{\numberline {2--4}{\ignorespaces OSQP中目标函数(RT代表实时变化量)\relax }}{13}{table.caption.18}% 
+\contentsline {table}{\numberline {2--5}{\ignorespaces OSQP中线性约束(RT代表实时变化量)\relax }}{14}{table.caption.19}% 
 \addvspace {10.0pt}
 \addvspace {10.0pt}
-\contentsline {table}{\numberline {4--1}{\ignorespaces 符号解释\relax }}{24}{table.caption.22}% 
+\contentsline {table}{\numberline {4--1}{\ignorespaces 符号解释\relax }}{26}{table.caption.24}% 
 \addvspace {10.0pt}
 \addvspace {10.0pt}
-\contentsline {table}{\numberline {6--1}{\ignorespaces Hemisphere V102常用指令\relax }}{35}{table.caption.27}% 
-\contentsline {table}{\numberline {6--2}{\ignorespaces 防水接头接线方法\relax }}{36}{table.caption.28}% 
+\contentsline {table}{\numberline {6--1}{\ignorespaces Hemisphere V102常用指令\relax }}{37}{table.caption.29}% 
+\contentsline {table}{\numberline {6--2}{\ignorespaces 防水接头接线方法\relax }}{38}{table.caption.30}% 
 \addvspace {10.0pt}
 \addvspace {10.0pt}
-\contentsline {table}{\numberline {8--1}{\ignorespaces 一个颇为标准的三线表}}{44}{table.caption.35}% 
-\contentsline {table}{\numberline {8--2}{\ignorespaces 一个带有脚注的表格的例子\relax }}{44}{table.caption.36}% 
-\contentsline {table}{\numberline {8--3}{\ignorespaces 实验数据\relax }}{45}{table.8.3}% 
+\contentsline {table}{\numberline {8--1}{\ignorespaces 一个颇为标准的三线表}}{46}{table.caption.37}% 
+\contentsline {table}{\numberline {8--2}{\ignorespaces 一个带有脚注的表格的例子\relax }}{46}{table.caption.38}% 
+\contentsline {table}{\numberline {8--3}{\ignorespaces 实验数据\relax }}{47}{table.8.3}% 
 \addvspace {10.0pt}
 \addvspace {10.0pt}
 \addvspace {10.0pt}

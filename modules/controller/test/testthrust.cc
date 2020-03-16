@@ -274,7 +274,7 @@ void test_multiplethrusterallocation() {
   thrustallocationdata _thrustallocationdata{
       500,             // Q_surge
       500,             // Q_sway
-      500,             // Q_yaw
+      1000,            // Q_yaw
       num_tunnel,      // num_tunnel
       num_azimuth,     // num_azimuth
       num_mainrudder,  // num_mainrudder
@@ -354,14 +354,14 @@ void test_multiplethrusterallocation() {
   double angle = 0;
   for (int i = 0; i != 120; ++i) {
     angle = (i + 1) * M_PI / 60;
-    save_tau(2, i + 1) = -1.0 * sin(angle) + 0.2 * std::rand() / RAND_MAX;
+    save_tau(2, i + 1) = 0.0 * sin(angle) + 0.01 * std::rand() / RAND_MAX;
   }
-  save_tau.block(1, 0, 1, 100) = Eigen::MatrixXd::Constant(1, 100, 0) +
-                                 0.00 * Eigen::MatrixXd::Random(1, 100);
-  save_tau.block(1, 100, 1, 100) = Eigen::MatrixXd::Constant(1, 100, -0) +
-                                   0.00 * Eigen::MatrixXd::Random(1, 100);
-  save_tau.row(0) = 2 * Eigen::MatrixXd::Constant(1, totalstep, 1) +
-                    0.01 * Eigen::MatrixXd::Random(1, totalstep);
+  save_tau.block(1, 0, 1, 100) = Eigen::MatrixXd::Constant(1, 100, 1) +
+                                 0.05 * Eigen::MatrixXd::Random(1, 100);
+  save_tau.block(1, 100, 1, 100) = Eigen::MatrixXd::Constant(1, 100, -1) +
+                                   0.05 * Eigen::MatrixXd::Random(1, 100);
+  save_tau.row(0) = 0 * Eigen::MatrixXd::Constant(1, totalstep, 1) +
+                    0.00 * Eigen::MatrixXd::Random(1, totalstep);
   for (int i = 0; i != totalstep; ++i) {
     // update tau
     _controllerRTdata.tau = save_tau.col(i);
@@ -938,8 +938,8 @@ int main() {
   el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
   LOG(INFO) << "The program has started!";
 
-  testonestepthrustallocation();
-  // test_multiplethrusterallocation();
+  // testonestepthrustallocation();
+  test_multiplethrusterallocation();
   // testrudder();
   // test_twinfixed();
   // testbiling();

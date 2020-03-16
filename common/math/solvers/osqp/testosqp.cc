@@ -1,5 +1,5 @@
+#include <stdio.h>
 #include "osqp.h"
-
 void basc_qp_test() {
   // Load problem data
   c_float P_x[4] = {
@@ -74,16 +74,51 @@ void basc_qp_test() {
 
   // Setup workspace
   exitflag = osqp_setup(&work, data, settings);
-
+  if (exitflag != 0) printf("setup error\n");
   // Solve Problem
   osqp_solve(work);
-
   // solution
   OSQPSolution *sol_data = work->solution;
-
-  // print solution
-  printf("Optimal primal solution: \n");
-  for (int i = 0; i != 3; ++i) printf("x[%d]: %f\n", i, sol_data->x[i]);
+  switch (work->info->status_val) {
+    case OSQP_SOLVED:
+      // print solution
+      printf("Optimal primal solution: \n");
+      for (int i = 0; i != 3; ++i) printf("x[%d]: %f\n", i, sol_data->x[i]);
+      break;
+    case OSQP_SOLVED_INACCURATE:
+      printf("SOLVED_INACCURATE\n");
+      break;
+    case OSQP_MAX_ITER_REACHED:
+      printf("OSQP_MAX_ITER_REACHED\n");
+      break;
+    case OSQP_PRIMAL_INFEASIBLE:
+      printf("OSQP_PRIMAL_INFEASIBLE\n");
+      break;
+    case OSQP_PRIMAL_INFEASIBLE_INACCURATE:
+      printf("OSQP_PRIMAL_INFEASIBLE_INACCURATE\n");
+      break;
+    case OSQP_DUAL_INFEASIBLE:
+      printf("OSQP_DUAL_INFEASIBLE\n");
+      break;
+    case OSQP_DUAL_INFEASIBLE_INACCURATE:
+      printf("OSQP_DUAL_INFEASIBLE_INACCURATE\n");
+      break;
+    case OSQP_SIGINT:
+      printf("OSQP_SIGINT\n");
+      break;
+    case OSQP_TIME_LIMIT_REACHED:
+      printf("OSQP_TIME_LIMIT_REACHED\n");
+      break;
+    case OSQP_UNSOLVED:
+      printf("OSQP_UNSOLVED\n");
+      break;
+    case OSQP_NON_CVX:
+      printf("OSQP_NON_CVX\n");
+      break;
+    default:
+      printf("unknown\n");
+      break;
+  }
 
   // Clean workspace
   osqp_cleanup(work);
@@ -186,6 +221,6 @@ void update_qp_test() {
 }  // update_qp_test
 
 int main() {
-  // basc_qp_test();
-  update_qp_test();
+  basc_qp_test();
+  // update_qp_test();
 }

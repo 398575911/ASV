@@ -366,86 +366,6 @@ class thrustallocation {
     initializeOSQPAPI();
   }
 
-  void initializeOSQPVariables() {
-    int two_m_m = 2 * m;
-    int eight_m_m = 8 * m;
-
-    // assign value to the objective
-    for (int i = 0; i != numvar; ++i) {
-      osqp_P_i[i] = i;
-      osqp_P_p[i] = i;
-      osqp_q[i] = 0;
-    }
-    osqp_P_p[numvar] = numvar;
-    for (int i = 0; i != m; ++i) {
-      osqp_P_x[i] = 0;
-    }
-    for (int i = 0; i != m; ++i) {
-      osqp_P_x[i + m] = Omega(i, i);
-    }
-    for (int i = 0; i != n; ++i) {
-      osqp_P_x[i + 2 * m] = Q(i, i);
-    }
-
-    // assign value to the A in OSQP
-    osqp_A_p[0] = 0;
-    for (int i = 0; i != two_m_m; ++i) {
-      int four_m_i = 4 * i;
-      osqp_A_p[i + 1] = four_m_i + 4;
-      for (int j = 0; j != 3; ++j) {
-        osqp_A_x[four_m_i + j] = 0.0;
-        osqp_A_i[four_m_i + j] = j;
-      }
-      osqp_A_x[four_m_i + 3] = 1.0;
-      osqp_A_i[four_m_i + 3] = i + 3;
-    }
-    for (int i = 0; i != n; ++i) {
-      int two_m_i = 2 * i;
-      osqp_A_p[1 + 2 * m + i] = eight_m_m + 2 + two_m_i;
-      osqp_A_x[two_m_i + eight_m_m] = 1.0;
-      osqp_A_x[two_m_i + 1 + eight_m_m] = 1.0;
-      osqp_A_i[two_m_i + eight_m_m] = i;
-      osqp_A_i[two_m_i + 1 + eight_m_m] = two_m_m + 3 + i;
-    }
-
-    // assign value to l and u in OSQP
-    for (int i = 0; i != numvar; ++i) {
-      osqp_l[i] = 0.0;
-      osqp_u[i] = 0.0;
-    }
-    for (int i = 0; i != n; ++i) {
-      int index_n = i + numvar;
-      osqp_l[index_n] = -OSQP_INFTY;
-      osqp_u[index_n] = OSQP_INFTY;
-    }
-
-  }  // initializeOSQPVariables
-
-  void initializeOSQPAPI() {
-    osqp_flag = 0;
-    osqp_settings = (OSQPSettings *)c_malloc(sizeof(OSQPSettings));
-    osqp_data = (OSQPData *)c_malloc(sizeof(OSQPData));
-
-    // Populate data
-    if (osqp_data) {
-      osqp_data->n = numvar;
-      osqp_data->m = num_constraints;
-      osqp_data->P = csc_matrix(osqp_data->n, osqp_data->n, numvar, osqp_P_x,
-                                osqp_P_i, osqp_P_p);
-      osqp_data->q = osqp_q;
-      osqp_data->A = csc_matrix(osqp_data->m, osqp_data->n, A_nnz, osqp_A_x,
-                                osqp_A_i, osqp_A_p);
-      osqp_data->l = osqp_l;
-      osqp_data->u = osqp_u;
-    }
-
-    // Define solver settings as default
-    if (osqp_settings) {
-      osqp_set_default_settings(osqp_settings);
-    }
-    osqp_flag = osqp_setup(&osqp_work, osqp_data, osqp_settings);
-  }  // initializeOSQPAPI
-
   // calculate the contraints of tunnel thruster
   // depend on the desired force in the Y direction or Mz direction
   void calculateconstraints_tunnel(const controllerRTdata<m, n> &_RTdata,
@@ -1072,6 +992,88 @@ class thrustallocation {
       calculateconstraints_twinfixed(_RTdata, _RTdata.tau(0), _RTdata.tau(2));
   }
 
+  void initializeOSQPVariables() {
+    int two_m_m = 2 * m;
+    int eight_m_m = 8 * m;
+
+    // assign value to the objective
+    for (int i = 0; i != numvar; ++i) {
+      osqp_P_i[i] = i;
+      osqp_P_p[i] = i;
+      osqp_q[i] = 0;
+    }
+    osqp_P_p[numvar] = numvar;
+    for (int i = 0; i != m; ++i) {
+      osqp_P_x[i] = 0;
+    }
+    for (int i = 0; i != m; ++i) {
+      osqp_P_x[i + m] = Omega(i, i);
+    }
+    for (int i = 0; i != n; ++i) {
+      osqp_P_x[i + 2 * m] = Q(i, i);
+    }
+
+    // assign value to the A in OSQP
+    osqp_A_p[0] = 0;
+    for (int i = 0; i != two_m_m; ++i) {
+      int four_m_i = 4 * i;
+      osqp_A_p[i + 1] = four_m_i + 4;
+      for (int j = 0; j != 3; ++j) {
+        osqp_A_x[four_m_i + j] = 0.0;
+        osqp_A_i[four_m_i + j] = j;
+      }
+      osqp_A_x[four_m_i + 3] = 1.0;
+      osqp_A_i[four_m_i + 3] = i + 3;
+    }
+    for (int i = 0; i != n; ++i) {
+      int two_m_i = 2 * i;
+      osqp_A_p[1 + 2 * m + i] = eight_m_m + 2 + two_m_i;
+      osqp_A_x[two_m_i + eight_m_m] = 1.0;
+      osqp_A_x[two_m_i + 1 + eight_m_m] = 1.0;
+      osqp_A_i[two_m_i + eight_m_m] = i;
+      osqp_A_i[two_m_i + 1 + eight_m_m] = two_m_m + 3 + i;
+    }
+
+    // assign value to l and u in OSQP
+    for (int i = 0; i != numvar; ++i) {
+      osqp_l[i] = 0.0;
+      osqp_u[i] = 0.0;
+    }
+    for (int i = 0; i != n; ++i) {
+      int index_n = i + numvar;
+      osqp_l[index_n] = -OSQP_INFTY;
+      osqp_u[index_n] = OSQP_INFTY;
+    }
+
+  }  // initializeOSQPVariables
+
+  void initializeOSQPAPI() {
+    osqp_flag = 0;
+    osqp_settings = (OSQPSettings *)c_malloc(sizeof(OSQPSettings));
+    osqp_data = (OSQPData *)c_malloc(sizeof(OSQPData));
+
+    // Populate data
+    if (osqp_data) {
+      osqp_data->n = numvar;
+      osqp_data->m = num_constraints;
+      osqp_data->P = csc_matrix(osqp_data->n, osqp_data->n, numvar, osqp_P_x,
+                                osqp_P_i, osqp_P_p);
+      osqp_data->q = osqp_q;
+      osqp_data->A = csc_matrix(osqp_data->m, osqp_data->n, A_nnz, osqp_A_x,
+                                osqp_A_i, osqp_A_p);
+      osqp_data->l = osqp_l;
+      osqp_data->u = osqp_u;
+    }
+
+    // Define solver settings as default
+    if (osqp_settings) {
+      osqp_set_default_settings(osqp_settings);
+    }
+    osqp_flag = osqp_setup(&osqp_work, osqp_data, osqp_settings);
+    if (osqp_flag != 0) CLOG(ERROR, "osqp") << "setup error.";
+
+  }  // initializeOSQPAPI
+
   // update parameters in QP for each time step
   void updateOSQPparameters() {
     // update objective
@@ -1108,6 +1110,21 @@ class thrustallocation {
 
   }  // updateOSQPparameters
 
+  // solve QP using OSQP solver
+  void onestepOSQP() {
+    // reset the delta value
+    results.setZero();
+
+    // Solve Problem
+    osqp_solve(osqp_work);
+    if (osqp_work->info->status_val > 0) {
+      for (int i = 0; i != numvar; ++i) results(i) = osqp_work->solution->x[i];
+    } else {
+      CLOG(ERROR, "osqp") << "solver error.";
+    }
+
+  }  // onestepOSQP
+
   // 一元二次方程
   double computeabcvalue(double a, double b, double c, double x) {
     return a * x * x + b * x + c;
@@ -1118,18 +1135,7 @@ class thrustallocation {
   // convert degree to rad
   double degree2rad(int _degree) { return _degree * M_PI / 180.0; }
 
-  // solve QP using OSQP solver
-  void onestepOSQP() {
-    results.setZero();
-
-    // Solve Problem
-    osqp_solve(osqp_work);
-
-    OSQPSolution *new_sol_data = osqp_work->solution;
-    for (int k = 0; k != numvar; ++k) results(k) = new_sol_data->x[k];
-
-  }  // onestepOSQP
-};   // end class thrustallocation
+};  // end class thrustallocation
 }  // namespace ASV::control
 
 #endif /* _THRUSTALLOCATION_H_*/

@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  14 MAR 2020 20:50
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  16 MAR 2020 13:29
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -2862,17 +2862,25 @@ Overfull \hbox (49.67712pt too wide) in paragraph at lines 275--285
  [][] 
  []
 
-[11] [12] [13]
+
+Underfull \vbox (badness 1400) has occurred while \output is active []
+
+[11] [12]
+Overfull \hbox (57.79022pt too wide) in paragraph at lines 343--353
+ [][] 
+ []
+
+[13] [14] [15]
 File: figure/chapter02/twinfixed.jpg Graphic file (type bmp)
 <figure/chapter02/twinfixed.jpg>
 File: figure/chapter02/twinfixed1.jpg Graphic file (type bmp)
 <figure/chapter02/twinfixed1.jpg>
-[14] [15] [16]
+[16] [17] [18]
 File: figure/chapter02/los.jpg Graphic file (type bmp)
 <figure/chapter02/los.jpg>
-) (./tex/chapter03.tex [17] [18]
+) (./tex/chapter03.tex [19] [20]
 第三章
-[19
+[21
 
 ]
 File: figure/chapter03/Basic_concept_of_Kalman_filtering.png Graphic file (type
@@ -2883,44 +2891,44 @@ Overfull \hbox (2.84544pt too wide) in paragraph at lines 63--72
  [][] 
  []
 
-[20] [21]) (./tex/chapter04.tex [22]
+[22] [23]) (./tex/chapter04.tex [24]
 第四章
 Package hyperref Info: bookmark level for unknown theorem defaults to 0 on inpu
 t line 23.
 File: figure/chapter04/trajectoryfrenet.jpg Graphic file (type bmp)
 <figure/chapter04/trajectoryfrenet.jpg>
-[23
+[25
 
-] [24] [25]
+] [26] [27]
 File: figure/chapter04/frenetlattice.jpg Graphic file (type bmp)
 <figure/chapter04/frenetlattice.jpg>
-[26]
+[28]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[27] [28]
+[29] [30]
 File: figure/chapter04/Algorithm.jpg Graphic file (type bmp)
 <figure/chapter04/Algorithm.jpg>
-) (./tex/chapter05.tex [29] [30]
+) (./tex/chapter05.tex [31] [32]
 第五章
 File: figure/chapter05/Radar_spoke_projection.jpg Graphic file (type bmp)
 <figure/chapter05/Radar_spoke_projection.jpg>
-[31
+[33
 
-] [32]) (./tex/chap_sensor.tex [33] [34
+] [34]) (./tex/chap_sensor.tex [35] [36
 
 ]
 第六章
-[35]
+[37]
 File: figure/chapter_sensor/utmoverlap.jpg Graphic file (type bmp)
 <figure/chapter_sensor/utmoverlap.jpg>
 
 Underfull \vbox (badness 2735) has occurred while \output is active []
 
-[36]) (./tex/chap_software.tex [37] [38
+[38]) (./tex/chap_software.tex [39] [40
 
 ]
 第七章
-) (./tex/floats.tex [39] [40
+) (./tex/floats.tex [41] [42
 
 ]
 第八章
@@ -2950,7 +2958,7 @@ Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 
 File: figure/cn_100t.png Graphic file (type bmp)
 <figure/cn_100t.png>
-[41]
+[43]
 File: ./pdf/sjtu-badge.pdf Graphic file (type pdf)
 <use ./pdf/sjtu-badge.pdf>
 File: ./pdf/sjtu-badge.pdf Graphic file (type pdf)
@@ -2959,7 +2967,7 @@ File: ./pdf/sjtu-name.pdf Graphic file (type pdf)
 <use ./pdf/sjtu-name.pdf>
 File: ./pdf/sjtu-name.pdf Graphic file (type pdf)
 <use ./pdf/sjtu-name.pdf>
-[42]
+[44]
 File: figure/pressure15.jpg Graphic file (type bmp)
 <figure/pressure15.jpg>
 File: figure//pressure25.jpg Graphic file (type bmp)
@@ -2984,10 +2992,10 @@ LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
 (Font)              scaled to size 8.1303pt on input line 140.
 LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
 (Font)              scaled to size 5.39996pt on input line 140.
-[43]
+[45]
 LaTeX Font Info:    Font shape `TU/SourceSansPro(0)/m/n' will be
 (Font)              scaled to size 8.1303pt on input line 161.
-[44] [45] (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstlang1.sty
+[46] [47] (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2019/02/27 1.8b listings language file
 ) (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2019/02/27 1.8b (Carsten Heinz)
@@ -2996,35 +3004,35 @@ LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/n' will be
 (Font)              scaled to size 8.1303pt on input line 291.
 LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/bx/n' will be
 (Font)              scaled to size 8.1303pt on input line 292.
-[46]
+[48]
 LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/sl' in size <9.03374> not
  available
 (Font)              Font shape `TU/SourceCodePro(0)/m/it' tried instead on inpu
 t line 305.
 LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/it' will be
 (Font)              scaled to size 8.1303pt on input line 305.
-) (./tex/math_and_citations.tex [47] [48
+) (./tex/math_and_citations.tex [49] [50
 
 ]
 第九章
-[49] [50]
+[51] [52]
 Package hyperref Info: bookmark level for unknown proof defaults to 0 on input 
 line 105.
-) (./tex/summary.tex [51] [52
+) (./tex/summary.tex [53] [54
 
-]) (./tex/app_maxwell_equations.tex [53
+]) (./tex/app_maxwell_equations.tex [55
 
-] [54
+] [56
 
 ]
 附录 A
-) (./tex/app_flow_chart.tex [55] [56
+) (./tex/app_flow_chart.tex [57] [58
 
 ]
 附录 B
-(./figure/flow_chart.tex)) [57] [58
+(./figure/flow_chart.tex)) [59] [60
 
-] [59
+] [61
 
 ]
 Underfull \hbox (badness 1194) in paragraph at lines 83--83
@@ -3032,11 +3040,11 @@ Underfull \hbox (badness 1194) in paragraph at lines 83--83
 chmarks
  []
 
-[60] (./tex/acknowledgements.tex [61] [62
+[62] (./tex/acknowledgements.tex [63] [64
 
 ]) (./tex/end_english_abstract.tex) 
 AED: pageslts setting LastPage 
-[63
+[65
 
 ]
 \tf@thm=\write10
@@ -3058,7 +3066,7 @@ Package pageslts Info: Total number of pages is odd.
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 100.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 100.
 Package rerunfilecheck Info: File `thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 86EA262B1532DCA32EB44595E7688AE2.
+(rerunfilecheck)             Checksum: 6E901EC57539740D781A49C9C215C525.
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -3067,12 +3075,12 @@ Package logreq Info: Writing requests to 'thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 58582 strings out of 492922
- 1206934 string characters out of 6133407
- 1794211 words of memory out of 5000000
- 61533 multiletter control sequences out of 15000+600000
+ 58585 strings out of 492922
+ 1206983 string characters out of 6133407
+ 1795359 words of memory out of 5000000
+ 61536 multiletter control sequences out of 15000+600000
  543445 words of font info for 261 fonts, out of 8000000 for 9000
  1349 hyphenation exceptions out of 8191
  75i,18n,111p,817b,6859s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on thesis.xdv (87 pages, 772168 bytes).
+Output written on thesis.xdv (89 pages, 792760 bytes).
