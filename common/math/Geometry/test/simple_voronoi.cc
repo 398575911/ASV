@@ -23,7 +23,7 @@
 //#define JCV_FLT_MAX 1.7976931348623157E+308
 #include "../include/jc_voronoi.h"
 
-#define NPOINT 10
+#define NPOINT 50
 
 int main(int argc, char** argv) {
   (void)argc;
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     printf("%f %f\n", (double)points[i].x, (double)points[i].y);
   }
 
-  jcv_diagram_generate(NPOINT, (const jcv_point*)points, &bounding_box,
+  jcv_diagram_generate(NPOINT, (const jcv_point*)points, &bounding_box, 0,
                        &diagram);
 
   printf("# Edges\n");

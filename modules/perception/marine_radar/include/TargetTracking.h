@@ -9,6 +9,10 @@
 ****************************************************************************
 */
 
+// TODO:
+// 1. validate it in model test
+// 2. linear interpolation for the detected spokes
+
 #ifndef _TARGETTRACKING_H_
 #define _TARGETTRACKING_H_
 

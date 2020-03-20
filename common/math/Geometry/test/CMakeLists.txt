@@ -2,11 +2,11 @@
 cmake_minimum_required (VERSION 3.10)
 
 # 项目信息
-project (testvoronoi)
+project (Geomentry)
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_BUILD_TYPE "Debug") # "Debug" or "Release" mode
-set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -Wextra -g -ggdb -pedantic")
+set(CMAKE_BUILD_TYPE "Release") # "Debug" or "Release" mode
+set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -Weverything -Wextra -g -ggdb -pedantic")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -march=native -mavx")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -21,18 +21,35 @@ set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY}
     "/usr/lib"
     "/usr/local/lib"
    )
- 
-set(SOURCE_FILES ${SOURCE_FILES} 
-	"${PROJECT_SOURCE_DIR}/stb_wrapper.c" )
 
 # 指定生成目标
-add_executable (simple_voronoi simple_voronoi.cc)
-target_include_directories(simple_voronoi PRIVATE ${HEADER_DIRECTORY})
 
-add_executable (testVoronoi testVoronoi.c  ${SOURCE_FILES})
-target_include_directories(testVoronoi PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(testVoronoi m)
 
 add_executable (miniball_example miniball_example.cc)
 
 add_executable (miniball_example_containers miniball_example_containers.cc)
+
+
+add_executable (testkdtree testkdtree.cc "${HEADER_DIRECTORY}/kdtree.c")
+
+add_executable (testkdtree2 testkdtree2.cc "${HEADER_DIRECTORY}/kdtree.c")
+
+
+add_executable (simple_voronoi simple_voronoi.cc)
+target_include_directories(simple_voronoi PRIVATE ${HEADER_DIRECTORY})
+
+
+set(RARE_LIBRARIES ${RARE_LIBRARIES} 
+	"boost_system"
+	"boost_filesystem"
+	"boost_iostreams"
+	"util"
+	)
+add_executable (plot_voronoi plot_voronoi.cc)
+target_include_directories(plot_voronoi PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(plot_voronoi  ${RARE_LIBRARIES})
+
+
+add_executable (plot_2dkdtree plot_2dkdtree.cc "${HEADER_DIRECTORY}/kdtree.c")
+target_include_directories(plot_2dkdtree PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(plot_2dkdtree ${RARE_LIBRARIES})
