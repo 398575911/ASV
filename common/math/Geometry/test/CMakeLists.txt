@@ -53,3 +53,7 @@ target_link_libraries(plot_voronoi  ${RARE_LIBRARIES})
 add_executable (plot_2dkdtree plot_2dkdtree.cc "${HEADER_DIRECTORY}/kdtree.c")
 target_include_directories(plot_2dkdtree PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(plot_2dkdtree ${RARE_LIBRARIES})
+
+add_executable (test_RScurve test_RScurve.cc)
+target_include_directories(test_RScurve PRIVATE ${HEADER_DIRECTORY})
+# target_link_libraries(plot_2dkdtree ${RARE_LIBRARIES})
