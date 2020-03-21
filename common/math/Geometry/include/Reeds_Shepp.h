@@ -1,14 +1,22 @@
+/*
+***********************************************************************
+* Reeds_Shepp.h:
+* Generate the Reeds Shepp curves from starting state to ending state.
+* The comments, variable names, etc. use the nomenclature
+* from the Reeds & Shepp paper.
+* This header file can be read by C++ compilers
+*
+* by Hu.ZH(CrossOcean.ai)
+***********************************************************************
+*/
+
 #ifndef _REEDS_SHEPP_H_
 #define _REEDS_SHEPP_H_
 
-#include <cassert>
+#include <array>
 #include <cmath>
 #include <limits>
-#include <typeinfo>
 #include <vector>
-
-// The comments, variable names, etc. use the nomenclature from the Reeds &
-// Shepp paper.
 
 enum ReedsSheppPathSegmentType {
   RS_NOP = 0,
@@ -70,35 +78,32 @@ class ReedsSheppStateSpace {
     return rho_ * reedsShepp(q0, q1).length();
   }
 
-  std::vector<int> xingshentype(double q0[3], double q1[3]) {
+  std::array<int, 5> rs_type(double q0[3], double q1[3]) {
     ReedsSheppPath path = reedsShepp(q0, q1);
-    std::vector<int> types;
+    std::array<int, 5> types;
     for (int i = 0; i < 5; ++i) {
-      types.push_back(int(path.type_[i]));
+      types[i] = (int(path.type_[i]));
       // std::cout<<path.type_[i]<<std::endl;
     }
     return types;
-  }
+  }  // rs_type
 
-  std::vector<std::vector<double> > xingshensample(double q0[3], double q1[3],
-                                                   double step_size) {
+  std::vector<std::array<double, 3> > rs_state(double q0[3], double q1[3],
+                                               double step_size) {
     ReedsSheppPath path = reedsShepp(q0, q1);
     double dist = rho_ * path.length();
-    std::vector<std::vector<double> > result;
+    std::vector<std::array<double, 3> > result;
 
     for (double seg = 0.0; seg <= dist; seg += step_size) {
       double qnew[3] = {};
       interpolate(q0, path, seg / rho_, qnew);
-      std::vector<double> temp;
-      for (int i = 0; i < 3; i++) {
-        temp.push_back(qnew[i]);
-      }
-      // std::cout<<qnew[0]<<"   "<<qnew[1]<<"  "<<qnew[2]<<std::endl;
-      result.push_back(temp);
+      std::array<double, 3> temp;
+      std::copy(std::begin(qnew), std::end(qnew), std::begin(temp));
+      result.emplace_back(temp);
     }
 
     return result;
-  }  // xingshensample
+  }  // rs_state
 
   ReedsSheppPath reedsShepp(double x, double y, double phi) {
     ReedsSheppPath path;

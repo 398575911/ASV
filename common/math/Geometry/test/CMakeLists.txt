@@ -56,4 +56,4 @@ target_link_libraries(plot_2dkdtree ${RARE_LIBRARIES})
 
 add_executable (test_RScurve test_RScurve.cc)
 target_include_directories(test_RScurve PRIVATE ${HEADER_DIRECTORY})
-# target_link_libraries(plot_2dkdtree ${RARE_LIBRARIES})
+target_link_libraries(test_RScurve ${RARE_LIBRARIES})
