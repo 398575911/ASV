@@ -19,34 +19,25 @@ static double dist_sq(double *a1, double *a2, int dims) {
   return dist_sq;
 }
 
-int main(int argc, char **argv) {
-  int i, vcount = 10;
-  // void *kd, *set;
-  struct kdtree *kd;
-  struct kdres *set;
+int main() {
+  constexpr int vcount = 10;
+  double radius = 40;
+  double pt[3] = {0, 20, 0};
+  float x[vcount];
+  float y[vcount];
+  float z[vcount];
 
-  double pt[3] = {0, 0, 0};
+  struct kdtree *kd = kd_create(3);
 
-  if (argc > 1 && isdigit(argv[1][0])) {
-    vcount = atoi(argv[1]);
-  }
-  printf("inserting %d random vectors... \n", vcount);
-  fflush(stdout);
+  for (int i = 0; i < vcount; i++) {
+    x[i] = ((float)rand() / RAND_MAX) * 200.0 - 100.0;
+    y[i] = ((float)rand() / RAND_MAX) * 200.0 - 100.0;
+    z[i] = 0;
 
-  kd = kd_create(3);
-
-  for (i = 0; i < vcount; i++) {
-    float x, y, z;
-    x = ((float)rand() / RAND_MAX) * 200.0 - 100.0;
-    y = ((float)rand() / RAND_MAX) * 200.0 - 100.0;
-    z = 0;
-
-    printf(" %.3f, %.3f, %.3f\n", x, y, z);
-
-    assert(kd_insert3(kd, x, y, z, 0) == 0);
+    assert(kd_insert3(kd, x[i], y[i], z[i], 0) == 0);
   }
 
-  set = kd_nearest_range3(kd, pt[0], pt[1], pt[2], 40);
+  struct kdres *set = kd_nearest_range3(kd, pt[0], pt[1], pt[2], radius);
 
   printf("range query returned %d items\n", kd_res_size(set));
 
@@ -65,10 +56,24 @@ int main(int argc, char **argv) {
     kd_res_next(set);
   }
 
-  // Gnuplot gp;
-  // gp << "reset\n";
-  // gp << "set terminal x11 size 800, 800 0\n";
-  // gp << "set size ratio -1\n";
+  // plotting
+  Gnuplot gp;
+  gp << "reset\n";
+  gp << "set terminal x11 size 1000, 1000 0\n";
+  gp << "set size ratio -1\n";
+  gp << "set title 'K-nearest neighour using KDtree'\n";
+
+  std::vector<std::tuple<double, double, double>> x_y_radius;
+  std::vector<std::pair<double, double>> xy_pts_A;
+
+  x_y_radius.push_back({pt[0], pt[1], radius});
+  for (int i = 0; i < vcount; i++) {
+    xy_pts_A.push_back(std::make_pair(x[i], y[i]));
+  }
+  gp << "plot " << gp.file1d(x_y_radius)
+     << " with circles lc rgb 'blue' fs transparent solid 0.15 noborder "
+        "notitle, "
+     << gp.file1d(xy_pts_A) << " with points lc rgb 'black' notitle \n";
 
   kd_res_free(set);
   kd_free(kd);
