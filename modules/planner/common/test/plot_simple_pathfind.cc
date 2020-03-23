@@ -23,7 +23,7 @@ constexpr int DEBUG_LIST_LENGTHS_ONLY = 0;
 // The world map
 
 const int MAP_WIDTH = 20;
-const int MAP_HEIGHT = 20;
+const int MAP_HEIGHT = 30;
 
 int world_map[MAP_WIDTH * MAP_HEIGHT] = {
 
@@ -46,8 +46,18 @@ int world_map[MAP_WIDTH * MAP_HEIGHT] = {
     1, 9, 1, 1, 9, 1, 1, 1, 1, 9, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1,  // 15
     1, 9, 9, 9, 9, 1, 1, 1, 1, 1, 1, 9, 9, 9, 9, 1, 1, 1, 1, 1,  // 16
     1, 1, 9, 9, 9, 9, 9, 9, 9, 1, 1, 1, 9, 9, 9, 1, 9, 9, 9, 9,  // 17
-    1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1,  // 18
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 19
+    1, 9, 1, 1, 1, 9, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1,  // 18
+    1, 9, 1, 1, 1, 9, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 9, 1,  // 19
+    1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 9, 9, 9, 1,  // 20
+    1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1,  // 21
+    9, 9, 9, 9, 9, 9, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 9, 1, 1, 1,  // 22
+    1, 1, 9, 1, 1, 1, 1, 9, 9, 9, 9, 1, 1, 9, 1, 1, 1, 1, 1, 1,  // 23
+    1, 1, 9, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 24
+    1, 9, 9, 9, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1,  // 25
+    1, 1, 9, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 9, 9, 1, 1, 1, 9, 1,  // 26
+    1, 1, 9, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1,  // 27
+    1, 1, 1, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 1, 1, 1, 1, 1, 9, 1,  // 28
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 29
 
 };
 
@@ -129,7 +139,8 @@ class MapSearchNode {
   // of our map the answer is the map terrain value at this node since that is
   // conceptually where we're moving
   float GetCost(MapSearchNode &successor) {
-    return (float)GetMap(x, y);
+    // return (float)GetMap(x, y);
+    return 0;
   }  // GetCost
 
   bool IsSameState(MapSearchNode &rhs) {
@@ -162,121 +173,108 @@ int main() {
   // Create an instance of the search class...
   AStarSearch<MapSearchNode> astarsearch;
 
-  unsigned int SearchCount = 0;
+  // Create a start state
+  MapSearchNode nodeStart;
+  nodeStart.x = 5;
+  nodeStart.y = 6;
 
-  const unsigned int NumSearches = 1;
+  // Define the goal state
+  MapSearchNode nodeEnd;
+  nodeEnd.x = 11;
+  nodeEnd.y = 25;
 
-  while (SearchCount < NumSearches) {
-    // Create a start state
-    MapSearchNode nodeStart;
-    nodeStart.x = rand() % MAP_WIDTH;
-    nodeStart.y = rand() % MAP_HEIGHT;
+  // Set Start and goal states
 
-    std::cout << nodeStart.x << " : " << nodeStart.y << std::endl;
-    nodeStart.x = 3;
-    nodeStart.y = 6;
+  astarsearch.SetStartAndGoalStates(nodeStart, nodeEnd);
 
-    // Define the goal state
-    MapSearchNode nodeEnd;
-    // nodeEnd.x = rand() % MAP_WIDTH;
-    // nodeEnd.y = rand() % MAP_HEIGHT;
-    nodeEnd.x = 17;
-    nodeEnd.y = 15;
+  unsigned int SearchState;
+  unsigned int SearchSteps = 0;
 
-    // Set Start and goal states
+  do {
+    SearchState = astarsearch.SearchStep();
 
-    astarsearch.SetStartAndGoalStates(nodeStart, nodeEnd);
+    SearchSteps++;
 
-    unsigned int SearchState;
-    unsigned int SearchSteps = 0;
+    if constexpr (DEBUG_LISTS == 1) {
+      std::cout << "Steps:" << SearchSteps << "\n";
 
-    do {
-      SearchState = astarsearch.SearchStep();
+      int len = 0;
 
-      SearchSteps++;
-
-      if constexpr (DEBUG_LISTS == 1) {
-        std::cout << "Steps:" << SearchSteps << "\n";
-
-        int len = 0;
-
-        std::cout << "Open:\n";
-        MapSearchNode *p = astarsearch.GetOpenListStart();
-        while (p) {
-          len++;
-          if constexpr (DEBUG_LIST_LENGTHS_ONLY == 0)
-            ((MapSearchNode *)p)->PrintNodeInfo();
-          p = astarsearch.GetOpenListNext();
-        }
-
-        std::cout << "Open list has " << len << " nodes\n";
-
-        len = 0;
-
-        std::cout << "Closed:\n";
-        p = astarsearch.GetClosedListStart();
-        while (p) {
-          len++;
-          if constexpr (DEBUG_LIST_LENGTHS_ONLY == 0) p->PrintNodeInfo();
-          p = astarsearch.GetClosedListNext();
-        }
-
-        std::cout << "Closed list has " << len << " nodes\n";
+      std::cout << "Open:\n";
+      MapSearchNode *p = astarsearch.GetOpenListStart();
+      while (p) {
+        len++;
+        if constexpr (DEBUG_LIST_LENGTHS_ONLY == 0)
+          ((MapSearchNode *)p)->PrintNodeInfo();
+        p = astarsearch.GetOpenListNext();
       }
 
-    } while (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_SEARCHING);
+      std::cout << "Open list has " << len << " nodes\n";
 
-    if (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_SUCCEEDED) {
-      std::cout << "Search found goal state\n";
+      len = 0;
 
-      MapSearchNode *node = astarsearch.GetSolutionStart();
-
-      std::vector<std::pair<double, double>> x_y_ps;
-
-      std::cout << "Displaying solution\n";
-      int steps = 0;
-
-      while (node) {
-        node->PrintNodeInfo();
-        x_y_ps.push_back(std::make_pair(node->x, node->y));
-        node = astarsearch.GetSolutionNext();
-        steps++;
+      std::cout << "Closed:\n";
+      p = astarsearch.GetClosedListStart();
+      while (p) {
+        len++;
+        if constexpr (DEBUG_LIST_LENGTHS_ONLY == 0) p->PrintNodeInfo();
+        p = astarsearch.GetClosedListNext();
       }
 
-      std::cout << "Solution steps " << steps << std::endl;
-
-      // Once you're done with the solution you can free the nodes up
-      astarsearch.FreeSolutionNodes();
-
-      Gnuplot gp;
-      gp << "set terminal x11 size 1100, 1000 0\n";
-      gp << "set title 'A star search'\n";
-      gp << "set tic scale 0\n";
-      gp << "set palette rgbformula -7,2,-7\n";  // rainbow
-      gp << "set cbrange [0:9]\n";
-      gp << "set cblabel 'obstacle'\n";
-      gp << "unset cbtics\n";
-      gp << "set xrange [0:" << MAP_WIDTH << "]\n";
-      gp << "set yrange [0:" << MAP_HEIGHT << "]\n";
-
-      std::vector<std::tuple<double, double, int>> x_y_z;
-      for (int i = 0; i != MAP_WIDTH; ++i)
-        for (int j = 0; j != MAP_HEIGHT; ++j)
-          x_y_z.push_back({i, j, GetMap(i, j)});
-      gp << "plot " << gp.file1d(x_y_z) << " with image notitle, "
-         << gp.file1d(x_y_ps) << " with points notitle\n";
-
-    } else if (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_FAILED) {
-      std::cout << "Search terminated. Did not find goal state\n";
+      std::cout << "Closed list has " << len << " nodes\n";
     }
 
-    // Display the number of loops the search went through
-    std::cout << "SearchSteps : " << SearchSteps << "\n";
+  } while (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_SEARCHING);
 
-    SearchCount++;
+  if (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_SUCCEEDED) {
+    std::cout << "Search found goal state\n";
 
-    astarsearch.EnsureMemoryFreed();
+    MapSearchNode *node = astarsearch.GetSolutionStart();
+
+    std::vector<std::pair<double, double>> x_y_ps;
+    std::vector<std::pair<double, double>> x_y_startend;
+
+    std::cout << "Displaying solution\n";
+
+    while (node) {
+      node->PrintNodeInfo();
+      x_y_ps.push_back(std::make_pair(node->x, node->y));
+      node = astarsearch.GetSolutionNext();
+    }
+
+    x_y_startend.push_back(std::make_pair(nodeStart.x, nodeStart.y));
+    x_y_startend.push_back(std::make_pair(nodeEnd.x, nodeEnd.y));
+
+    // Once you're done with the solution you can free the nodes up
+    astarsearch.FreeSolutionNodes();
+
+    Gnuplot gp;
+    gp << "set terminal x11 size 1100, 1200 0\n";
+    gp << "set title 'A star search'\n";
+    gp << "set tic scale 0\n";
+    gp << "set palette rgbformula -7,2,-7\n";  // rainbow
+    gp << "set cbrange [0:9]\n";
+    gp << "set cblabel 'obstacle'\n";
+    gp << "unset cbtics\n";
+    gp << "set xrange [0:" << MAP_WIDTH << "]\n";
+    gp << "set yrange [0:" << MAP_HEIGHT << "]\n";
+
+    std::vector<std::tuple<double, double, int>> x_y_z;
+    for (int i = 0; i != MAP_WIDTH; ++i)
+      for (int j = 0; j != MAP_HEIGHT; ++j)
+        x_y_z.push_back({i, j, GetMap(i, j)});
+    gp << "plot " << gp.file1d(x_y_z) << " with image notitle, "
+       << gp.file1d(x_y_startend) << " with points pointtype 7 notitle,"
+       << gp.file1d(x_y_ps) << " with points lc rgb 'black' title 'path'\n";
+
+  } else if (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_FAILED) {
+    std::cout << "Search terminated. Did not find goal state\n";
   }
+
+  // Display the number of loops the search went through
+  std::cout << "SearchSteps : " << SearchSteps << "\n";
+
+  astarsearch.EnsureMemoryFreed();
 
   return 0;
 }

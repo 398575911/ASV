@@ -2,7 +2,7 @@
 cmake_minimum_required (VERSION 3.10)
 
 # 项目信息
-project (testopenspace)
+project (HybridAstar)
 set(CMAKE_CXX_STANDARD 17)
 
 
@@ -14,23 +14,21 @@ elseif(WIN32)
     message("This is a Windows System")
 endif()
 
-set(CMAKE_BUILD_TYPE "Release") # "Debug" or "Release" mode
+set(CMAKE_BUILD_TYPE "Debug") # "Debug" or "Release" mode
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -Wextra -g -ggdb -pedantic")
-set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -mavx")
 
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # thread库
 find_package(Threads MODULE REQUIRED)
-find_package(OpenMP REQUIRED)
-find_package(Boost 1.71.0 COMPONENTS date_time REQUIRED)
+find_library(SQLITE3_LIBRARY sqlite3 HINTS ${LIBRARY_DIRECTORY})
 
 # 添加 include 子目录
 
 set(HEADER_DIRECTORY ${HEADER_DIRECTORY} 
-	"${PROJECT_SOURCE_DIR}/../include"
-	"${PROJECT_SOURCE_DIR}/../../../"
+	"${PROJECT_SOURCE_DIR}/../../../../../"
 	)
 
 set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY} 
@@ -38,23 +36,17 @@ set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY}
     )
 
 set(SOURCE_FILES ${SOURCE_FILES} 
-	"${PROJECT_SOURCE_DIR}/../common/logging/src/easylogging++.cc" )
-
+	"${PROJECT_SOURCE_DIR}/../../../../../common/logging/src/easylogging++.cc" )
 
 # 指定生成目标
+set(RARE_LIBRARIES ${RARE_LIBRARIES} 
+	"boost_system"
+	"boost_filesystem"
+	"boost_iostreams"
+	"util"
+	)
 
-add_executable (testnode testnode2d.cc)
-target_include_directories(testnode PRIVATE ${HEADER_DIRECTORY})
+add_executable (test_hybridAstar test_hybridAstar.cc ${SOURCE_FILES} )
+target_include_directories(test_hybridAstar PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(test_hybridAstar PUBLIC ${RARE_LIBRARIES} )
 
-
-add_executable (testmp testopenmp.cc)
-target_include_directories(testmp PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(testmp PUBLIC OpenMP::OpenMP_CXX)
-target_link_libraries(testmp PUBLIC ${Boost_LIBRARIES})
-
-
-add_executable (dubins_demo dubins_demo.cc)
-target_include_directories(dubins_demo PRIVATE ${HEADER_DIRECTORY})
-
-add_executable (montecarlo_tests montecarlo_tests.cc)
-target_include_directories(montecarlo_tests PRIVATE ${HEADER_DIRECTORY})

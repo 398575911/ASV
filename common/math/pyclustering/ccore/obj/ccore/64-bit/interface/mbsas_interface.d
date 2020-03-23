@@ -6,9 +6,9 @@ obj/ccore/64-bit/interface/mbsas_interface.o: \
  include/pyclustering/interface/mbsas_interface.h \
  include/pyclustering/cluster/mbsas.hpp \
  include/pyclustering/cluster/bsas.hpp \
- include/pyclustering/cluster/cluster_algorithm.hpp \
- include/pyclustering/cluster/cluster_data.hpp \
  include/pyclustering/cluster/bsas_data.hpp \
+ include/pyclustering/cluster/cluster_data.hpp \
+ include/pyclustering/cluster/cluster_algorithm.hpp \
  include/pyclustering/utils/metric.hpp \
  include/pyclustering/cluster/mbsas_data.hpp
 
@@ -24,11 +24,11 @@ include/pyclustering/cluster/mbsas.hpp:
 
 include/pyclustering/cluster/bsas.hpp:
 
-include/pyclustering/cluster/cluster_algorithm.hpp:
+include/pyclustering/cluster/bsas_data.hpp:
 
 include/pyclustering/cluster/cluster_data.hpp:
 
-include/pyclustering/cluster/bsas_data.hpp:
+include/pyclustering/cluster/cluster_algorithm.hpp:
 
 include/pyclustering/utils/metric.hpp:
 
