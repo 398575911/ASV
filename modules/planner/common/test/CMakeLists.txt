@@ -53,4 +53,6 @@ target_include_directories(findpath PRIVATE ${HEADER_DIRECTORY})
 add_executable (min_path_to_Bucharest min_path_to_Bucharest.cc ${SOURCE_FILES} )
 target_include_directories(min_path_to_Bucharest PRIVATE ${HEADER_DIRECTORY})
 
-
+add_executable (plot_simple_pathfind plot_simple_pathfind.cc ${SOURCE_FILES} )
+target_include_directories(plot_simple_pathfind PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(plot_simple_pathfind PUBLIC ${RARE_LIBRARIES} )
