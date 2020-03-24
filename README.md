@@ -28,6 +28,8 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 3. Finite state machine
 4. Message broker
 5. export shared library
+6. behavourial planning considering sea rules
+7. A* based route planning
 
 
 近期:
