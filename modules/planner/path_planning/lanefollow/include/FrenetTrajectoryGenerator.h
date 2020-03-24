@@ -153,7 +153,7 @@ class FrenetTrajectoryGenerator {
   // assume that target_spline2d is known, we can interpolate the spline2d to
   // obtain the associated (s,x,y,theta, kappa)
   void setup_target_course() {
-    Eigen::VectorXd s = target_Spline2D.getarclength();
+    Eigen::VectorXd s = target_Spline2D.arclength();
     std::size_t n =
         1 + static_cast<std::size_t>(s(s.size() - 1) /
                                      latticedata.TARGET_COURSE_ARC_STEP);

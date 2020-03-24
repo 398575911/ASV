@@ -16,7 +16,7 @@
 using namespace ASV;
 
 // output figures or not
-constexpr bool figure_output = true;
+constexpr bool figure_output = false;
 
 // illustrate the lattice planner at a time instant
 void rtplotting_bestpath(
@@ -250,12 +250,11 @@ int main() {
       std::cout << "goal\n";
       break;
     }
-    // rtplotting_bestpath(gp1, estimate_marinestate.x, estimate_marinestate.y,
-    //                     estimate_marinestate.theta,
-    //                     estimate_marinestate.speed, cart_ob_x, cart_ob_y,
-    //                     cart_rx, cart_ry, cart_bestX, cart_bestY,
-    //                     all_frenet_paths);
-    // rtplotting_speed(gp2, cart_bestspeed);
+    rtplotting_bestpath(gp1, estimate_marinestate.x, estimate_marinestate.y,
+                        estimate_marinestate.theta, estimate_marinestate.speed,
+                        cart_ob_x, cart_ob_y, cart_rx, cart_ry, cart_bestX,
+                        cart_bestY, all_frenet_paths);
+    rtplotting_speed(gp2, cart_bestspeed);
 
     long int et = _timer.timeelapsed();
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));

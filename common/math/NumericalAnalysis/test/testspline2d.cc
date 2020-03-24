@@ -35,7 +35,7 @@ int main() {
   // Y = Eigen::VectorXd::LinSpaced(5, 0, 0);
 
   _Spline2D.reinterpolation(X, Y);
-  Eigen::VectorXd s = _Spline2D.getarclength();
+  Eigen::VectorXd s = _Spline2D.arclength();
 
   double step = 0.05;
   int n = 1 + static_cast<int>(s[s.size() - 1] / step);

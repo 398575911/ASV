@@ -273,15 +273,15 @@ class Spline2D {
   }  // reinterpolation
   // calculate the x,y based on the arclength
   Eigen::Vector2d compute_position(double _arclength) const {
-    return (Eigen::Vector2d() << _SX(_arclength), _SY(_arclength)).finished();
+    return (Eigen::Vector2d() << SX_(_arclength), SY_(_arclength)).finished();
   }  // compute_position
 
   // calculate the curvature based on the arclength
   double compute_curvature(double _arclength) const {
-    double dx = _SX.deriv(1, _arclength);
-    double ddx = _SX.deriv(2, _arclength);
-    double dy = _SY.deriv(1, _arclength);
-    double ddy = _SY.deriv(2, _arclength);
+    double dx = SX_.deriv(1, _arclength);
+    double ddx = SX_.deriv(2, _arclength);
+    double dy = SY_.deriv(1, _arclength);
+    double ddy = SY_.deriv(2, _arclength);
     // kappa = (ddy * dx - ddx * dy) /
     //         std::pow(std::pow(dx, 2) + std::pow(dy, 2), 1.5);
     // avoid using sqrt to speed up
@@ -291,12 +291,12 @@ class Spline2D {
 
   // calculate the derivative of curvature to arclength
   double compute_dcurvature(double _arclength) const {
-    double dx = _SX.deriv(1, _arclength);
-    double ddx = _SX.deriv(2, _arclength);
-    double dddx = _SX.deriv(3, _arclength);
-    double dy = _SY.deriv(1, _arclength);
-    double ddy = _SY.deriv(2, _arclength);
-    double dddy = _SY.deriv(3, _arclength);
+    double dx = SX_.deriv(1, _arclength);
+    double ddx = SX_.deriv(2, _arclength);
+    double dddx = SX_.deriv(3, _arclength);
+    double dy = SY_.deriv(1, _arclength);
+    double ddy = SY_.deriv(2, _arclength);
+    double dddy = SY_.deriv(3, _arclength);
 
     double squareterm = dx * dx + dy * dy;
     // dkappa = ((dddy * dx - dddx * dy) * squareterm -
@@ -312,24 +312,24 @@ class Spline2D {
 
   // calculate the orientation based on the arclength
   double compute_yaw(double _arclength) const {
-    double dx = _SX.deriv(1, _arclength);
-    double dy = _SY.deriv(1, _arclength);
+    double dx = SX_.deriv(1, _arclength);
+    double dy = SY_.deriv(1, _arclength);
     return std::atan2(dy, dx);
   }  // compute_yaw
-  Eigen::VectorXd getarclength() const { return arclength; }
+  Eigen::VectorXd arclength() const { return arclength_; }
 
  private:
   std::size_t n;
   Eigen::VectorXd X_2d, Y_2d;
-  Eigen::VectorXd arclength;
+  Eigen::VectorXd arclength_;
 
-  spline _SX;
-  spline _SY;
+  spline SX_;
+  spline SY_;
 
   void setupspline2d() {
     compute_arclength();
-    _SX.set_points(arclength, X_2d);
-    _SY.set_points(arclength, Y_2d);
+    SX_.set_points(arclength_, X_2d);
+    SY_.set_points(arclength_, Y_2d);
   }  // setupspline2d
 
   void compute_arclength() {
@@ -337,14 +337,14 @@ class Spline2D {
     assert(X_2d.size() > 2);
     n = X_2d.size();
 
-    arclength.resize(n);
-    arclength(0) = 0.0;
+    arclength_.resize(n);
+    arclength_(0) = 0.0;
 
     for (std::size_t i = 0; i != (n - 1); i++) {
       double dx = X_2d(i + 1) - X_2d(i);
       double dy = Y_2d(i + 1) - Y_2d(i);
-      arclength(i + 1) =
-          arclength(i) + std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+      arclength_(i + 1) =
+          arclength_(i) + std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
     }
   }  // compute_arclength
 };   // class spline2d

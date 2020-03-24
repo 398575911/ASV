@@ -39,7 +39,7 @@ int main() {
   common::math::eigenmvnd normal_Q(Eigen::VectorXd::Zero(2),
                                    0.05 * Eigen::MatrixXd::Identity(2, 2),
                                    totalnum);
-  Eigen::MatrixXd sample_normal_Q = normal_Q.perform_mvnd().get_mvnd_matrix();
+  Eigen::MatrixXd sample_normal_Q = normal_Q.perform_mvnd().mvnd_matrix();
 
   std::vector<double> meas_x(totalnum);
   std::vector<double> meas_y(totalnum);

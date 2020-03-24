@@ -62,6 +62,40 @@ int GetMap(int x, int y) {
 
 // Definitions
 
+// To use the search class you must define the following calls...
+
+// Data
+//    Your own state space information
+// Functions
+//    (Optional) Constructor.
+//    Nodes are created by the user, so whether you use a
+//      constructor with parameters as below, or just set the object up after
+//      the constructor, is up to you.
+//
+//    (Optional) Destructor.
+//    The destructor will be called if you create one. You
+//    can rely on the default constructor unless you dynamically
+// allocate something in    your data
+//
+//    float GoalDistanceEstimate( PuzzleState &nodeGoal );
+//    Return the estimated cost to goal from this node (pass reference
+// to goal node)
+//
+//    bool IsGoal( PuzzleState &nodeGoal );
+//    Return true if this node is the goal.
+//
+//    bool GetSuccessors( AStarSearch<PuzzleState> *astarsearch );
+//    For each successor to this state call the AStarSearch's
+// AddSuccessor call to     add each one to the current search -
+// return false if you are out of memory and the search     will
+// fail
+//
+//    float GetCost( PuzzleState *successor );
+//    Return the cost moving from this state to the state of successor
+//
+//    bool IsSameState( PuzzleState &rhs );
+//    Return true if the provided state is the same as this state
+
 class MapSearchNode {
  public:
   int x;  // the (x,y) positions of the node

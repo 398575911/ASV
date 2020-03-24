@@ -57,7 +57,7 @@ class eigenmvnd {
     return *this;
   }
 
-  auto get_mvnd_matrix() const noexcept { return multidistribution; }
+  auto mvnd_matrix() const noexcept { return multidistribution; }
 
  private:
   // utility functions

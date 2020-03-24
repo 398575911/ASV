@@ -106,8 +106,8 @@ void test2d() {
   int _TotalT = 50;
   math::eigenmvnd normal_Q(Eigen::MatrixXd::Zero(n, 1), Q, _TotalT);
   math::eigenmvnd normal_R(Eigen::MatrixXd::Zero(m, 1), R, _TotalT);
-  Eigen::MatrixXd sample_normal_Q = normal_Q.perform_mvnd().get_mvnd_matrix();
-  Eigen::MatrixXd sample_normal_R = normal_R.perform_mvnd().get_mvnd_matrix();
+  Eigen::MatrixXd sample_normal_Q = normal_Q.perform_mvnd().mvnd_matrix();
+  Eigen::MatrixXd sample_normal_R = normal_R.perform_mvnd().mvnd_matrix();
 
   // generate x and x with noise
   Eigen::MatrixXd x_noise(n, _TotalT);

@@ -39,8 +39,7 @@ int main() {
   // with our chosen mean and covariance
   math::eigenmvnd normX_solver(mean, covar, 5000);
 
-  Eigen::MatrixXd sample_normal_Q =
-      normX_solver.perform_mvnd().get_mvnd_matrix();
+  Eigen::MatrixXd sample_normal_Q = normX_solver.perform_mvnd().mvnd_matrix();
 
   // plotting
   Gnuplot gp;
