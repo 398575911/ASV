@@ -22,9 +22,9 @@
 #include <iostream>
 #include <vector>
 
-namespace ASV {
+namespace ASV::common::math {
 
-// spline interpolation
+// cubic spline interpolation (n = 3), twice continuously differentiable
 class spline {
  public:
   enum class bd_type { first_deriv = 1, second_deriv = 2 };
@@ -289,7 +289,9 @@ class Spline2D {
     return kappa;
   }  // compute_curvature
 
-  // calculate the derivative of curvature to arclength
+  // calculate the derivative of curvature to arclength,
+  // WARNING: As cubic spline is twice differentiable, causing the
+  // disconinuty in dk/ds
   double compute_dcurvature(double _arclength) const {
     double dx = SX_.deriv(1, _arclength);
     double ddx = SX_.deriv(2, _arclength);
@@ -308,7 +310,7 @@ class Spline2D {
                     (squareterm * squareterm);
 
     return dkappa;
-  }  // compute_curvature
+  }  // compute_dcurvature
 
   // calculate the orientation based on the arclength
   double compute_yaw(double _arclength) const {
@@ -380,6 +382,6 @@ class polynomialvalue {
   polyvector a;  // coefficent; a={a5, a4, a3, a2, a1, a0}
 };               // class polynomialvalue
 
-}  // end namespace ASV
+}  // namespace ASV::common::math
 
 #endif /* TK_SPLINE_H */

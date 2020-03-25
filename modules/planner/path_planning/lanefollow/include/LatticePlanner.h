@@ -135,9 +135,9 @@ class LatticePlanner : public FrenetTrajectoryGenerator,
   CartesianState getnextcartesianstate() const noexcept {
     return next_cartesianstate;
   }
-  Eigen::VectorXd getbestX() const noexcept { return best_path.x; }
-  Eigen::VectorXd getbestY() const noexcept { return best_path.y; }
-  Eigen::VectorXd getbestSpeed() const noexcept { return best_path.speed; }
+  Eigen::VectorXd bestX() const noexcept { return best_path.x; }
+  Eigen::VectorXd bestY() const noexcept { return best_path.y; }
+  Eigen::VectorXd bestSpeed() const noexcept { return best_path.speed; }
   double getsampletime() const noexcept { return sample_time; }
 
  private:

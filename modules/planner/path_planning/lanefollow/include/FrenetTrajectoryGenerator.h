@@ -130,7 +130,7 @@ class FrenetTrajectoryGenerator {
   Eigen::VectorXd Tj;
   Eigen::VectorXd tvk;
   // center line
-  Spline2D target_Spline2D;
+  ASV::common::math::Spline2D target_Spline2D;
   Eigen::VectorXd Frenet_s;    // arclength (m)
   Eigen::VectorXd cart_RefX;   // reference x (m) in the Cartesian coordinate
   Eigen::VectorXd cart_RefY;   // reference y (m) in the Cartesian coordinate

@@ -11,7 +11,7 @@
 #include "../include/spline.h"
 #include "common/plotting/include/gnuplot-iostream.h"
 
-using namespace ASV;
+using namespace ASV::common::math;
 
 int main() {
   Eigen::VectorXd X(5);

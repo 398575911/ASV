@@ -238,11 +238,11 @@ int main() {
     auto all_frenet_paths = _trajectorygenerator.getallfrenetpaths();
     auto cart_rx = _trajectorygenerator.getCartRefX();
     auto cart_ry = _trajectorygenerator.getCartRefY();
-    auto cart_bestX = _trajectorygenerator.getbestX();
-    auto cart_bestY = _trajectorygenerator.getbestY();
-    auto cart_bestspeed = _trajectorygenerator.getbestSpeed();
-    auto cart_ob_x = _trajectorygenerator.getobstacle_x();
-    auto cart_ob_y = _trajectorygenerator.getobstacle_y();
+    auto cart_bestX = _trajectorygenerator.bestX();
+    auto cart_bestY = _trajectorygenerator.bestY();
+    auto cart_bestspeed = _trajectorygenerator.bestSpeed();
+    auto cart_ob_x = _trajectorygenerator.obstacle_x();
+    auto cart_ob_y = _trajectorygenerator.obstacle_y();
 
     if ((std::pow(estimate_marinestate.x - cart_rx(cart_rx.size() - 1), 2) +
          std::pow(estimate_marinestate.y + cart_ry(cart_ry.size() - 1), 2)) <=

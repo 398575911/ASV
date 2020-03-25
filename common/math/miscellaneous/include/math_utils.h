@@ -19,6 +19,30 @@
 
 namespace ASV::common::math {
 
+constexpr double kMathEpsilon = 1e-10;
+
+// cross product of two 2-dimensional vectors {x0,y0} {x1,y1}
+double CrossProd(const double x0, const double y0, const double x1,
+                 const double y1) {
+  return x0 * y1 - x1 * y0;
+}  // CrossProd
+double CrossProd(const Eigen::Vector2d& a, const Eigen::Vector2d& b) {
+  return a(0) * b(1) - b(0) * a(1);
+}  // CrossProd
+
+// inner product of two 2-dimensional vectors
+double InnerProd(const double x0, const double y0, const double x1,
+                 const double y1) {
+  return x0 * x1 + y0 * y1;
+}  // InnerProd
+
+bool IsWithin(double val, double bound1, double bound2) {
+  if (bound1 > bound2) {
+    std::swap(bound1, bound2);
+  }
+  return val >= bound1 - kMathEpsilon && val <= bound2 + kMathEpsilon;
+}  // IsWithin
+
 // restrict heading angle or delta heading to (-PI ~ PI)
 // compute the delta heading to find the shortest way to rotate
 double Normalizeheadingangle(double _heading) noexcept {
@@ -39,7 +63,7 @@ std::tuple<double, double> Marine2Cart(double marine_x,
                                        double marine_y) noexcept {
   return {marine_x, -marine_y};
 }  // Marine2Cart
-Eigen::VectorXd Marine2Cart(const Eigen::VectorXd &_marine_y) noexcept {
+Eigen::VectorXd Marine2Cart(const Eigen::VectorXd& _marine_y) noexcept {
   return (-1) * _marine_y;
 }  // Marine2Cart
 

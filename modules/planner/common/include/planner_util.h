@@ -16,7 +16,7 @@
 
 namespace ASV::planning {
 
-class quintic_polynomial final : public polynomialvalue<5> {
+class quintic_polynomial final : public ASV::common::math::polynomialvalue<5> {
  public:
   quintic_polynomial(const Eigen::Matrix<double, 6, 1> &_a =
                          Eigen::Matrix<double, 6, 1>::Zero())
@@ -80,7 +80,7 @@ class quintic_polynomial final : public polynomialvalue<5> {
 
 };  // quintic_polynomial
 
-class quartic_polynomial final : public polynomialvalue<4> {
+class quartic_polynomial final : public ASV::common::math::polynomialvalue<4> {
  public:
   quartic_polynomial(const Eigen::Matrix<double, 5, 1> &_a =
                          Eigen::Matrix<double, 5, 1>::Zero())

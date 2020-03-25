@@ -18,6 +18,8 @@
 #include <limits>
 #include <vector>
 
+namespace ASV::common::math {
+
 enum ReedsSheppPathSegmentType {
   RS_NOP = 0,
   RS_LEFT = 1,
@@ -614,5 +616,7 @@ class ReedsSheppStateSpace {
                             0.5 * M_PI, -v);
   }  // CCSCC
 };   //  end class ReedsSheppStateSpace
+
+}  // namespace ASV::common::math
 
 #endif /* _REEDS_SHEPP_H_ */

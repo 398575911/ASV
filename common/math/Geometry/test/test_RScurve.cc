@@ -43,7 +43,7 @@ int main() {
   double q0[3] = {2, 2, 0};
   double q1[3] = {-6, 8, -M_PI / 2};
 
-  ReedsSheppStateSpace r(3);
+  ASV::common::math::ReedsSheppStateSpace r(3);
 
   //----------------------------get curve type-------------------------
   auto RStypes = r.rs_type(q0, q1);
