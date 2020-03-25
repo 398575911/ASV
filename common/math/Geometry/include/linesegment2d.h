@@ -72,10 +72,8 @@ class LineSegment2d {
   // @brief Get the sine of the heading.
   double sin_heading() const { return unit_direction_(1); }  // sin_heading
 
-  // @brief Get the length of the line segment.
   double length() const { return length_; }
-
-  // @brief Get the square of length of the line segment.
+  // Get the square of length of the line segment.
   double length_sqr() const { return length_ * length_; }
 
   // find the nearst points on the line segment
@@ -94,6 +92,25 @@ class LineSegment2d {
       return start_ + unit_direction_ * proj;
     }
   }
+
+  /**
+   * @brief Compute perpendicular foot of a point in 2-D on the straight line
+   *        expanded from the line segment.
+   * @param point The point to compute the perpendicular foot from.
+   * @param foot_point The computed perpendicular foot from the input point to
+   *        the straight line expanded from the line segment.
+   * @return The distance from the input point to the perpendicular foot.
+   */
+  std::pair<double, Eigen::Vector2d> GetPerpendicularFoot(
+      const Eigen::Vector2d &point) const {
+    if (length_ <= kMathEpsilon) {
+      return DistanceTo(start_);
+    }
+
+    double proj = ProjectOntoUnit(point);
+
+    return {std::abs(ProductOntoUnit(point)), start_ + unit_direction_ * proj};
+  }  // GetPerpendicularFoot
 
   // Compute the shortest distance from a point on the line segment to a point
   // in 2-D.
@@ -121,8 +138,8 @@ class LineSegment2d {
 
   // Check if the line segment has an intersect with another 2d line segment
   bool HasIntersect(const LineSegment2d &other_segment) const {
-    Vec2d point;
-    return GetIntersect(other_segment, &point);
+    auto [IsIntersect, point] = GetIntersect(other_segment);
+    return IsIntersect;
   }  // HasIntersect
 
   /**
@@ -136,7 +153,7 @@ class LineSegment2d {
   std::pair<bool, Eigen::Vector2d> GetIntersect(
       const LineSegment2d &other_segment) const {
     if (length_ <= kMathEpsilon || other_segment.length() <= kMathEpsilon) {
-      return false;
+      return {false, Eigen::Vector2d::Zero()};
     }
     if (IsPointIn(other_segment.start())) {
       return {true, other_segment.start()};
@@ -154,26 +171,28 @@ class LineSegment2d {
     const double cc1 = CrossProd(end_ - start_, other_segment.start() - start_);
     const double cc2 = CrossProd(end_ - start_, other_segment.end() - start_);
     if (cc1 * cc2 >= -kMathEpsilon) {
-      return false;
+      return {false, Eigen::Vector2d::Zero()};
     }
     const double cc3 = CrossProd(other_segment.end() - other_segment.start(),
                                  start_ - other_segment.start());
     const double cc4 = CrossProd(other_segment.end() - other_segment.start(),
                                  end_ - other_segment.start());
     if (cc3 * cc4 >= -kMathEpsilon) {
-      return false;
+      return {false, Eigen::Vector2d::Zero()};
     }
+
     const double ratio = cc4 / (cc4 - cc3);
-    *point = Vec2d(start_.x() * ratio + end_.x() * (1.0 - ratio),
-                   start_.y() * ratio + end_.y() * (1.0 - ratio));
-    return true;
+    return {true,
+            (Eigen::Vector2d() << start_(0) * ratio + end_(0) * (1.0 - ratio),
+             start_(1) * ratio + end_(1) * (1.0 - ratio))
+                .finished()};
 
   }  // GetIntersect
 
   // Compute the projection of a vector onto the line segment,
   // which is from the start point of the line segment to the input point,
   // onto the unit direction
-  double ProjectOntoUnit(const Vec2d &point) const {
+  double ProjectOntoUnit(const Eigen::Vector2d &point) const {
     auto vectorps = point - start_;
     return InnerProd(vectorps(0), vectorps(1), unit_direction_(0),
                      unit_direction_(1));
@@ -181,21 +200,11 @@ class LineSegment2d {
 
   // Compute the cross product of a vector onto the line segment,
   // which is from the start point of the line segment to the input point.
-  double ProductOntoUnit(const Vec2d &point) const {
+  double ProductOntoUnit(const Eigen::Vector2d &point) const {
     auto vectorps = point - start_;
     return CrossProd(unit_direction_(0), unit_direction_(1), vectorps(0),
                      vectorps(1));
   }
-  /**
-   * @brief Compute perpendicular foot of a point in 2-D on the straight line
-   *        expanded from the line segment.
-   * @param point The point to compute the perpendicular foot from.
-   * @param foot_point The computed perpendicular foot from the input point to
-   *        the straight line expanded from the line segment.
-   * @return The distance from the input point to the perpendicular foot.
-   */
-  double GetPerpendicularFoot(const Vec2d &point,
-                              Vec2d *const foot_point) const;
 
  private:
   Eigen::Vector2d start_;
