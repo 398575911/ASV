@@ -10,10 +10,6 @@
 #ifndef _LINESEGMENT2D_H_
 #define _LINESEGMENT2D_H_
 
-#include <algorithm>
-#include <cmath>
-#include <string>
-
 #include <common/math/eigen/Eigen/Core>
 #include <common/math/eigen/Eigen/Dense>
 #include "common/math/miscellaneous/include/math_utils.h"
@@ -145,13 +141,11 @@ class LineSegment2d {
     return IsIntersect;
   }  // HasIntersect
 
-  /**
-   * @brief Compute the intersect with another line segment in 2-D if any.
-   * @param other_segment The line segment to compute the intersect.
-   * @param point the computed intersect between the line segment and
-   *        the input other_segment.
+  // Compute the intersect with another line segment in 2-D if any.
+  /* @param other_segment The line segment to compute the intersect.
    * @return Whether the line segment has an intersect
-   *         with the input other_segment.
+   *         with the input other_segment, and point the computed intersect
+   *          between the line segment and the input other_segment.
    */
   std::pair<bool, Eigen::Vector2d> GetIntersect(
       const LineSegment2d &other_segment) const {
@@ -216,7 +210,7 @@ class LineSegment2d {
   Eigen::Vector2d unit_direction_;
   double heading_;
   double length_;
-};
+};  // end class LineSegment2d
 
 }  // namespace ASV::common::math
 
