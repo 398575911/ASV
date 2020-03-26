@@ -1,8 +1,11 @@
-
-/**
- * @file
- * @brief Line segment in 2-D.
- */
+/*
+***********************************************************************
+* linesegment2d.h: Line segment in 2-D.
+* This header file can be read by C++ compilers
+*
+*  by Hu.ZH(CrossOcean.ai)
+***********************************************************************
+*/
 
 #ifndef _LINESEGMENT2D_H_
 #define _LINESEGMENT2D_H_
@@ -53,8 +56,8 @@ class LineSegment2d {
    * counterclock-wise by the given amount.
    * @return The rotated line-segment's end-point.
    */
-  Eigen::Vector2d rotate(const double angle) {
-    Vec2d diff_vec = end_ - start_;
+  Eigen::Vector2d rotate(const double angle) const {
+    Eigen::Vector2d diff_vec = end_ - start_;
 
     double delta_x =
         diff_vec(0) * std::cos(angle) - diff_vec(1) * std::sin(angle);
@@ -77,7 +80,7 @@ class LineSegment2d {
   double length_sqr() const { return length_ * length_; }
 
   // find the nearst points on the line segment
-  Eigen::Vector2d find_nearest_point(const Eigen::Vector2d &point) {
+  Eigen::Vector2d find_nearest_point(const Eigen::Vector2d &point) const {
     if (length_ <= kMathEpsilon) {
       return start_;
     }
@@ -91,7 +94,7 @@ class LineSegment2d {
     } else {
       return start_ + unit_direction_ * proj;
     }
-  }
+  }  // find_nearest_point
 
   /**
    * @brief Compute perpendicular foot of a point in 2-D on the straight line
@@ -152,9 +155,6 @@ class LineSegment2d {
    */
   std::pair<bool, Eigen::Vector2d> GetIntersect(
       const LineSegment2d &other_segment) const {
-    if (length_ <= kMathEpsilon || other_segment.length() <= kMathEpsilon) {
-      return {false, Eigen::Vector2d::Zero()};
-    }
     if (IsPointIn(other_segment.start())) {
       return {true, other_segment.start()};
     }
@@ -168,6 +168,9 @@ class LineSegment2d {
       return {true, end_};
     }
 
+    if (length_ <= kMathEpsilon || other_segment.length() <= kMathEpsilon) {
+      return {false, Eigen::Vector2d::Zero()};
+    }
     const double cc1 = CrossProd(end_ - start_, other_segment.start() - start_);
     const double cc2 = CrossProd(end_ - start_, other_segment.end() - start_);
     if (cc1 * cc2 >= -kMathEpsilon) {

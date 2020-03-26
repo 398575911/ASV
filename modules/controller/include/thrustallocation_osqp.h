@@ -60,24 +60,24 @@ class thrustallocation {
         v_azimuththrusterdata(_v_azimuththrusterdata),
         v_ruddermaindata(_v_ruddermaindata),
         v_twinfixeddata(_v_twinfixeddata),
-        lx(vectormd::Zero()),
-        ly(vectormd::Zero()),
-        upper_delta_alpha(vectormd::Zero()),
-        lower_delta_alpha(vectormd::Zero()),
-        upper_delta_u(vectormd::Zero()),
-        lower_delta_u(vectormd::Zero()),
-        Q(matrixnnd::Zero()),
-        Omega(matrixmmd::Zero()),
-        Q_deltau(matrixmmd::Zero()),
-        g_deltau(vectormd::Zero()),
-        d_rho(vectormd::Zero()),
-        B_alpha(matrixnmd::Zero()),
-        d_Balpha_u(matrixnmd::Zero()),
-        b(vectornd::Zero()),
-        delta_alpha(vectormd::Zero()),
-        delta_u(vectormd::Zero()),
+        lx_(vectormd::Zero()),
+        ly_(vectormd::Zero()),
+        upper_delta_alpha_(vectormd::Zero()),
+        lower_delta_alpha_(vectormd::Zero()),
+        upper_delta_u_(vectormd::Zero()),
+        lower_delta_u_(vectormd::Zero()),
+        Q_(matrixnnd::Zero()),
+        Omega_(matrixmmd::Zero()),
+        Q_deltau_(matrixmmd::Zero()),
+        g_deltau_(vectormd::Zero()),
+        d_rho_(vectormd::Zero()),
+        B_alpha_(matrixnmd::Zero()),
+        d_Balpha_u_(matrixnmd::Zero()),
+        b_(vectornd::Zero()),
+        delta_alpha_(vectormd::Zero()),
+        delta_u_(vectormd::Zero()),
         derivative_dx(1e-6),
-        results(Eigen::Matrix<double, 2 * m + n, 1>::Zero()) {
+        results_(Eigen::Matrix<double, 2 * m + n, 1>::Zero()) {
     initializethrusterallocation();
   }
 
@@ -148,25 +148,25 @@ class thrustallocation {
     if constexpr (index_actuation == ACTUATION::FULLYACTUATED) {
       switch (_cm) {
         case CONTROLMODE::MANUAL:
-          Q(0, 0) = Q_surge;
-          Q(1, 1) = Q_sway;
-          Q(2, 2) = Q_yaw;
+          Q_(0, 0) = Q_surge;
+          Q_(1, 1) = Q_sway;
+          Q_(2, 2) = Q_yaw;
           break;
         case CONTROLMODE::HEADINGONLY:
           // empirical value
-          Q(0, 0) = 0.2 * Q_surge;
-          Q(1, 1) = 0.2 * Q_sway;
-          Q(2, 2) = 2 * Q_yaw;
+          Q_(0, 0) = 0.2 * Q_surge;
+          Q_(1, 1) = 0.2 * Q_sway;
+          Q_(2, 2) = 2 * Q_yaw;
           break;
         case CONTROLMODE::MANEUVERING:
-          Q(0, 0) = Q_surge;
-          Q(1, 1) = 0;  // The penalty for sway error is zero
-          Q(2, 2) = Q_yaw;
+          Q_(0, 0) = Q_surge;
+          Q_(1, 1) = 0;  // The penalty for sway error is zero
+          Q_(2, 2) = Q_yaw;
           break;
         case CONTROLMODE::DYNAMICPOSITION:
-          Q(0, 0) = Q_surge;
-          Q(1, 1) = Q_sway;
-          Q(2, 2) = Q_yaw;
+          Q_(0, 0) = Q_surge;
+          Q_(1, 1) = Q_sway;
+          Q_(2, 2) = Q_yaw;
           // Q(0, 0) = 500;
           // Q(1, 1) = 500;
           // Q(2, 2) = 1000;
@@ -177,14 +177,14 @@ class thrustallocation {
     } else {  // underactuated
       switch (_cm) {
         case CONTROLMODE::MANUAL:
-          Q(0, 0) = Q_surge;
-          Q(1, 1) = 0;  // The penalty for sway error is zero
-          Q(2, 2) = Q_yaw;
+          Q_(0, 0) = Q_surge;
+          Q_(1, 1) = 0;  // The penalty for sway error is zero
+          Q_(2, 2) = Q_yaw;
           break;
         case CONTROLMODE::HEADINGONLY:
-          Q(0, 0) = 0.2 * Q_surge;
-          Q(1, 1) = 0;  // The penalty for sway error is zero
-          Q(2, 2) = 2 * Q_yaw;
+          Q_(0, 0) = 0.2 * Q_surge;
+          Q_(1, 1) = 0;  // The penalty for sway error is zero
+          Q_(2, 2) = 2 * Q_yaw;
           break;
         case CONTROLMODE::MANEUVERING:
           // Q(0, 0) = 10;  // 取值与螺旋桨最大推力呈负相关
@@ -192,9 +192,9 @@ class thrustallocation {
           // Q(2, 2) = 20;
 
           // 取值与螺旋桨最大推力呈负相关
-          Q(0, 0) = Q_surge;
-          Q(1, 1) = 0;  // The penalty for sway error is zero
-          Q(2, 2) = Q_yaw;
+          Q_(0, 0) = Q_surge;
+          Q_(1, 1) = 0;  // The penalty for sway error is zero
+          Q_(2, 2) = Q_yaw;
 
           break;
         default:
@@ -203,28 +203,28 @@ class thrustallocation {
     }
     // update OSQP
     for (int j = 0; j != n; ++j) {
-      osqp_P_x[j + 2 * m] = Q(j, j);
+      osqp_P_x[j + 2 * m] = Q_(j, j);
     }
   }  // setQ
 
   //
-  vectormd getlx() const { return lx; }
-  vectormd getly() const { return ly; }
-  vectormd getupper_delta_alpha() const { return upper_delta_alpha; }
-  vectormd getlower_delta_alpha() const { return lower_delta_alpha; }
-  vectormd getupper_delta_u() const { return upper_delta_u; }
-  vectormd getlower_delta_u() const { return lower_delta_u; }
-  matrixnnd getQ() const { return Q; }
-  matrixmmd getOmega() const { return Omega; }
-  matrixmmd getQ_deltau() const { return Q_deltau; }
-  vectormd getg_deltau() const { return g_deltau; }
-  vectormd getd_rho() const { return d_rho; }
-  matrixnmd getB_alpha() const { return B_alpha; }
-  matrixnmd getd_Balpha_u() const { return d_Balpha_u; }
-  vectornd getb() const { return b; }
-  vectormd getdelta_alpha() const { return delta_alpha; }
-  vectormd getdelta_u() const { return delta_u; }
-  Eigen::Matrix<double, 2 * m + n, 1> getresults() const { return results; }
+  vectormd lx() const { return lx_; }
+  vectormd ly() const { return ly_; }
+  vectormd upper_delta_alpha() const { return upper_delta_alpha_; }
+  vectormd lower_delta_alpha() const { return lower_delta_alpha_; }
+  vectormd upper_delta_u() const { return upper_delta_u_; }
+  vectormd lower_delta_u() const { return lower_delta_u_; }
+  matrixnnd Q() const { return Q_; }
+  matrixmmd Omega() const { return Omega_; }
+  matrixmmd Q_deltau() const { return Q_deltau_; }
+  vectormd g_deltau() const { return g_deltau_; }
+  vectormd d_rho() const { return d_rho_; }
+  matrixnmd B_alpha() const { return B_alpha_; }
+  matrixnmd d_Balpha_u() const { return d_Balpha_u_; }
+  vectornd b() const { return b_; }
+  vectormd delta_alpha() const { return delta_alpha_; }
+  vectormd delta_u() const { return delta_u_; }
+  Eigen::Matrix<double, 2 * m + n, 1> results() const { return results_; }
 
  private:
   const double Q_surge;
@@ -251,34 +251,34 @@ class thrustallocation {
   // constant value of all twin fixed thrusters
   std::vector<twinfixedthrusterdata> v_twinfixeddata;
   // location of each thruster
-  vectormd lx;
-  vectormd ly;
+  vectormd lx_;
+  vectormd ly_;
   // real time constraints of each thruster
-  vectormd upper_delta_alpha;
-  vectormd lower_delta_alpha;
-  vectormd upper_delta_u;
-  vectormd lower_delta_u;
+  vectormd upper_delta_alpha_;
+  vectormd lower_delta_alpha_;
+  vectormd upper_delta_u_;
+  vectormd lower_delta_u_;
   // quadratic objective
-  matrixnnd Q;
-  matrixmmd Omega;
-  matrixmmd Q_deltau;
+  matrixnnd Q_;
+  matrixmmd Omega_;
+  matrixmmd Q_deltau_;
   // linear objective
-  vectormd g_deltau;
-  vectormd d_rho;
+  vectormd g_deltau_;
+  vectormd d_rho_;
 
   // real time constraint matrix in QP (equality constraint)
-  matrixnmd B_alpha;
-  matrixnmd d_Balpha_u;  // Jocobian matrix of Balpha times u
-  vectornd b;
+  matrixnmd B_alpha_;
+  matrixnmd d_Balpha_u_;  // Jocobian matrix of Balpha times u
+  vectornd b_;
 
   // real time physical variable in thruster allocation
-  vectormd delta_alpha;  // rad
-  vectormd delta_u;      // N
+  vectormd delta_alpha_;  // rad
+  vectormd delta_u_;      // N
   // linearized parameters
   double derivative_dx;  // step size of the derivative
 
   // array to store the optimization results
-  Eigen::Matrix<double, 2 * m + n, 1> results;
+  Eigen::Matrix<double, 2 * m + n, 1> results_;
 
   // parameters for OSQP API
   c_float osqp_P_x[2 * m + n];
@@ -302,9 +302,9 @@ class thrustallocation {
     if (num_twinfixed > 0) assert(num_twinfixed == 2);
 
     for (int i = 0; i != num_tunnel; ++i) {
-      lx(i) = v_tunnelthrusterdata[i].lx;
-      ly(i) = v_tunnelthrusterdata[i].ly;
-      Omega(i, i) = 1;
+      lx_(i) = v_tunnelthrusterdata[i].lx;
+      ly_(i) = v_tunnelthrusterdata[i].ly;
+      Omega_(i, i) = 1;
       // re-calculate the max thrust of tunnel thruser
       v_tunnelthrusterdata[i].max_thrust_positive =
           v_tunnelthrusterdata[i].K_positive *
@@ -315,9 +315,9 @@ class thrustallocation {
     }
     for (int i = 0; i != num_azimuth; ++i) {
       int index_azimuth = num_tunnel + i;
-      lx(index_azimuth) = v_azimuththrusterdata[i].lx;
-      ly(index_azimuth) = v_azimuththrusterdata[i].ly;
-      Omega(index_azimuth, index_azimuth) = 50;
+      lx_(index_azimuth) = v_azimuththrusterdata[i].lx;
+      ly_(index_azimuth) = v_azimuththrusterdata[i].ly;
+      Omega_(index_azimuth, index_azimuth) = 50;
       // re-calculate the max thrust of azimuth thruser
       v_azimuththrusterdata[i].max_thrust =
           v_azimuththrusterdata[i].K *
@@ -328,9 +328,9 @@ class thrustallocation {
     }
     for (int i = 0; i != num_mainrudder; ++i) {
       int index_rudder = num_tunnel + num_azimuth + i;
-      lx(index_rudder) = v_ruddermaindata[i].lx;
-      ly(index_rudder) = v_ruddermaindata[i].ly;
-      Omega(index_rudder, index_rudder) = 50;
+      lx_(index_rudder) = v_ruddermaindata[i].lx;
+      ly_(index_rudder) = v_ruddermaindata[i].ly;
+      Omega_(index_rudder, index_rudder) = 50;
       // re-calculate the max thrust of main thruser with rudder
       double Cy = v_ruddermaindata[i].Cy;
       v_ruddermaindata[i].max_thrust =
@@ -347,9 +347,9 @@ class thrustallocation {
 
     for (int i = 0; i != num_twinfixed; ++i) {
       int index_twinfixed = num_tunnel + num_azimuth + num_mainrudder + i;
-      lx(index_twinfixed) = v_twinfixeddata[i].lx;
-      ly(index_twinfixed) = v_twinfixeddata[i].ly;
-      Omega(index_twinfixed, index_twinfixed) = 50;
+      lx_(index_twinfixed) = v_twinfixeddata[i].lx;
+      ly_(index_twinfixed) = v_twinfixeddata[i].ly;
+      Omega_(index_twinfixed, index_twinfixed) = 50;
       // re-calculate the max thrust of twin fixed thruster
       v_twinfixeddata[i].max_thrust_positive =
           v_twinfixeddata[i].K_positive *
@@ -378,17 +378,17 @@ class thrustallocation {
           _RTdata.feedback_rotation(i) <= _maxdeltar) {
         // specify the first case
         if (_desired_Mz > 0) {
-          upper_delta_alpha(i) = 0;
-          lower_delta_alpha(i) = 0;
-          lower_delta_u(i) = -_RTdata.feedback_u(i);
-          upper_delta_u(i) =
+          upper_delta_alpha_(i) = 0;
+          lower_delta_alpha_(i) = 0;
+          lower_delta_u_(i) = -_RTdata.feedback_u(i);
+          upper_delta_u_(i) =
               _Kp * std::pow(_RTdata.feedback_rotation(i) + _maxdeltar, 2) -
               _RTdata.feedback_u(i);
         } else {
-          upper_delta_alpha(i) = -M_PI;
-          lower_delta_alpha(i) = -M_PI;
-          lower_delta_u(i) = -_RTdata.feedback_u(i);
-          upper_delta_u(i) =
+          upper_delta_alpha_(i) = -M_PI;
+          lower_delta_alpha_(i) = -M_PI;
+          lower_delta_u_(i) = -_RTdata.feedback_u(i);
+          upper_delta_u_(i) =
               _Kn * std::pow(_RTdata.feedback_rotation(i) - _maxdeltar, 2) -
               _RTdata.feedback_u(i);
         }
@@ -396,42 +396,42 @@ class thrustallocation {
                  _RTdata.feedback_rotation(i) < 0) {
         if (_desired_Mz > 0) {
           // specify the second case
-          upper_delta_alpha(i) = M_PI;
-          lower_delta_alpha(i) = M_PI;
-          lower_delta_u(i) = -_RTdata.feedback_u(i);
-          upper_delta_u(i) =
+          upper_delta_alpha_(i) = M_PI;
+          lower_delta_alpha_(i) = M_PI;
+          lower_delta_u_(i) = -_RTdata.feedback_u(i);
+          upper_delta_u_(i) =
               _Kp * std::pow(_RTdata.feedback_rotation(i) + _maxdeltar, 2) -
               _RTdata.feedback_u(i);
         } else {
           // specify the first case
-          upper_delta_alpha(i) = 0;
-          lower_delta_alpha(i) = 0;
-          lower_delta_u(i) = -_RTdata.feedback_u(i);
-          upper_delta_u(i) =
+          upper_delta_alpha_(i) = 0;
+          lower_delta_alpha_(i) = 0;
+          lower_delta_u_(i) = -_RTdata.feedback_u(i);
+          upper_delta_u_(i) =
               _Kn * std::pow(_RTdata.feedback_rotation(i) - _maxdeltar, 2) -
               _RTdata.feedback_u(i);
         }
 
       } else if (_RTdata.feedback_rotation(i) > _maxdeltar) {
-        lower_delta_alpha(i) = 0;
-        upper_delta_alpha(i) = 0;
-        upper_delta_u(i) = std::min(
+        lower_delta_alpha_(i) = 0;
+        upper_delta_alpha_(i) = 0;
+        upper_delta_u_(i) = std::min(
             v_tunnelthrusterdata[i].max_thrust_positive - _RTdata.feedback_u(i),
             _Kp * std::pow(_RTdata.feedback_rotation(i) + _maxdeltar, 2) -
                 _RTdata.feedback_u(i));
-        lower_delta_u(i) =
+        lower_delta_u_(i) =
             _Kp * std::pow(_RTdata.feedback_rotation(i) - _maxdeltar, 2) -
             _RTdata.feedback_u(i);
 
       } else {
-        lower_delta_alpha(i) = 0;
-        upper_delta_alpha(i) = 0;
-        upper_delta_u(i) = std::min(
+        lower_delta_alpha_(i) = 0;
+        upper_delta_alpha_(i) = 0;
+        upper_delta_u_(i) = std::min(
             _Kn * std::pow(_RTdata.feedback_rotation(i) - _maxdeltar, 2) -
                 _RTdata.feedback_u(i),
             v_tunnelthrusterdata[i].max_thrust_negative -
                 _RTdata.feedback_u(i));
-        lower_delta_u(i) =
+        lower_delta_u_(i) =
             _Kn * std::pow(_RTdata.feedback_rotation(i) + _maxdeltar, 2) -
             _RTdata.feedback_u(i);
       }
@@ -443,18 +443,18 @@ class thrustallocation {
     for (int j = 0; j != num_azimuth; ++j) {
       int index_azimuth = j + num_tunnel;
       /* contraints on the increment of angle */
-      upper_delta_alpha(index_azimuth) =
+      upper_delta_alpha_(index_azimuth) =
           std::min(v_azimuththrusterdata[j].max_delta_alpha,
                    v_azimuththrusterdata[j].max_alpha -
                        _RTdata.feedback_alpha(index_azimuth));
-      lower_delta_alpha(index_azimuth) =
+      lower_delta_alpha_(index_azimuth) =
           std::max(-v_azimuththrusterdata[j].max_delta_alpha,
                    v_azimuththrusterdata[j].min_alpha -
                        _RTdata.feedback_alpha(index_azimuth));
       /* contraints on the increment of thrust */
       double K = v_azimuththrusterdata[j].K;
       int _maxdeltar = v_azimuththrusterdata[j].max_delta_rotation;
-      upper_delta_u(index_azimuth) =
+      upper_delta_u_(index_azimuth) =
           std::min(v_azimuththrusterdata[j].max_thrust,
                    K * std::pow(_RTdata.feedback_rotation(index_azimuth) +
                                     _maxdeltar,
@@ -462,10 +462,10 @@ class thrustallocation {
           _RTdata.feedback_u(index_azimuth);
 
       if (_RTdata.feedback_rotation(index_azimuth) < _maxdeltar)
-        lower_delta_u(index_azimuth) = v_azimuththrusterdata[j].min_thrust -
-                                       _RTdata.feedback_u(index_azimuth);
+        lower_delta_u_(index_azimuth) = v_azimuththrusterdata[j].min_thrust -
+                                        _RTdata.feedback_u(index_azimuth);
       else
-        lower_delta_u(index_azimuth) =
+        lower_delta_u_(index_azimuth) =
             std::max(K * std::pow(_RTdata.feedback_rotation(index_azimuth) -
                                       _maxdeltar,
                                   2),
@@ -492,11 +492,11 @@ class thrustallocation {
                    v_ruddermaindata[k].min_varphi);
 
       /* contraints on the increment of alpha */
-      upper_delta_alpha(index_rudder) =
+      upper_delta_alpha_(index_rudder) =
           std::atan(Cy * rudderangle_upper /
                     (1 - 0.02 * Cy * std::pow(rudderangle_upper, 2))) -
           _RTdata.feedback_alpha(index_rudder);
-      lower_delta_alpha(index_rudder) =
+      lower_delta_alpha_(index_rudder) =
           std::atan(Cy * rudderangle_lower /
                     (1 - 0.02 * Cy * std::pow(rudderangle_lower, 2))) -
           _RTdata.feedback_alpha(index_rudder);
@@ -555,10 +555,10 @@ class thrustallocation {
                                computeabcvalue(_a, _b, _c, max_squrevarphi)));
         _min_usqrtterm = std::sqrt(computeabcvalue(_a, _b, _c, min_point_x));
       }
-      upper_delta_u(index_rudder) =
+      upper_delta_u_(index_rudder) =
           _max_u * _max_usqrtterm - _RTdata.feedback_u(index_rudder);
 
-      lower_delta_u(index_rudder) =
+      lower_delta_u_(index_rudder) =
           _min_u * _min_usqrtterm - _RTdata.feedback_u(index_rudder);
     }
   }  // calculateconstraints_rudder
@@ -586,57 +586,57 @@ class thrustallocation {
       double _u0 = _RTdata.feedback_u(index_tf);
 
       if (_n0 >= _maxdn) {
-        upper_delta_alpha(index_tf) = 0;
-        lower_delta_alpha(index_tf) = 0;
-        upper_delta_u(index_tf) =
+        upper_delta_alpha_(index_tf) = 0;
+        lower_delta_alpha_(index_tf) = 0;
+        upper_delta_u_(index_tf) =
             std::min(v_twinfixeddata[i].max_thrust_positive - _u0,
                      _Kp * std::pow(_n0 + _maxdn, 2) - _u0);
-        lower_delta_u(index_tf) = _Kp * std::pow(_n0 - _maxdn, 2) - _u0;
+        lower_delta_u_(index_tf) = _Kp * std::pow(_n0 - _maxdn, 2) - _u0;
       } else if (_maxdnp2n <= _n0 && _n0 < _maxdn) {
-        upper_delta_alpha(index_tf) = 0;
-        lower_delta_alpha(index_tf) = 0;
-        upper_delta_u(index_tf) = _Kp * std::pow(_n0 + _maxdnp2n, 2) - _u0;
-        lower_delta_u(index_tf) = _Kp * std::pow(_n0 - _maxdnp2n, 2) - _u0;
+        upper_delta_alpha_(index_tf) = 0;
+        lower_delta_alpha_(index_tf) = 0;
+        upper_delta_u_(index_tf) = _Kp * std::pow(_n0 + _maxdnp2n, 2) - _u0;
+        lower_delta_u_(index_tf) = _Kp * std::pow(_n0 - _maxdnp2n, 2) - _u0;
       } else if (0 < _n0 && _n0 < _maxdnp2n) {
         if (_desired_tau(i) < 0) {
           // change the direction
-          upper_delta_alpha(index_tf) = M_PI;
-          lower_delta_alpha(index_tf) = M_PI;
-          lower_delta_u(index_tf) = _Kn * std::pow(_n0 - _maxdnp2n, 2) - _u0;
-          upper_delta_u(index_tf) = lower_delta_u(index_tf);
+          upper_delta_alpha_(index_tf) = M_PI;
+          lower_delta_alpha_(index_tf) = M_PI;
+          lower_delta_u_(index_tf) = _Kn * std::pow(_n0 - _maxdnp2n, 2) - _u0;
+          upper_delta_u_(index_tf) = lower_delta_u_(index_tf);
         } else {
-          upper_delta_alpha(index_tf) = 0;
-          lower_delta_alpha(index_tf) = 0;
-          lower_delta_u(index_tf) = _Kp * std::pow(_n0 + _maxdnp2n, 2) - _u0;
-          upper_delta_u(index_tf) = lower_delta_u(index_tf);
+          upper_delta_alpha_(index_tf) = 0;
+          lower_delta_alpha_(index_tf) = 0;
+          lower_delta_u_(index_tf) = _Kp * std::pow(_n0 + _maxdnp2n, 2) - _u0;
+          upper_delta_u_(index_tf) = lower_delta_u_(index_tf);
         }
 
       } else if (-_maxdnp2n < _n0 && _n0 < 0) {
         if (_desired_tau(i) < 0) {
-          upper_delta_alpha(index_tf) = 0;
-          lower_delta_alpha(index_tf) = 0;
-          lower_delta_u(index_tf) = _Kn * std::pow(_n0 - _maxdnp2n, 2) - _u0;
-          upper_delta_u(index_tf) = lower_delta_u(index_tf);
+          upper_delta_alpha_(index_tf) = 0;
+          lower_delta_alpha_(index_tf) = 0;
+          lower_delta_u_(index_tf) = _Kn * std::pow(_n0 - _maxdnp2n, 2) - _u0;
+          upper_delta_u_(index_tf) = lower_delta_u_(index_tf);
         } else {
           // change the direction
-          upper_delta_alpha(index_tf) = -M_PI;
-          lower_delta_alpha(index_tf) = -M_PI;
-          lower_delta_u(index_tf) = _Kp * std::pow(_n0 + _maxdnp2n, 2) - _u0;
-          upper_delta_u(index_tf) = lower_delta_u(index_tf);
+          upper_delta_alpha_(index_tf) = -M_PI;
+          lower_delta_alpha_(index_tf) = -M_PI;
+          lower_delta_u_(index_tf) = _Kp * std::pow(_n0 + _maxdnp2n, 2) - _u0;
+          upper_delta_u_(index_tf) = lower_delta_u_(index_tf);
         }
 
       } else if (-_maxdn < _n0 && _n0 <= -_maxdnp2n) {
-        upper_delta_alpha(index_tf) = 0;
-        lower_delta_alpha(index_tf) = 0;
-        upper_delta_u(index_tf) = _Kn * std::pow(_n0 - _maxdnp2n, 2) - _u0;
-        lower_delta_u(index_tf) = _Kn * std::pow(_n0 + _maxdnp2n, 2) - _u0;
+        upper_delta_alpha_(index_tf) = 0;
+        lower_delta_alpha_(index_tf) = 0;
+        upper_delta_u_(index_tf) = _Kn * std::pow(_n0 - _maxdnp2n, 2) - _u0;
+        lower_delta_u_(index_tf) = _Kn * std::pow(_n0 + _maxdnp2n, 2) - _u0;
       } else {
-        upper_delta_alpha(index_tf) = 0;
-        lower_delta_alpha(index_tf) = 0;
-        upper_delta_u(index_tf) =
+        upper_delta_alpha_(index_tf) = 0;
+        lower_delta_alpha_(index_tf) = 0;
+        upper_delta_u_(index_tf) =
             std::min(v_twinfixeddata[i].max_thrust_negative - _u0,
                      _Kn * std::pow(_n0 - _maxdn, 2) - _u0);
-        lower_delta_u(index_tf) = _Kn * std::pow(_n0 + _maxdn, 2) - _u0;
+        lower_delta_u_(index_tf) = _Kn * std::pow(_n0 + _maxdn, 2) - _u0;
       }
     }
 
@@ -654,8 +654,8 @@ class thrustallocation {
   // calculate the command at the next time step
   void update_nextstep_command(controllerRTdata<m, n> &_RTdata) {
     // calculate delta variable using Mosek results
-    delta_u = results.head(m);
-    delta_alpha = results.segment(m, m);
+    delta_u_ = results_.head(m);
+    delta_alpha_ = results_.segment(m, m);
     // update alpha and u
     updateAlphaandU(_RTdata.feedback_u, _RTdata.feedback_alpha,
                     _RTdata.command_u, _RTdata.command_alpha);
@@ -671,8 +671,8 @@ class thrustallocation {
   void updateAlphaandU(const vectormd &_feedback_u,
                        const vectormd &_feedback_alpha, vectormd &_command_u,
                        vectormd &_command_alpha) {
-    _command_u = _feedback_u + delta_u;
-    _command_alpha = _feedback_alpha + delta_alpha;
+    _command_u = _feedback_u + delta_u_;
+    _command_alpha = _feedback_alpha + delta_alpha_;
   }
 
   // convert the radian to deg, and round to integer (command)
@@ -909,7 +909,7 @@ class thrustallocation {
       t_sin = sin(angle);
       _B_alpha(0, i) = t_cos;
       _B_alpha(1, i) = t_sin;
-      _B_alpha(2, i) = -ly(i) * t_cos + lx(i) * t_sin;
+      _B_alpha(2, i) = -ly_(i) * t_cos + lx_(i) * t_sin;
     }
     return _B_alpha;
   }  // calculateBalpha
@@ -929,7 +929,7 @@ class thrustallocation {
       auto alpha_minus = t_alpha;
       alpha_plus(i) += derivative_dx;
       alpha_minus(i) -= derivative_dx;
-      d_rho(i) =
+      d_rho_(i) =
           (calculateRhoTerm(alpha_plus) - calculateRhoTerm(alpha_minus)) /
           (2 * derivative_dx);
     }
@@ -952,9 +952,9 @@ class thrustallocation {
       auto alpha_minus = t_alpha;
       alpha_plus(i) += derivative_dx;
       alpha_minus(i) -= derivative_dx;
-      d_Balpha_u.col(i) = (calculateBalphau(alpha_plus, t_u) -
-                           calculateBalphau(alpha_minus, t_u)) /
-                          (2 * derivative_dx);
+      d_Balpha_u_.col(i) = (calculateBalphau(alpha_plus, t_u) -
+                            calculateBalphau(alpha_minus, t_u)) /
+                           (2 * derivative_dx);
     }
   }  // calculateJocobianBalphaU
 
@@ -962,23 +962,23 @@ class thrustallocation {
   void calculateDeltauQ(const vectormd &t_u) {
     vectormd d_utemp = vectormd::Zero();
     d_utemp = t_u.cwiseSqrt();
-    g_deltau = 1.5 * d_utemp;
+    g_deltau_ = 1.5 * d_utemp;
     vectormd Q_temp = vectormd::Zero();
     // Q_temp = 0.75 * d_utemp.cwiseInverse();
     Q_temp = 7.5 * d_utemp.cwiseInverse();
-    Q_deltau = Q_temp.asDiagonal();
+    Q_deltau_ = Q_temp.asDiagonal();
   }  // calculateDeltauQ
 
   // calculate the BalphaU and b
   void calculateb(const vectornd &_tau, const vectornd &_BalphaU) {
-    b = _tau - _BalphaU;
+    b_ = _tau - _BalphaU;
   }
 
   // update parameters in thruster allocation for each time step
   void updateTAparameters(controllerRTdata<m, n> &_RTdata) {
-    B_alpha = calculateBalpha(_RTdata.feedback_alpha);
+    B_alpha_ = calculateBalpha(_RTdata.feedback_alpha);
     // update BalphaU
-    _RTdata.BalphaU = calculateBalphau(B_alpha, _RTdata.feedback_u);
+    _RTdata.BalphaU = calculateBalphau(B_alpha_, _RTdata.feedback_u);
 
     if constexpr (index_actuation == ACTUATION::FULLYACTUATED)
       calculateJocobianRhoTerm(_RTdata.feedback_alpha);
@@ -1007,10 +1007,10 @@ class thrustallocation {
       osqp_P_x[i] = 0;
     }
     for (int i = 0; i != m; ++i) {
-      osqp_P_x[i + m] = Omega(i, i);
+      osqp_P_x[i + m] = Omega_(i, i);
     }
     for (int i = 0; i != n; ++i) {
-      osqp_P_x[i + 2 * m] = Q(i, i);
+      osqp_P_x[i + 2 * m] = Q_(i, i);
     }
 
     // assign value to the A in OSQP
@@ -1078,29 +1078,29 @@ class thrustallocation {
   void updateOSQPparameters() {
     // update objective
     for (int i = 0; i != m; ++i) {
-      osqp_q[i] = g_deltau(i);
-      osqp_q[i + m] = d_rho(i);
-      osqp_P_x[i] = Q_deltau(i, i);
+      osqp_q[i] = g_deltau_(i);
+      osqp_q[i + m] = d_rho_(i);
+      osqp_P_x[i] = Q_deltau_(i, i);
     }
 
     // update A
     for (int i = 0; i != m; ++i) {
       for (int j = 0; j != n; ++j) {
-        osqp_A_x[4 * i + j] = B_alpha(j, i);
-        osqp_A_x[4 * (i + m) + j] = d_Balpha_u(j, i);
+        osqp_A_x[4 * i + j] = B_alpha_(j, i);
+        osqp_A_x[4 * (i + m) + j] = d_Balpha_u_(j, i);
       }
     }
 
     // update l and u
     for (int i = 0; i != n; ++i) {
-      osqp_l[i] = b(i);
-      osqp_u[i] = b(i);
+      osqp_l[i] = b_(i);
+      osqp_u[i] = b_(i);
     }
     for (int i = 0; i != m; ++i) {
-      osqp_l[n + i] = lower_delta_u(i);
-      osqp_u[n + i] = upper_delta_u(i);
-      osqp_l[n + m + i] = lower_delta_alpha(i);
-      osqp_u[n + m + i] = upper_delta_alpha(i);
+      osqp_l[n + i] = lower_delta_u_(i);
+      osqp_u[n + i] = upper_delta_u_(i);
+      osqp_l[n + m + i] = lower_delta_alpha_(i);
+      osqp_u[n + m + i] = upper_delta_alpha_(i);
     }
 
     osqp_update_P(osqp_work, osqp_P_x, OSQP_NULL, numvar);
@@ -1113,12 +1113,12 @@ class thrustallocation {
   // solve QP using OSQP solver
   void onestepOSQP() {
     // reset the delta value
-    results.setZero();
+    results_.setZero();
 
     // Solve Problem
     osqp_solve(osqp_work);
     if (osqp_work->info->status_val > 0) {
-      for (int i = 0; i != numvar; ++i) results(i) = osqp_work->solution->x[i];
+      for (int i = 0; i != numvar; ++i) results_(i) = osqp_work->solution->x[i];
     } else {
       CLOG(ERROR, "osqp") << "solver error.";
     }

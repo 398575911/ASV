@@ -14,7 +14,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # 添加 include 子目录
 
 set(HEADER_DIRECTORY ${HEADER_DIRECTORY} 
-   	"${PROJECT_SOURCE_DIR}/../include"
+   	"${PROJECT_SOURCE_DIR}/../../../../"
     )
 
 set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY} 
@@ -24,15 +24,14 @@ set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY}
 
 # 指定生成目标
 
-
 add_executable (miniball_example miniball_example.cc)
 
 add_executable (miniball_example_containers miniball_example_containers.cc)
 
 
-add_executable (testkdtree testkdtree.cc "${HEADER_DIRECTORY}/kdtree.c")
+add_executable (testkdtree testkdtree.cc "../../src/kdtree.c")
 
-add_executable (testkdtree2 testkdtree2.cc "${HEADER_DIRECTORY}/kdtree.c")
+add_executable (testkdtree2 testkdtree2.cc "../../src/kdtree.c")
 
 
 add_executable (simple_voronoi simple_voronoi.cc)
@@ -50,10 +49,19 @@ target_include_directories(plot_voronoi PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(plot_voronoi  ${RARE_LIBRARIES})
 
 
-add_executable (plot_2dkdtree plot_2dkdtree.cc "${HEADER_DIRECTORY}/kdtree.c")
+add_executable (plot_2dkdtree plot_2dkdtree.cc "../../src/kdtree.c")
 target_include_directories(plot_2dkdtree PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(plot_2dkdtree ${RARE_LIBRARIES})
 
 add_executable (test_RScurve test_RScurve.cc)
 target_include_directories(test_RScurve PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(test_RScurve ${RARE_LIBRARIES})
+
+
+
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
+add_executable (test_linesegment2d testlinesegment2d.cc)
+target_include_directories(test_linesegment2d PRIVATE ${HEADER_DIRECTORY})
+
+
+
