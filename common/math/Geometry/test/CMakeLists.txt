@@ -46,7 +46,7 @@ set(RARE_LIBRARIES ${RARE_LIBRARIES}
 	)
 add_executable (plot_voronoi plot_voronoi.cc)
 target_include_directories(plot_voronoi PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(plot_voronoi  ${RARE_LIBRARIES})
+target_link_libraries(plot_voronoi ${RARE_LIBRARIES})
 
 
 add_executable (plot_2dkdtree plot_2dkdtree.cc "../../src/kdtree.c")
@@ -60,8 +60,10 @@ target_link_libraries(test_RScurve ${RARE_LIBRARIES})
 
 
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
-add_executable (test_linesegment2d testlinesegment2d.cc)
-target_include_directories(test_linesegment2d PRIVATE ${HEADER_DIRECTORY})
+add_executable (linesegment2d_test linesegment2d_test.cc)
+target_include_directories(linesegment2d_test PRIVATE ${HEADER_DIRECTORY})
 
 
-
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
+add_executable (aabox2d_test aabox2d_test.cc)
+target_include_directories(aabox2d_test PRIVATE ${HEADER_DIRECTORY})

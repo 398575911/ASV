@@ -1,6 +1,6 @@
 /*
 ***********************************************************************
-* testlinesegment2d.cc: test for Line segment in 2-D.
+* linesegment2d_test.cc: test for Line segment in 2-D.
 * This header file can be read by C++ compilers
 *
 *  by Hu.ZH(CrossOcean.ai)
