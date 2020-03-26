@@ -128,7 +128,7 @@ int main() {
 
       long int et = _timer.timeelapsed();
 
-      gps_db.update_table(common::gps_db_data{
+      gps_db.update_gps_table(common::gps_db_data{
           0,                   // local_time
           gps_data.UTC,        // UTC
           gps_data.latitude,   // latitude

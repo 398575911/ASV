@@ -101,7 +101,7 @@ double Degree2Rad(double _degree) noexcept {
 
 // convert Cartesian coordinates to Polar coordinates
 std::tuple<double, double> Cartesian2Polar(const double x, const double y) {
-  return {std::sqrt(x * x + y * y), std::atan2(y, x)};
+  return {std::hypot(x, y), std::atan2(y, x)};
 }  // Cartesian2Polar
 
 // calculate the angle between two 2d vectors

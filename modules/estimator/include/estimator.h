@@ -307,8 +307,8 @@ class estimator {
     static double previous_theta = 0.0;
     static double previous_speed = 0.0;
 
-    double _ds = std::sqrt(std::pow(_RTdata.State(0) - previous_cart_x, 2) +
-                           std::pow(_RTdata.State(1) - previous_cart_y, 2));
+    double _ds = std::hypot(_RTdata.State(0) - previous_cart_x,
+                            _RTdata.State(1) - previous_cart_y);
 
     double _dtheta =
         common::math::Normalizeheadingangle(_RTdata.State(2) - previous_theta);
@@ -318,8 +318,8 @@ class estimator {
       _curvature = _dtheta / _ds;  // consider the low-speed situation
 
     // todo:save
-    double _speed = std::sqrt(std::pow(_RTdata.State(3), 2) +
-                              std::pow(_RTdata.State(4), 2));
+    double _speed = std::hypot(_RTdata.State(3), _RTdata.State(4));
+
     double _dspeed = (_speed - previous_speed) / sample_time;
     //
     _RTdata.Marine_state(0) = _RTdata.State(0);

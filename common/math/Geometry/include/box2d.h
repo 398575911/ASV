@@ -36,8 +36,8 @@ class Box2d {
    * @param length The size of the heading-axis.
    * @param width The size of the axis perpendicular to the heading-axis.
    */
-  explicit Box2d(const Vec2d &center, const double heading, const double length,
-                 const double width);
+  explicit Box2d(const Eigen::Vector2d &center, const double heading,
+                 const double length, const double width);
 
   /**
    * @brief Constructor which takes the heading-axis and the width of the box
@@ -59,14 +59,14 @@ class Box2d {
    * @param opposite_corner The opposite corner to the first one
    * @return An axes-aligned Box2d
    */
-  static Box2d CreateAABox(const Vec2d &one_corner,
-                           const Vec2d &opposite_corner);
+  static Box2d CreateAABox(const Eigen::Vector2d &one_corner,
+                           const Eigen::Vector2d &opposite_corner);
 
   /**
    * @brief Getter of the center of the box
    * @return The center of the box
    */
-  const Vec2d &center() const { return center_; }
+  Eigen::Vector2d center() const { return center_; }
 
   /**
    * @brief Getter of the x-coordinate of the center of the box
@@ -235,16 +235,16 @@ class Box2d {
   double min_y() const { return min_y_; }
 
  private:
-  Vec2d center_;
-  double length_ = 0.0;
-  double width_ = 0.0;
-  double half_length_ = 0.0;
-  double half_width_ = 0.0;
-  double heading_ = 0.0;
-  double cos_heading_ = 1.0;
-  double sin_heading_ = 0.0;
+  Eigen::Vector2d center_;
+  double length_;
+  double width_;
+  double half_length_;
+  double half_width_;
+  double heading_;
+  double cos_heading_;
+  double sin_heading_;
 
-  std::vector<Vec2d> corners_;
+  Eigen::Matrix<double, 4, 2> corners_;
 
   double max_x_ = std::numeric_limits<double>::lowest();
   double min_x_ = std::numeric_limits<double>::max();

@@ -576,9 +576,8 @@ class FrenetTrajectoryGenerator {
       CLOG(ERROR, "Frenet") << "extreme situations";
     }
     // speed
-    _cartstate_v.speed =
-        std::sqrt(std::pow(_frenetstate.s_dot * one_minus_kappa_r_d, 2) +
-                  std::pow(_frenetstate.d_dot, 2));
+    _cartstate_v.speed = std::hypot(_frenetstate.s_dot * one_minus_kappa_r_d,
+                                    _frenetstate.d_dot);
 
     // theta
     const double tan_delta_theta = _frenetstate.d_prime / one_minus_kappa_r_d;
@@ -650,9 +649,8 @@ class FrenetTrajectoryGenerator {
     }
 
     // speed at t0
-    _cartstate_v.speed =
-        std::sqrt(std::pow(_frenetstate.s_dot * one_minus_kappa_r_d, 2) +
-                  std::pow(_frenetstate.d_dot, 2));
+    _cartstate_v.speed = std::hypot(_frenetstate.s_dot * one_minus_kappa_r_d,
+                                    _frenetstate.d_dot);
 
     // theta at t0
     const double tan_delta_theta = _frenetstate.d_prime / one_minus_kappa_r_d;

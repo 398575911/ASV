@@ -665,7 +665,7 @@ class TargetTracking : public RadarFiltering {
     std::size_t num_detected_targets = detected_target_x.size();
     double Vj0_x = previous_target_vx;
     double Vj0_y = previous_target_vy;
-    double previous_speed_j0 = std::sqrt(Vj0_x * Vj0_x + Vj0_y * Vj0_y);
+    double previous_speed_j0 = std::hypot(Vj0_x, Vj0_y);
 
     double Vt = TrackingTarget_Data.speed_threhold;
     if (previous_speed_j0 > Vt) {
@@ -674,10 +674,10 @@ class TargetTracking : public RadarFiltering {
             inverse_time * (detected_target_x[i] - previous_target_x);
         double Vji_y =
             inverse_time * (detected_target_y[i] - previous_target_y);
-        double predicted_speed_ji = std::sqrt(Vji_x * Vji_x + Vji_y * Vji_y);
+        double predicted_speed_ji = std::hypot(Vji_x, Vji_y);
 
-        double delta_velocity =
-            std::sqrt(std::pow(Vji_x - Vj0_x, 2) + std::pow(Vji_y - Vj0_y, 2));
+        double delta_velocity = std::hypot(Vji_x - Vj0_x, Vji_y - Vj0_y);
+
         double aji = inverse_time * delta_velocity;
 
         double delta_yaw =
@@ -716,10 +716,9 @@ class TargetTracking : public RadarFiltering {
         double Vji_y =
             inverse_time * (detected_target_y[i] - previous_target_y);
 
-        double predicted_speed_ji = std::sqrt(Vji_x * Vji_x + Vji_y * Vji_y);
+        double predicted_speed_ji = std::hypot(Vji_x, Vji_y);
+        double delta_velocity = std::hypot(Vji_x - Vj0_x, Vji_y - Vj0_y);
 
-        double delta_velocity =
-            std::sqrt(std::pow(Vji_x - Vj0_x, 2) + std::pow(Vji_y - Vj0_y, 2));
         double aji = inverse_time * delta_velocity;
 
         // remove the detected targets which is un-matched

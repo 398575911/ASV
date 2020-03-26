@@ -12,7 +12,6 @@
 #define _ROUTEPLANNING_H_
 
 #include <GeographicLib/UTMUPS.hpp>
-#include <cmath>
 #include "RoutePlannerData.h"
 #include "common/logging/include/easylogging++.h"
 #include "common/math/miscellaneous/include/math_utils.h"
@@ -34,7 +33,7 @@ class RoutePlanning {
     double capture_radius = compute_capture_radius(_desired_speed, L);
     double delta_X = _initial_x - _center_x;
     double delta_Y = _initial_y - _center_y;
-    double r = std::sqrt(delta_X * delta_X + delta_Y * delta_Y);
+    double r = std::hypot(delta_X, delta_Y);
     double theta0 = std::atan2(delta_Y, delta_X);
 
     // ensure the waypoints are far enough

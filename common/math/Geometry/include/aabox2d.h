@@ -142,7 +142,8 @@ class AABox2d {
     if (dy <= 0.0) {
       return dx;
     }
-    return std::sqrt(dx * dx + dy * dy);
+
+    return std::hypot(dx, dy);
   }  // DistanceTo
 
   // brief Determines the distance between two boxes.
@@ -157,7 +158,8 @@ class AABox2d {
     if (dy <= 0.0) {
       return dx;
     }
-    return std::sqrt(dx * dx + dy * dy);
+    return std::hypot(dx, dy);
+
   }  // DistanceTo
 
   // brief Determines whether two boxes overlap.
