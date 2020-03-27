@@ -138,6 +138,7 @@ class LineSegment2d {
   // Check if the line segment has an intersect with another 2d line segment
   bool HasIntersect(const LineSegment2d &other_segment) const {
     auto [IsIntersect, point] = GetIntersect(other_segment);
+    (void)point;  // unused
     return IsIntersect;
   }  // HasIntersect
 

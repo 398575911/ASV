@@ -1,7 +1,7 @@
 /*
 ***********************************************************************
 * CollisionChecker.h:
-* Collision detection
+* Collision detection, using circle-based vessel shape
 * This header file can be read by C++ compilers
 *
 * by Hu.ZH(CrossOcean.ai)

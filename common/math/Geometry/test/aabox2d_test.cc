@@ -17,25 +17,25 @@ BOOST_AUTO_TEST_CASE(GetAllCorners) {
   auto corners1 = box1.GetAllCorners();
 
   BOOST_CHECK_CLOSE(corners1(0, 0), 2.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners1(0, 1), -1.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners1(1, 0), 2.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners1(1, 0), -1.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners1(0, 1), 2.0, 1e-6);
   BOOST_CHECK_CLOSE(corners1(1, 1), 1.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners1(2, 0), -2.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners1(2, 1), 1.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners1(3, 0), -2.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners1(3, 1), -1.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners1(0, 2), -2.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners1(1, 2), 1.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners1(0, 3), -2.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners1(1, 3), -1.0, 1e-6);
 
   AABox2d box2((Eigen::Vector2d() << 3, 1).finished(),
                (Eigen::Vector2d() << 7, 3).finished());
   auto corners2 = box2.GetAllCorners();
   BOOST_CHECK_CLOSE(corners2(0, 0), 7.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners2(0, 1), 1.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners2(1, 0), 7.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners2(1, 0), 1.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners2(0, 1), 7.0, 1e-6);
   BOOST_CHECK_CLOSE(corners2(1, 1), 3.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners2(2, 0), 3.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners2(2, 1), 3.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners2(3, 0), 3.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners2(3, 1), 1.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners2(0, 2), 3.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners2(1, 2), 3.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners2(0, 3), 3.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners2(1, 3), 1.0, 1e-6);
 }
 
 BOOST_AUTO_TEST_CASE(CenterAndLengths) {
@@ -137,13 +137,13 @@ BOOST_AUTO_TEST_CASE(Shift) {
   box.Shift((Eigen::Vector2d() << 30, 40).finished());
   auto corners = box.GetAllCorners();
   BOOST_CHECK_CLOSE(corners(0, 0), 32.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners(0, 1), 39.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners(1, 0), 32.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners(1, 0), 39.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners(0, 1), 32.0, 1e-6);
   BOOST_CHECK_CLOSE(corners(1, 1), 41.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners(2, 0), 28.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners(2, 1), 41.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners(3, 0), 28.0, 1e-6);
-  BOOST_CHECK_CLOSE(corners(3, 1), 39.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners(0, 2), 28.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners(1, 2), 41.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners(0, 3), 28.0, 1e-6);
+  BOOST_CHECK_CLOSE(corners(1, 3), 39.0, 1e-6);
 }
 
 BOOST_AUTO_TEST_CASE(MergeFrom) {

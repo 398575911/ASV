@@ -64,8 +64,8 @@ class AABox2d {
     center_ << 0.5 * (min_x + max_x), 0.5 * (min_y + max_y);
     length_ = max_x - min_x;
     width_ = max_y - min_y;
-    half_length_ = length_ / 2.0;
-    half_width_ = width_ / 2.0;
+    half_length_ = 0.5 * length_;
+    half_width_ = 0.5 * width_;
   }
 
   virtual ~AABox2d() = default;
@@ -103,15 +103,13 @@ class AABox2d {
   double max_y() const { return center_y() + half_width_; }
 
   // Gets all corners in counter clockwise order.
-  Eigen::Matrix<double, 4, 2> GetAllCorners() const {
-    Eigen::Matrix<double, 4, 2> allcorners =
-        Eigen::Matrix<double, 4, 2>::Zero();
+  Eigen::Matrix<double, 2, 4> GetAllCorners() const {
+    Eigen::Matrix<double, 2, 4> allcorners =
+        Eigen::Matrix<double, 2, 4>::Zero();
 
-    allcorners << max_x(), min_y(),  // first corner
-        max_x(), max_y(),            // second corner
-        min_x(), max_y(),            // third corner
-        min_x(), min_y()             // fourth corner
-        ;
+    allcorners << max_x(), max_x(), min_x(), min_x(),  //
+        min_y(), max_y(), max_y(), min_y();
+
     return allcorners;
   }  // GetAllCorners
 

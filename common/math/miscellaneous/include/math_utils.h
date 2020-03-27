@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <tuple>
 #include <vector>
 
@@ -20,6 +21,18 @@
 namespace ASV::common::math {
 
 constexpr double kMathEpsilon = 1e-10;
+
+// Random float number generation
+double RandomDouble(double low, double high) {
+  return low + static_cast<double>(std::rand()) /
+                   (static_cast<double>(RAND_MAX / (high - low)));
+}  // RandomDouble
+
+// random number in some range
+int RandomInt(int low, int high) {
+  return low + (std::rand() % (high - low + 1));
+
+}  // RandomInt
 
 // cross product of two 2-dimensional vectors {x0,y0} {x1,y1}
 double CrossProd(const double x0, const double y0, const double x1,

@@ -67,3 +67,9 @@ BOOST_AUTO_TEST_CASE(linesegment) {
   BOOST_TEST(IsWithin(0, 10, 20) == false);
   BOOST_TEST(IsWithin(11.2232, 10, 20) == true);
 }
+
+BOOST_AUTO_TEST_CASE(Randomtest) {
+  for (int i = 0; i != 100; i++) std::cout << RandomDouble(10, 20) << std::endl;
+
+  for (int i = 0; i != 100; i++) std::cout << RandomInt(-10, 10) << std::endl;
+}

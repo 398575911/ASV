@@ -63,7 +63,10 @@ ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE)
 add_executable (linesegment2d_test linesegment2d_test.cc)
 target_include_directories(linesegment2d_test PRIVATE ${HEADER_DIRECTORY})
 
-
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
 add_executable (aabox2d_test aabox2d_test.cc)
 target_include_directories(aabox2d_test PRIVATE ${HEADER_DIRECTORY})
+
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
+add_executable (box2d_test box2d_test.cc)
+target_include_directories(box2d_test PRIVATE ${HEADER_DIRECTORY})
