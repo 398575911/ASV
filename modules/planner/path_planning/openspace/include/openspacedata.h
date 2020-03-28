@@ -11,10 +11,18 @@
 #ifndef _OPENSPACEDATA_H_
 #define _OPENSPACEDATA_H_
 
-#include <common/math/eigen/Eigen/Core>
-#include <common/math/eigen/Eigen/Dense>
+#include "modules/planner/path_planning/common/PathPlannerData.h"
 
 namespace ASV::planning {
+
+// in the Cartesian Coordinates.
+struct OpenSpace_Trajectory {
+  Eigen::VectorXd t;      // time (s)
+  Eigen::VectorXd x;      // x (m)
+  Eigen::VectorXd y;      // y (m)
+  Eigen::VectorXd theta;  // heading (rad)
+  Eigen::VectorXd speed;  // speed (rad/s)
+};
 
 /**************************** obstacles  ******************************/
 // the obstacles in openspace planner can be defined in different forms,

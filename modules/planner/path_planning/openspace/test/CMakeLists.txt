@@ -50,3 +50,7 @@ add_executable (test_hybridAstar test_hybridAstar.cc ${SOURCE_FILES} )
 target_include_directories(test_hybridAstar PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(test_hybridAstar PUBLIC ${RARE_LIBRARIES} )
 
+add_executable (CollisionChecking_test CollisionChecking_test.cc ${SOURCE_FILES} )
+target_include_directories(CollisionChecking_test PRIVATE ${HEADER_DIRECTORY})
+# target_link_libraries(CollisionChecking_test PUBLIC ${RARE_LIBRARIES} )
+

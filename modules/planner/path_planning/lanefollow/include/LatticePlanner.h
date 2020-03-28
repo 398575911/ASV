@@ -1,8 +1,9 @@
 /*
 ****************************************************************************
 * LatticePlanner.h:
-* Lattice planner including Frenet Lattices generator and collision checker
-* define the data struct used in the controller
+* Lattice planner including Frenet Lattices generator and collision checker.
+* This path planner is generally used in high-speed vessel, and thus
+* underactuated model is used in lattice planner.
 * This header file can be read by C++ compilers
 *
 * by Hu.ZH(CrossOcean.ai)

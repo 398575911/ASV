@@ -96,6 +96,7 @@ int main() {
       0.2,   // MAX_CURVATURE
       3,     // HULL_LENGTH
       1,     // HULL_WIDTH
+      1.5,   // HULL_BACK2COG
       3      // ROBOT_RADIUS
   };
 
