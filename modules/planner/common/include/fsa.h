@@ -48,6 +48,8 @@ given where due.
 #include <stdio.h>
 #include <string.h>
 
+namespace ASV::planning {
+
 template <class USER_TYPE>
 class FixedSizeAllocator {
  public:
@@ -206,6 +208,8 @@ class FixedSizeAllocator {
   FSA_ELEMENT *m_pFirstUsed;
   unsigned int m_MaxElements;
   FSA_ELEMENT *m_pMemory;
-};
+};  //  end class FixedSizeAllocator
 
-#endif  // defined FSA_H
+}  // namespace ASV::planning
+
+#endif /* FSA_H */

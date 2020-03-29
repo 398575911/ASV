@@ -19,14 +19,15 @@ namespace ASV::planning {
 class CollisionChecking {
  public:
   explicit CollisionChecking(const CollisionData &_CollisionData)
-      : CollisionData_(_CollisionData) {}
+      : ego_length_(_CollisionData.HULL_LENGTH),
+        ego_width_(_CollisionData.HULL_WIDTH),
+        ego_back2cog_(_CollisionData.HULL_BACK2COG) {}
 
   virtual ~CollisionChecking() = default;
 
   // check collision, return true if collision occurs.
   bool InCollision(const OpenSpace_Trajectory &ego_trajectory) {
-    const double ego_center_local_x =
-        0.5 * CollisionData_.HULL_LENGTH - CollisionData_.HULL_BACK2COG;
+    const double ego_center_local_x = 0.5 * ego_length_ - ego_back2cog_;
     const double ego_center_local_y = 0.0;
 
     for (int i = 0; i != ego_trajectory.t.size(); ++i) {
@@ -42,7 +43,7 @@ class CollisionChecking {
       ASV::common::math::Box2d ego_box(
           (Eigen::Vector2d() << ego_center_global_x, ego_center_global_y)
               .finished(),
-          ego_theta, CollisionData_.HULL_LENGTH, CollisionData_.HULL_WIDTH);
+          ego_theta, ego_length_, ego_width_);
 
       // check vertex
       for (auto const &vertex : Obstacles_Vertex_) {
@@ -86,22 +87,25 @@ class CollisionChecking {
       const std::vector<Obstacle_Vertex> &Obstacles_Vertex) {
     Obstacles_Vertex_ = Obstacles_Vertex;
     return *this;
-  }
+  }  // set_Obstacles_Vertex
 
   CollisionChecking &set_Obstacles_LineSegment(
       const std::vector<Obstacle_LineSegment> &Obstacles_LineSegment) {
     Obstacles_LineSegment_ = Obstacles_LineSegment;
     return *this;
-  }
+  }  // set_Obstacles_LineSegment
 
   CollisionChecking &set_Obstacles_Box2d(
       const std::vector<Obstacle_Box2d> &Obstacles_Box2d) {
     Obstacles_Box2d_ = Obstacles_Box2d;
     return *this;
-  }
+  }  // set_Obstacles_Box2d
 
  private:
-  const CollisionData CollisionData_;
+  const double ego_length_;
+  const double ego_width_;
+  const double ego_back2cog_;
+
   std::vector<Obstacle_Vertex> Obstacles_Vertex_;
   std::vector<Obstacle_LineSegment> Obstacles_LineSegment_;
   std::vector<Obstacle_Box2d> Obstacles_Box2d_;

@@ -26,11 +26,7 @@ given where due.
 // Uses std new and delete instead if you turn it off
 #define USE_FSA_MEMORY 1
 
-// disable warning that debugging information has lines that are truncated
-// occurs in stl headers
-#if defined(WIN32) && defined(_WINDOWS)
-#pragma warning(disable : 4786)
-#endif
+namespace ASV::planning {
 
 template <class T>
 class AStarState;
@@ -232,7 +228,7 @@ class AStarSearch {
       for (typename std::vector<Node *>::iterator successor =
                m_Successors.begin();
            successor != m_Successors.end(); successor++) {
-        // 	The g value for this successor ...
+        //  The g value for this successor ...
         float newg = n->g + n->m_UserState.GetCost((*successor)->m_UserState);
 
         // Now we need to find whether the node is on the open or closed lists
@@ -714,4 +710,6 @@ class AStarState {
       T &rhs) = 0;  // Returns true if this node is the same as the rhs node
 };
 
-#endif
+}  // namespace ASV::planning
+
+#endif /* STLASTAR_H */

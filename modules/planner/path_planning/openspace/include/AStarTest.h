@@ -1,42 +1,40 @@
-/*
-*******************************************************************************
-* HybridAStar.h:
-* Hybrid A star algorithm, to generate the coarse collision-free trajectory
-* This header file can be read by C++ compilers
-*
-* by Hu.ZH, Bin Li(CrossOcean.ai)
-*******************************************************************************
-*/
 
-#ifndef _HYBRIDASTAR_H_
-#define _HYBRIDASTAR_H_
 
-#include "CollisionChecking.h"
+#ifndef _ASTAR_H_
+#define _ASTAR_H_
+
 #include "modules/planner/common/include/stlastar.h"
-#include "openspacedata.h"
 
 namespace ASV::planning {
 
-class HybridAStar {};
+class external_foo {
+ public:
+  external_foo(int _a) : a(_a) { std::cout << "foo\n"; }
+  ~external_foo() = default;
+  void testfoo() {
+    ++a;
+    std::cout << "test" << a << std::endl;
+  }
+
+ private:
+  int a;
+};
 
 class HybridState4DNode {
  public:
-  double x;  // the (x,y) positions of the node
-  double y;
-
-  HybridState4DNode() : x(0), y(0) {}
-  HybridState4DNode(int px, int py) : x(px), y(py) {}
+  HybridState4DNode() : x_(0), y_(0), external_foo_(nullptr) {}
+  HybridState4DNode(int px, int py) : x_(px), y_(py), external_foo_(nullptr) {}
   // Here's the heuristic function that estimates the distance from a Node
   // to the Goal.
   float GoalDistanceEstimate(HybridState4DNode &nodeGoal) {
     // return abs(x - nodeGoal.x) + abs(y - nodeGoal.y);
-    return (x - nodeGoal.x) * (x - nodeGoal.x) +
-           (y - nodeGoal.y) * (y - nodeGoal.y);
+    return (x_ - nodeGoal.x()) * (x_ - nodeGoal.x()) +
+           (y_ - nodeGoal.y()) * (y_ - nodeGoal.y());
     // return 0;
   }  // GoalDistanceEstimate
 
   bool IsGoal(HybridState4DNode &nodeGoal) {
-    if ((x == nodeGoal.x) && (y == nodeGoal.y)) {
+    if ((x_ == nodeGoal.x()) && (y_ == nodeGoal.y())) {
       return true;
     }
 
@@ -47,37 +45,45 @@ class HybridState4DNode {
   // called AddSuccessor to give the successors to the AStar class. The A*
   // specific initialisation is done for each node internally, so here you just
   // set the state information that is specific to the application
-  bool GetSuccessors(ASV::planning::AStarSearch<HybridState4DNode> *astarsearch,
+  bool GetSuccessors(AStarSearch<HybridState4DNode> *astarsearch,
                      HybridState4DNode *parent_node) {
+    external_foo_->testfoo();
+
     int parent_x = -1;
     int parent_y = -1;
 
     if (parent_node) {
-      parent_x = parent_node->x;
-      parent_y = parent_node->y;
+      parent_x = parent_node->x();
+      parent_y = parent_node->y();
     }
-
-    HybridState4DNode NewNode;
 
     // push each possible move except allowing the search to go backwards
-
-    if ((GetMap(x - 1, y) < 9) && !((parent_x == x - 1) && (parent_y == y))) {
-      NewNode = HybridState4DNode(x - 1, y);
+    if ((GetMap(x_ - 1, y_) < 9) &&
+        !((parent_x == x_ - 1) && (parent_y == y_))) {
+      HybridState4DNode NewNode = HybridState4DNode(x_ - 1, y_);
+      NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
-    if ((GetMap(x, y - 1) < 9) && !((parent_x == x) && (parent_y == y - 1))) {
-      NewNode = HybridState4DNode(x, y - 1);
+    if ((GetMap(x_, y_ - 1) < 9) &&
+        !((parent_x == x_) && (parent_y == y_ - 1))) {
+      HybridState4DNode NewNode = HybridState4DNode(x_, y_ - 1);
+      NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
-    if ((GetMap(x + 1, y) < 9) && !((parent_x == x + 1) && (parent_y == y))) {
-      NewNode = HybridState4DNode(x + 1, y);
+    if ((GetMap(x_ + 1, y_) < 9) &&
+        !((parent_x == x_ + 1) && (parent_y == y_))) {
+      HybridState4DNode NewNode = HybridState4DNode(x_ + 1, y_);
+      NewNode.setfoo(this->external_foo_);
+
       astarsearch->AddSuccessor(NewNode);
     }
 
-    if ((GetMap(x, y + 1) < 9) && !((parent_x == x) && (parent_y == y + 1))) {
-      NewNode = HybridState4DNode(x, y + 1);
+    if ((GetMap(x_, y_ + 1) < 9) &&
+        !((parent_x == x_) && (parent_y == y_ + 1))) {
+      HybridState4DNode NewNode = HybridState4DNode(x_, y_ + 1);
+      NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
@@ -90,14 +96,14 @@ class HybridState4DNode {
   float GetCost(HybridState4DNode &successor) {
     // return (float)GetMap(successor.x, successor.y);
     // return (float)GetMap(x, y);
-    return (successor.x - x) * (successor.x - x) +
-           (successor.y - y) * (successor.y - y);
+    return (successor.x() - x_) * (successor.x() - x_) +
+           (successor.y() - y_) * (successor.y() - y_);
     // return 1;
   }  // GetCost
 
   bool IsSameState(HybridState4DNode &rhs) {
     // same state in a maze search is simply when (x,y) are the same
-    if ((x == rhs.x) && (y == rhs.y)) {
+    if ((x_ == rhs.x()) && (y_ == rhs.y())) {
       return true;
     } else {
       return false;
@@ -106,7 +112,7 @@ class HybridState4DNode {
 
   void PrintNodeInfo() {
     char str[100];
-    sprintf(str, "Node position : (%d,%d)\n", x, y);
+    sprintf(str, "Node position : (%d,%d)\n", x_, y_);
 
     std::cout << str;
   }  // PrintNodeInfo
@@ -194,9 +200,19 @@ class HybridState4DNode {
     return world_map[(y * _MAP_WIDTH) + x];
   }  // GetMap
 
+  void setfoo(external_foo *_external_foo) {
+    this->external_foo_ = _external_foo;
+  }
+
+  int x() const { return x_; }
+  int y() const { return y_; }
+
  private:
-  void testPrivate() {}
-};  // end class HybridState4DNode
+  int x_;  // the (x,y) positions of the node
+  int y_;
+  external_foo *external_foo_;
+
+};  // namespace ASV::planningclassHybridState4DNode
 
 }  // namespace ASV::planning
 

@@ -8,7 +8,7 @@
 */
 
 #include "../include/CollisionChecking.h"
-
+#include <iostream>
 using namespace ASV;
 
 int main() {
@@ -19,17 +19,67 @@ int main() {
       2.0,   // MAX_ANG_ACCEL
       -2.0,  // MIN_ANG_ACCEL
       0.2,   // MAX_CURVATURE
-      3,     // HULL_LENGTH
-      1,     // HULL_WIDTH
-      1.5,   // HULL_BACK2COG
+      4,     // HULL_LENGTH
+      2,     // HULL_WIDTH
+      2,     // HULL_BACK2COG
       3.3    // ROBOT_RADIUS
   };
-  std::vector<planning::obstacle_Vertex> Obstacles_Vertex{
-      {},
+  std::vector<planning::Obstacle_Vertex> Obstacles_Vertex{{
+      10,  // x
+      2    // y
+  }};
+  std::vector<planning::Obstacle_LineSegment> Obstacles_lS{{
+                                                               4,  // start_x
+                                                               4,  // start_y
+                                                               4,  // end_x
+                                                               -4  // end_y
+                                                           },
+                                                           {
+                                                               4,   // start_x
+                                                               -4,  // start_y
+                                                               -4,  // end_x
+                                                               -4   // end_y
+                                                           },
+                                                           {
+                                                               -4,  // start_x
+                                                               -4,  // start_y
+                                                               -4,  // end_x
+                                                               4    // end_y
+                                                           }};
+  std::vector<planning::Obstacle_Box2d> Obstacles_Box{{
+      10,  // center_x
+      10,  // center_y
+      4,   // length
+      2,   // width
+      0    // heading
+  }};
+
+  Eigen::VectorXd t(5);
+  Eigen::VectorXd x(5);
+  Eigen::VectorXd y(5);
+  Eigen::VectorXd theta(5);
+  Eigen::VectorXd speed(5);
+
+  t << 0, 1, 2, 3, 4;
+  x << 0, 0, 0.1, 0.3, -0.4;
+  y << 0, 1, 2, 3, 4;
+  theta << 0, 0.5 * M_PI, M_PI, 1.5 * M_PI, 0;
+
+  planning::OpenSpace_Trajectory _OpenSpace_Trajectory{
+      t,      // t
+      x,      // x
+      y,      // y
+      theta,  // theta
+      speed   // speed
   };
 
-  OpenSpace_Trajectory _OpenSpace_Trajectory{};
-
   planning::CollisionChecking _CollisionChecking(_collisiondata);
-  _CollisionChecking.set_Obstacles_Vertex();
+  _CollisionChecking.set_Obstacles_Vertex(Obstacles_Vertex)
+      .set_Obstacles_LineSegment(Obstacles_lS)
+      .set_Obstacles_Box2d(Obstacles_Box);
+
+  if (_CollisionChecking.InCollision(_OpenSpace_Trajectory))
+    std::cout << "collison occur!\n";
+  else
+    std::cout << "collison free\n";
 }
