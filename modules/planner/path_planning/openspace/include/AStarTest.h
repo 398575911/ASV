@@ -58,30 +58,55 @@ class HybridState4DNode {
     }
 
     // push each possible move except allowing the search to go backwards
-    if ((GetMap(x_ - 1, y_) < 9) &&
-        !((parent_x == x_ - 1) && (parent_y == y_))) {
+    // if ((GetMap(x_ - 1, y_) < 9) &&
+    //     !((parent_x == x_ - 1) && (parent_y == y_))) {
+    //   HybridState4DNode NewNode = HybridState4DNode(x_ - 1, y_);
+    //   NewNode.setfoo(this->external_foo_);
+    //   astarsearch->AddSuccessor(NewNode);
+    // }
+
+    // if ((GetMap(x_, y_ - 1) < 9) &&
+    //     !((parent_x == x_) && (parent_y == y_ - 1))) {
+    //   HybridState4DNode NewNode = HybridState4DNode(x_, y_ - 1);
+    //   NewNode.setfoo(this->external_foo_);
+    //   astarsearch->AddSuccessor(NewNode);
+    // }
+
+    // if ((GetMap(x_ + 1, y_) < 9) &&
+    //     !((parent_x == x_ + 1) && (parent_y == y_))) {
+    //   HybridState4DNode NewNode = HybridState4DNode(x_ + 1, y_);
+    //   NewNode.setfoo(this->external_foo_);
+
+    //   astarsearch->AddSuccessor(NewNode);
+    // }
+
+    // if ((GetMap(x_, y_ + 1) < 9) &&
+    //     !((parent_x == x_) && (parent_y == y_ + 1))) {
+    //   HybridState4DNode NewNode = HybridState4DNode(x_, y_ + 1);
+    //   NewNode.setfoo(this->external_foo_);
+    //   astarsearch->AddSuccessor(NewNode);
+    // }
+
+    if (GetMap(x_ - 1, y_) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_ - 1, y_);
       NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
-    if ((GetMap(x_, y_ - 1) < 9) &&
-        !((parent_x == x_) && (parent_y == y_ - 1))) {
+    if (GetMap(x_, y_ - 1) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_, y_ - 1);
       NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
-    if ((GetMap(x_ + 1, y_) < 9) &&
-        !((parent_x == x_ + 1) && (parent_y == y_))) {
+    if (GetMap(x_ + 1, y_) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_ + 1, y_);
       NewNode.setfoo(this->external_foo_);
 
       astarsearch->AddSuccessor(NewNode);
     }
 
-    if ((GetMap(x_, y_ + 1) < 9) &&
-        !((parent_x == x_) && (parent_y == y_ + 1))) {
+    if (GetMap(x_, y_ + 1) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_, y_ + 1);
       NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
