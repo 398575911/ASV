@@ -15,6 +15,20 @@
 
 namespace ASV::planning {
 
+struct HybridAStarConfig {
+  float move_length;      // length of each movement
+  float penalty_turning;  // penalty of turning
+  float penalty_reverse;  // penalty of reverse
+  float penalty_switch;   // penalty of direction switch
+};
+
+// parameters used in search algorithm (Hybrid A star)
+struct SearchConfig {
+  float move_length;    // length of each movement
+  float turning_angle;  // angle of max turning
+  float cost_map[6][6];
+};
+
 // in the Cartesian Coordinates.
 struct OpenSpace_Trajectory {
   Eigen::VectorXd t;      // time (s)

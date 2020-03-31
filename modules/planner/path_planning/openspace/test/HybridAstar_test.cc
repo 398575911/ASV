@@ -36,51 +36,52 @@ int main() {
       3.3    // ROBOT_RADIUS
   };
 
-  HybridAStar Hybrid_AStar(_collisiondata);
+  HybridAStarConfig _HybridAStarConfig{
+      1,    // move_length
+      1.5,  // penalty_turning
+      2,    // penalty_reverse
+      2,    // penalty_switch
+  };
+
+  HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
 
   Hybrid_AStar.performsearch();
 
   auto hr = Hybrid_AStar.results();
+  auto node_start = Hybrid_AStar.nodeStart();
+  auto node_end = Hybrid_AStar.nodeEnd();
 
-  // std::vector<std::pair<double, double>> x_y_ps;
-  // std::vector<std::pair<double, double>> x_y_startend;
+  std::vector<std::pair<float, float>> x_y_ps;
+  std::vector<std::pair<float, float>> x_y_startend;
 
-  // std::cout << "Displaying solution\n";
+  for (auto const& value : hr) {
+    x_y_ps.push_back(std::make_pair(std::get<0>(value), std::get<1>(value)));
+  }
 
-  // while (node) {
-  //   node->PrintNodeInfo();
-  //   x_y_ps.push_back(std::make_pair(node->x(), node->y()));
-  //   node = astarsearch.GetSolutionNext();
-  // }
+  x_y_startend.push_back(std::make_pair(node_start.x(), node_start.y()));
+  x_y_startend.push_back(std::make_pair(node_end.x(), node_end.y()));
 
-  // x_y_startend.push_back(std::make_pair(nodeStart.x(), nodeStart.y()));
-  // x_y_startend.push_back(std::make_pair(nodeEnd.x(), nodeEnd.y()));
+  int MAP_WIDTH = 20;
+  int MAP_HEIGHT = 30;
 
-  // // Once you're done with the solution you can free the nodes up
-  // astarsearch.FreeSolutionNodes();
+  Gnuplot gp;
+  gp << "set terminal x11 size 1100, 1200 0\n";
+  gp << "set title 'A star search'\n";
+  gp << "set tic scale 0\n";
+  gp << "set palette rgbformula -7,2,-7\n";  // rainbow
+  gp << "set cbrange [0:9]\n";
+  gp << "set cblabel 'obstacle'\n";
+  gp << "unset cbtics\n";
+  gp << "set xrange [0:" << MAP_WIDTH << "]\n";
+  gp << "set yrange [0:" << MAP_HEIGHT << "]\n";
 
-  // int MAP_WIDTH = 20;
-  // int MAP_HEIGHT = 30;
-
-  // Gnuplot gp;
-  // gp << "set terminal x11 size 1100, 1200 0\n";
-  // gp << "set title 'A star search'\n";
-  // gp << "set tic scale 0\n";
-  // gp << "set palette rgbformula -7,2,-7\n";  // rainbow
-  // gp << "set cbrange [0:9]\n";
-  // gp << "set cblabel 'obstacle'\n";
-  // gp << "unset cbtics\n";
-  // gp << "set xrange [0:" << MAP_WIDTH << "]\n";
-  // gp << "set yrange [0:" << MAP_HEIGHT << "]\n";
-
-  // std::vector<std::tuple<double, double, int>> x_y_z;
-  // for (int i = 0; i != MAP_WIDTH; ++i)
-  //   for (int j = 0; j != MAP_HEIGHT; ++j)
-  //     x_y_z.push_back({i, j, nodeStart.GetMap(i, j)});
-  // gp << "plot " << gp.file1d(x_y_z) << " with image notitle, "
-  //    << gp.file1d(x_y_startend) << " with points pointtype 7 notitle,"
-  //    << gp.file1d(x_y_ps) << " with points lc rgb 'black' title
-  //    'path'\n";
+  std::vector<std::tuple<float, float, int>> x_y_z;
+  for (int i = 0; i != MAP_WIDTH; ++i)
+    for (int j = 0; j != MAP_HEIGHT; ++j)
+      x_y_z.push_back({i, j, node_start.GetMap(i, j)});
+  gp << "plot " << gp.file1d(x_y_z) << " with image notitle, "
+     << gp.file1d(x_y_startend) << " with points pointtype 7 notitle,"
+     << gp.file1d(x_y_ps) << " with points lc rgb 'black' title 'path'\n ";
 
   return 0;
 }

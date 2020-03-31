@@ -41,7 +41,7 @@ void rtplotting(Gnuplot &_gp, const double *state,
 
 int main() {
   double q0[3] = {2, 2, 0};
-  double q1[3] = {-6, 8, -M_PI / 2};
+  double q1[3] = {6, -8, 0.75 * M_PI};
 
   ASV::common::math::ReedsSheppStateSpace r(3);
 

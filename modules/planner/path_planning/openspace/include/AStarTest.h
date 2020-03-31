@@ -7,23 +7,10 @@
 
 namespace ASV::planning {
 
-class external_foo {
- public:
-  external_foo(int _a) : a(_a) { std::cout << "foo\n"; }
-  ~external_foo() = default;
-  void testfoo() {
-    ++a;
-    std::cout << "test" << a << std::endl;
-  }
-
- private:
-  int a;
-};
-
 class HybridState4DNode {
  public:
-  HybridState4DNode() : x_(0), y_(0), external_foo_(nullptr) {}
-  HybridState4DNode(int px, int py) : x_(px), y_(py), external_foo_(nullptr) {}
+  HybridState4DNode() : x_(0), y_(0) {}
+  HybridState4DNode(int px, int py) : x_(px), y_(py) {}
   // Here's the heuristic function that estimates the distance from a Node
   // to the Goal.
   float GoalDistanceEstimate(HybridState4DNode &nodeGoal) {
@@ -47,8 +34,6 @@ class HybridState4DNode {
   // set the state information that is specific to the application
   bool GetSuccessors(AStarSearch<HybridState4DNode> *astarsearch,
                      HybridState4DNode *parent_node) {
-    external_foo_->testfoo();
-
     int parent_x = -1;
     int parent_y = -1;
 
@@ -61,54 +46,44 @@ class HybridState4DNode {
     // if ((GetMap(x_ - 1, y_) < 9) &&
     //     !((parent_x == x_ - 1) && (parent_y == y_))) {
     //   HybridState4DNode NewNode = HybridState4DNode(x_ - 1, y_);
-    //   NewNode.setfoo(this->external_foo_);
     //   astarsearch->AddSuccessor(NewNode);
     // }
 
     // if ((GetMap(x_, y_ - 1) < 9) &&
     //     !((parent_x == x_) && (parent_y == y_ - 1))) {
     //   HybridState4DNode NewNode = HybridState4DNode(x_, y_ - 1);
-    //   NewNode.setfoo(this->external_foo_);
     //   astarsearch->AddSuccessor(NewNode);
     // }
 
     // if ((GetMap(x_ + 1, y_) < 9) &&
     //     !((parent_x == x_ + 1) && (parent_y == y_))) {
     //   HybridState4DNode NewNode = HybridState4DNode(x_ + 1, y_);
-    //   NewNode.setfoo(this->external_foo_);
-
     //   astarsearch->AddSuccessor(NewNode);
     // }
 
     // if ((GetMap(x_, y_ + 1) < 9) &&
     //     !((parent_x == x_) && (parent_y == y_ + 1))) {
     //   HybridState4DNode NewNode = HybridState4DNode(x_, y_ + 1);
-    //   NewNode.setfoo(this->external_foo_);
     //   astarsearch->AddSuccessor(NewNode);
     // }
 
     if (GetMap(x_ - 1, y_) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_ - 1, y_);
-      NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
     if (GetMap(x_, y_ - 1) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_, y_ - 1);
-      NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
     if (GetMap(x_ + 1, y_) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_ + 1, y_);
-      NewNode.setfoo(this->external_foo_);
-
       astarsearch->AddSuccessor(NewNode);
     }
 
     if (GetMap(x_, y_ + 1) < 9) {
       HybridState4DNode NewNode = HybridState4DNode(x_, y_ + 1);
-      NewNode.setfoo(this->external_foo_);
       astarsearch->AddSuccessor(NewNode);
     }
 
@@ -225,17 +200,12 @@ class HybridState4DNode {
     return world_map[(y * _MAP_WIDTH) + x];
   }  // GetMap
 
-  void setfoo(external_foo *_external_foo) {
-    this->external_foo_ = _external_foo;
-  }
-
   int x() const { return x_; }
   int y() const { return y_; }
 
  private:
   int x_;  // the (x,y) positions of the node
   int y_;
-  external_foo *external_foo_;
 
 };  // namespace ASV::planningclassHybridState4DNode
 

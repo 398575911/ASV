@@ -34,10 +34,8 @@ int main() {
   // Create an instance of the search class...
   AStarSearch<HybridState4DNode> astarsearch;
 
-  external_foo _external_foo(1);
   // Create a start state
   HybridState4DNode nodeStart(5, 6);
-  nodeStart.setfoo(&_external_foo);
 
   // Define the goal state
   HybridState4DNode nodeEnd(11, 24);
