@@ -65,6 +65,13 @@ double Normalizeheadingangle(double _heading) noexcept {
   }
   return a - M_PI;
 }  // Normalizeheadingangle
+float fNormalizeheadingangle(float _heading) noexcept {
+  float a = std::fmod(_heading + M_PI, 2.0 * M_PI);
+  if (a < 0.0) {
+    a += (2.0 * M_PI);
+  }
+  return a - M_PI;
+}  // fNormalizeheadingangle
 
 // convert marine coordinate to cartesian coordinate
 std::tuple<double, double, double> Marine2Cart(double marine_y,

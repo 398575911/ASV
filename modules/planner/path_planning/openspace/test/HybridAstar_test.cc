@@ -40,7 +40,7 @@ int main() {
       1,    // move_length
       1.5,  // penalty_turning
       2,    // penalty_reverse
-      2,    // penalty_switch
+      3,    // penalty_switch
   };
 
   HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);

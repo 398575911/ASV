@@ -15,7 +15,7 @@
 namespace ASV::planning {
 
 // The AStar search class. UserState is the users state space type
-template <class UserState, class util_class_first>
+template <class UserState, class util_class_first, class util_class_second>
 class HybridAStarSearch {
  public:  // data
   enum {
@@ -114,7 +114,8 @@ class HybridAStarSearch {
   }
 
   // Advances search one step
-  unsigned int SearchStep(const util_class_first &_util_class_first) {
+  unsigned int SearchStep(const util_class_first &_util_class_first,
+                          const util_class_second &_util_class_second) {
     // Firstly break if the user has not initialised the search
     assert((m_State > SEARCH_STATE_NOT_INITIALISED) &&
            (m_State < SEARCH_STATE_INVALID));
@@ -186,7 +187,8 @@ class HybridAStarSearch {
       // User provides this functions and uses AddSuccessor to add each
       // successor of node 'n' to m_Successors
       bool ret = n->m_UserState.GetSuccessors(
-          this, n->parent ? &n->parent->m_UserState : NULL, _util_class_first);
+          this, n->parent ? &n->parent->m_UserState : NULL, _util_class_first,
+          _util_class_second);
 
       if (!ret) {
         typename std::vector<Node *>::iterator successor;
@@ -212,7 +214,8 @@ class HybridAStarSearch {
                m_Successors.begin();
            successor != m_Successors.end(); successor++) {
         //  The g value for this successor ...
-        float newg = n->g + n->m_UserState.GetCost((*successor)->m_UserState);
+        float newg = n->g + n->m_UserState.GetCost((*successor)->m_UserState,
+                                                   _util_class_first);
 
         // Now we need to find whether the node is on the open or closed lists
         // If it is but the node that is already on them is better (lower g)
@@ -673,26 +676,30 @@ class HybridAStarSearch {
   bool m_CancelRequest;
 };
 
-template <class UserState, class util_class_first>
+template <class UserState, class util_class_first, class util_class_second>
 class HybridAStarState {
  public:
   virtual ~HybridAStarState() {}
   virtual float GoalDistanceEstimate(
       UserState &nodeGoal) = 0;  // Heuristic function which computes the
                                  // estimated cost to the goal node
-  virtual bool IsGoal(
-      UserState &nodeGoal) = 0;  // Returns true if this node is the goal node
 
-  // Retrieves all successors to this node and adds
-  // them via astarsearch.addSuccessor()
-  virtual bool GetSuccessors(
-      HybridAStarSearch<UserState, util_class_first> *astarsearch,
-      UserState *parent_node, const util_class_first *t1) = 0;
-  virtual float GetCost(
-      UserState &successor) = 0;  // Computes the cost of travelling from this
-                                  // node to the successor node
-  virtual bool IsSameState(UserState &rhs) = 0;  // Returns true if this node is
-                                                 // the same as the rhs node
+  // Returns true if this node is the goal node
+  virtual bool IsGoal(const UserState &nodeGoal) = 0;
+
+  // Retrieves all successors to this node and adds them via
+  // astarsearch.addSuccessor()
+  virtual bool GetSuccessors(HybridAStarSearch<UserState, util_class_first,
+                                               util_class_second> *astarsearch,
+                             UserState *parent_node, const util_class_first *t1,
+                             const util_class_second *t2) = 0;
+
+  // Computes the cost of travelling from this node to the successor node
+  virtual float GetCost(const UserState &successor,
+                        const util_class_first &t1) = 0;
+
+  // Returns true if this node is the same as the rhs node
+  virtual bool IsSameState(const UserState &rhs) = 0;
 };
 
 }  // namespace ASV::planning
