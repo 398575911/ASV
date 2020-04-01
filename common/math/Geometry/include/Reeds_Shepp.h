@@ -72,66 +72,62 @@ class ReedsSheppStateSpace {
  public:
   ReedsSheppStateSpace(double turningRadius = 1.0)
       : rho_(turningRadius),
-        ZERO(10 * std::numeric_limits<double>::epsilon()),
-        RS_EPS(1e-6),
-        twopi(2. * M_PI) {}
+        ZERO_(10 * std::numeric_limits<double>::epsilon()),
+        RS_EPS_(1e-6),
+        twopi_(2. * M_PI) {}
   virtual ~ReedsSheppStateSpace() = default;
 
-  double distance(double q0[3], double q1[3]) {
+  double rs_distance(const std::array<double, 3> &q0,
+                     const std::array<double, 3> &q1) {
     return rho_ * reedsShepp(q0, q1).length();
-  }
+  }  // rs_distance
 
-  std::array<int, 5> rs_type(double q0[3], double q1[3]) {
+  std::array<int, 5> rs_type(const std::array<double, 3> &q0,
+                             const std::array<double, 3> &q1) {
     ReedsSheppPath path = reedsShepp(q0, q1);
     std::array<int, 5> types;
     for (int i = 0; i < 5; ++i) {
-      types[i] = (int(path.type_[i]));
-      // std::cout<<path.type_[i]<<std::endl;
+      types[i] = static_cast<int>(path.type_[i]);
     }
     return types;
   }  // rs_type
 
-  std::vector<std::array<double, 3> > rs_state(double q0[3], double q1[3],
+  std::vector<std::array<double, 3> > rs_state(const std::array<double, 3> &q0,
+                                               const std::array<double, 3> &q1,
                                                double step_size) {
     ReedsSheppPath path = reedsShepp(q0, q1);
     double dist = rho_ * path.length();
     std::vector<std::array<double, 3> > result;
 
     for (double seg = 0.0; seg <= dist; seg += step_size) {
-      double qnew[3] = {};
-      interpolate(q0, path, seg / rho_, qnew);
-      std::array<double, 3> temp;
-      std::copy(std::begin(qnew), std::end(qnew), std::begin(temp));
-      result.emplace_back(temp);
+      auto qnew = interpolate(q0, path, seg / rho_);
+      result.emplace_back(qnew);
     }
 
     return result;
   }  // rs_state
 
-  ReedsSheppPath reedsShepp(double x, double y, double phi) {
-    ReedsSheppPath path;
-    CSC(x, y, phi, path);
-    CCC(x, y, phi, path);
-    CCCC(x, y, phi, path);
-    CCSC(x, y, phi, path);
-    CCSCC(x, y, phi, path);
-    return path;
-  }  // reedsShepp
-
-  ReedsSheppPath reedsShepp(double q0[3], double q1[3]) {
-    double dx = q1[0] - q0[0], dy = q1[1] - q0[1], dth = q1[2] - q0[2];
-    double c = std::cos(q0[2]), s = std::sin(q0[2]);
+  ReedsSheppPath reedsShepp(const std::array<double, 3> &q0,
+                            const std::array<double, 3> &q1) {
+    double dx = q1[0] - q0[0];
+    double dy = q1[1] - q0[1];
+    double dth = q1[2] - q0[2];
+    double c = std::cos(q0[2]);
+    double s = std::sin(q0[2]);
     double x = c * dx + s * dy, y = -s * dx + c * dy;
 
     return reedsShepp(x / rho_, y / rho_, dth);
   }  // reedsShepp
 
-  void interpolate(double q0[3], ReedsSheppPath &path, double seg,
-                   double s[3]) {
+  std::array<double, 3> interpolate(const std::array<double, 3> &q0,
+                                    const ReedsSheppPath &path, double seg) {
     if (seg < 0.0) seg = 0.0;
     if (seg > path.length()) seg = path.length();
 
-    double phi, v;
+    double phi = 0.0;
+    double v = 0.0;
+
+    std::array<double, 3> s = {0.0, 0.0, 0.0};
 
     s[0] = s[1] = 0.0;
     s[2] = q0[2];
@@ -167,22 +163,34 @@ class ReedsSheppStateSpace {
 
     s[0] = s[0] * rho_ + q0[0];
     s[1] = s[1] * rho_ + q0[1];
+
+    return s;
   }  // interpolate
 
  protected:
   double rho_;  // TURNNING RADIUS
 
  private:
-  const double ZERO;
-  const double RS_EPS;
-  const double twopi;
+  const double ZERO_;
+  const double RS_EPS_;
+  const double twopi_;
+
+  ReedsSheppPath reedsShepp(double x, double y, double phi) {
+    ReedsSheppPath path;
+    CSC(x, y, phi, path);
+    CCC(x, y, phi, path);
+    CCCC(x, y, phi, path);
+    CCSC(x, y, phi, path);
+    CCSCC(x, y, phi, path);
+    return path;
+  }  // reedsShepp
 
   inline double mod2pi(double x) {
-    double v = std::fmod(x, twopi);
+    double v = std::fmod(x, twopi_);
     if (v < -M_PI)
-      v += twopi;
+      v += twopi_;
     else if (v > M_PI)
-      v -= twopi;
+      v -= twopi_;
     return v;
   }  // mod2pi
 
@@ -205,12 +213,12 @@ class ReedsSheppStateSpace {
   inline bool LpSpLp(double x, double y, double phi, double &t, double &u,
                      double &v) {
     polar(x - std::sin(phi), y - 1. + std::cos(phi), u, t);
-    if (t >= -ZERO) {
+    if (t >= -ZERO_) {
       v = mod2pi(phi - t);
-      if (v >= -ZERO) {
-        assert(std::fabs(u * std::cos(t) + std::sin(phi) - x) < RS_EPS);
-        assert(std::fabs(u * std::sin(t) - std::cos(phi) + 1 - y) < RS_EPS);
-        assert(std::fabs(mod2pi(t + v - phi)) < RS_EPS);
+      if (v >= -ZERO_) {
+        assert(std::fabs(u * std::cos(t) + std::sin(phi) - x) < RS_EPS_);
+        assert(std::fabs(u * std::sin(t) - std::cos(phi) + 1 - y) < RS_EPS_);
+        assert(std::fabs(mod2pi(t + v - phi)) < RS_EPS_);
         return true;
       }
     }
@@ -230,11 +238,11 @@ class ReedsSheppStateSpace {
       t = mod2pi(t1 + theta);
       v = mod2pi(t - phi);
       assert(std::fabs(2 * std::sin(t) + u * std::cos(t) - std::sin(phi) - x) <
-             RS_EPS);
+             RS_EPS_);
       assert(std::fabs(-2 * std::cos(t) + u * std::sin(t) + std::cos(phi) + 1 -
-                       y) < RS_EPS);
-      assert(std::fabs(mod2pi(t - v - phi)) < RS_EPS);
-      return t >= -ZERO && v >= -ZERO;
+                       y) < RS_EPS_);
+      assert(std::fabs(mod2pi(t - v - phi)) < RS_EPS_);
+      return t >= -ZERO_ && v >= -ZERO_;
     }
     return false;
   }  // LpSpRp
@@ -298,11 +306,11 @@ class ReedsSheppStateSpace {
       t = mod2pi(theta + 0.5 * u + M_PI);
       v = mod2pi(phi - t + u);
       assert(std::fabs(2 * (std::sin(t) - std::sin(t - u)) + std::sin(phi) -
-                       x) < RS_EPS);
+                       x) < RS_EPS_);
       assert(std::fabs(2 * (-std::cos(t) + std::cos(t - u)) - std::cos(phi) +
-                       1 - y) < RS_EPS);
-      assert(std::fabs(mod2pi(t - u + v - phi)) < RS_EPS);
-      return t >= -ZERO && u <= ZERO;
+                       1 - y) < RS_EPS_);
+      assert(std::fabs(mod2pi(t - u + v - phi)) < RS_EPS_);
+      return t >= -ZERO_ && u <= ZERO_;
     }
     return false;
   }  // LpRmL
@@ -370,12 +378,12 @@ class ReedsSheppStateSpace {
       tauOmega(u, -u, xi, eta, phi, t, v);
       assert(
           std::fabs(2 * (std::sin(t) - std::sin(t - u) + std::sin(t - 2 * u)) -
-                    std::sin(phi) - x) < RS_EPS);
+                    std::sin(phi) - x) < RS_EPS_);
       assert(
           std::fabs(2 * (-std::cos(t) + std::cos(t - u) - std::cos(t - 2 * u)) +
-                    std::cos(phi) + 1 - y) < RS_EPS);
-      assert(std::fabs(mod2pi(t - 2 * u - v - phi)) < RS_EPS);
-      return t >= -ZERO && v <= ZERO;
+                    std::cos(phi) + 1 - y) < RS_EPS_);
+      assert(std::fabs(mod2pi(t - 2 * u - v - phi)) < RS_EPS_);
+      return t >= -ZERO_ && v <= ZERO_;
     }
     return false;
   }  // LpRupLumRm
@@ -390,11 +398,11 @@ class ReedsSheppStateSpace {
       if (u >= -0.5 * M_PI) {
         tauOmega(u, u, xi, eta, phi, t, v);
         assert(std::fabs(4 * std::sin(t) - 2 * std::sin(t - u) - std::sin(phi) -
-                         x) < RS_EPS);
+                         x) < RS_EPS_);
         assert(std::fabs(-4 * std::cos(t) + 2 * std::cos(t - u) +
-                         std::cos(phi) + 1 - y) < RS_EPS);
-        assert(std::fabs(mod2pi(t - v - phi)) < RS_EPS);
-        return t >= -ZERO && v >= -ZERO;
+                         std::cos(phi) + 1 - y) < RS_EPS_);
+        assert(std::fabs(mod2pi(t - v - phi)) < RS_EPS_);
+        return t >= -ZERO_ && v >= -ZERO_;
       }
     }
     return false;
@@ -465,11 +473,11 @@ class ReedsSheppStateSpace {
       t = mod2pi(theta + std::atan2(r, -2.));
       v = mod2pi(phi - 0.5 * M_PI - t);
       assert(std::fabs(2 * (std::sin(t) - std::cos(t)) - u * std::sin(t) +
-                       std::sin(phi) - x) < RS_EPS);
+                       std::sin(phi) - x) < RS_EPS_);
       assert(std::fabs(-2 * (std::sin(t) + std::cos(t)) + u * std::cos(t) -
-                       std::cos(phi) + 1 - y) < RS_EPS);
-      assert(std::fabs(mod2pi(t + 0.5 * M_PI + v - phi)) < RS_EPS);
-      return t >= -ZERO && u <= ZERO && v <= ZERO;
+                       std::cos(phi) + 1 - y) < RS_EPS_);
+      assert(std::fabs(mod2pi(t + 0.5 * M_PI + v - phi)) < RS_EPS_);
+      return t >= -ZERO_ && u <= ZERO_ && v <= ZERO_;
     }
     return false;
   }  // LpRmSmLm
@@ -484,11 +492,11 @@ class ReedsSheppStateSpace {
       u = 2. - rho;
       v = mod2pi(t + 0.5 * M_PI - phi);
       assert(std::fabs(2 * std::sin(t) - std::cos(t - v) - u * std::sin(t) -
-                       x) < RS_EPS);
+                       x) < RS_EPS_);
       assert(std::fabs(-2 * std::cos(t) - std::sin(t - v) + u * std::cos(t) +
-                       1 - y) < RS_EPS);
-      assert(std::fabs(mod2pi(t + 0.5 * M_PI - v - phi)) < RS_EPS);
-      return t >= -ZERO && u <= ZERO && v <= ZERO;
+                       1 - y) < RS_EPS_);
+      assert(std::fabs(mod2pi(t + 0.5 * M_PI - v - phi)) < RS_EPS_);
+      return t >= -ZERO_ && u <= ZERO_ && v <= ZERO_;
     }
     return false;
   }  // LpRmSmRm
@@ -603,15 +611,15 @@ class ReedsSheppStateSpace {
     polar(xi, eta, rho, theta);
     if (rho >= 2.) {
       u = 4. - std::sqrt(rho * rho - 4.);
-      if (u <= ZERO) {
+      if (u <= ZERO_) {
         t = mod2pi(std::atan2((4 - u) * xi - 2 * eta, -2 * xi + (u - 4) * eta));
         v = mod2pi(t - phi);
         assert(std::fabs(4 * std::sin(t) - 2 * std::cos(t) - u * std::sin(t) -
-                         std::sin(phi) - x) < RS_EPS);
+                         std::sin(phi) - x) < RS_EPS_);
         assert(std::fabs(-4 * std::cos(t) - 2 * std::sin(t) + u * std::cos(t) +
-                         std::cos(phi) + 1 - y) < RS_EPS);
-        assert(std::fabs(mod2pi(t - v - phi)) < RS_EPS);
-        return t >= -ZERO && v >= -ZERO;
+                         std::cos(phi) + 1 - y) < RS_EPS_);
+        assert(std::fabs(mod2pi(t - v - phi)) < RS_EPS_);
+        return t >= -ZERO_ && v >= -ZERO_;
       }
     }
     return false;

@@ -12,9 +12,6 @@
 #include <iostream>
 #include "common/plotting/include/gnuplot-iostream.h"
 
-constexpr int DEBUG_LISTS = 0;
-constexpr int DEBUG_LIST_LENGTHS_ONLY = 0;
-
 using namespace ASV;
 
 planning::CollisionData _collisiondata{
@@ -23,10 +20,10 @@ planning::CollisionData _collisiondata{
     -3.0,  // MIN_ACCEL
     2.0,   // MAX_ANG_ACCEL
     -2.0,  // MIN_ANG_ACCEL
-    0.2,   // MAX_CURVATURE
+    0.3,   // MAX_CURVATURE
     4,     // HULL_LENGTH
     2,     // HULL_WIDTH
-    2,     // HULL_BACK2COG
+    1,     // HULL_BACK2COG
     3.3    // ROBOT_RADIUS
 };
 
@@ -61,80 +58,115 @@ void rtplotting_bestpath(
     xy_pts_A.push_back(std::make_pair(state.at(0), state.at(1)));
 
     //
-    _gp << "set object " + std::to_string(i) + " polygon from";
+    _gp << "set object " + std::to_string(i + 1) + " polygon from";
     for (int j = 0; j != 4; ++j) {
       _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
     }
     _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
-    _gp << "set object " + std::to_string(i) +
+    _gp << "set object " + std::to_string(i + 1) +
                " fc rgb 'blue' fillstyle solid 0.2 noborder\n";
   }
 
-  // trajectory
+  // obstacle (box)
+  for (std::size_t i = 0; i != Obstacles_Box2d.size(); ++i) {
+    ASV::common::math::Box2d ob_box(
+        (Eigen::Vector2d() << Obstacles_Box2d[i].center_x,
+         Obstacles_Box2d[i].center_y)
+            .finished(),
+        Obstacles_Box2d[i].heading, Obstacles_Box2d[i].length,
+        Obstacles_Box2d[i].width);
+    auto allcorners = ob_box.GetAllCorners();
+
+    //
+    _gp << "set object " + std::to_string(i + trajectory.size() + 1) +
+               " polygon from";
+    for (int j = 0; j != 4; ++j) {
+      _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
+    }
+    _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
+    _gp << "set object " + std::to_string(i + trajectory.size() + 1) +
+               " fc rgb '#000000' fillstyle solid lw 0\n";
+  }
+
   _gp << "plot ";
+  // trajectory
   _gp << _gp.file1d(xy_pts_A)
       << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
          "pointsize 1 title 'best path',";
 
-  // obstacle
+  // obstacle (vertex)
   xy_pts_A.clear();
-  // for (std::size_t i = 0; i != _cart_obstacle_x.size(); ++i) {
-  //   xy_pts_A.push_back(
-  //       std::make_pair(-_cart_obstacle_y[i], _cart_obstacle_x[i]));
-  // }
-  // _gp << _gp.file1d(xy_pts_A)
-  //     << " with points pt 9 ps 3 lc rgb '#2166AC' title 'obstacles', ";
+  for (std::size_t i = 0; i != Obstacles_Vertex.size(); ++i) {
+    xy_pts_A.push_back(
+        std::make_pair(Obstacles_Vertex[i].x, Obstacles_Vertex[i].y));
+  }
+  _gp << _gp.file1d(xy_pts_A)
+      << " with points pt 9 ps 3 lc rgb '#000000' title 'obstacles_v', ";
 
-  _gp.flush();
+  // obstacle (Line Segment)
+  for (std::size_t i = 0; i != Obstacles_LineSegment.size(); ++i) {
+    xy_pts_A.clear();
+    xy_pts_A.push_back(std::make_pair(Obstacles_LineSegment[i].start_x,
+                                      Obstacles_LineSegment[i].start_y));
+    xy_pts_A.push_back(std::make_pair(Obstacles_LineSegment[i].end_x,
+                                      Obstacles_LineSegment[i].end_y));
+    _gp << _gp.file1d(xy_pts_A)
+        << " with linespoints linetype 1 lw 2 lc rgb '#000000' pointtype 7 "
+           "pointsize 1 title 'obstacles_l', ";
+  }
+  _gp << "\n";
+
+  // _gp.flush();
 
 }  // rtplotting_bestpath
 
 // Main
 int main() {
   planning::HybridAStarConfig _HybridAStarConfig{
-      1,    // move_length
-      1.5,  // penalty_turning
-      2,    // penalty_reverse
-      3,    // penalty_switch
+      0.5,  // move_length
+      1.2,  // penalty_turning
+      1.5,  // penalty_reverse
+      2,    // penalty_switch
+            // 5,    // num_interpolate
   };
 
   // obstacles
   std::vector<planning::Obstacle_Vertex> Obstacles_Vertex{{
       10,  // x
-      2    // y
+      4    // y
   }};
   std::vector<planning::Obstacle_LineSegment> Obstacles_lS{{
-                                                               4,  // start_x
-                                                               4,  // start_y
-                                                               4,  // end_x
-                                                               -4  // end_y
+                                                               10,  // start_x
+                                                               10,  // start_y
+                                                               10,  // end_x
+                                                               20   // end_y
                                                            },
                                                            {
-                                                               4,   // start_x
-                                                               -4,  // start_y
-                                                               -4,  // end_x
-                                                               -4   // end_y
+                                                               10,   // start_x
+                                                               20,   // start_y
+                                                               -10,  // end_x
+                                                               20    // end_y
                                                            },
                                                            {
-                                                               -4,  // start_x
-                                                               -4,  // start_y
-                                                               -4,  // end_x
-                                                               4    // end_y
+                                                               -10,  // start_x
+                                                               20,   // start_y
+                                                               -10,  // end_x
+                                                               10    // end_y
                                                            }};
   std::vector<planning::Obstacle_Box2d> Obstacles_Box{{
       10,  // center_x
       10,  // center_y
       4,   // length
-      2,   // width
+      1,   // width
       0    // heading
   }};
 
-  float start_x = 5;
-  float start_y = 6;
+  float start_x = 0;
+  float start_y = 0;
   float start_theta = 0;
-  float end_x = 11;
-  float end_y = 24;
-  float end_theta = 0;
+  float end_x = 10;
+  float end_y = 0;
+  float end_theta = 0.0 * M_PI;
 
   planning::HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
   Hybrid_AStar.update_obstacles(Obstacles_Vertex, Obstacles_lS, Obstacles_Box)
@@ -145,8 +177,11 @@ int main() {
   auto hr = Hybrid_AStar.hybridastar_trajecotry();
 
   Gnuplot gp;
-  gp << "set terminal x11 size 1100, 1200 0\n";
+  gp << "set terminal x11 size 1100, 1100 0\n";
   gp << "set title 'A star search'\n";
+  gp << "set xrange [-20:20]\n";
+  gp << "set yrange [-20:20]\n";
+  gp << "set size ratio -1\n";
 
   rtplotting_bestpath(gp, hr, Obstacles_Vertex, Obstacles_lS, Obstacles_Box);
 

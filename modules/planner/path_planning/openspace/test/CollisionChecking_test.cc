@@ -21,28 +21,28 @@ int main() {
       0.2,   // MAX_CURVATURE
       4,     // HULL_LENGTH
       2,     // HULL_WIDTH
-      2,     // HULL_BACK2COG
+      1,     // HULL_BACK2COG
       3.3    // ROBOT_RADIUS
   };
   std::vector<planning::Obstacle_Vertex> Obstacles_Vertex{{
       10,  // x
-      2    // y
+      4    // y
   }};
   std::vector<planning::Obstacle_LineSegment> Obstacles_lS{{
                                                                4,  // start_x
                                                                4,  // start_y
                                                                4,  // end_x
-                                                               -4  // end_y
+                                                               8   // end_y
                                                            },
                                                            {
                                                                4,   // start_x
-                                                               -4,  // start_y
+                                                               8,   // start_y
                                                                -4,  // end_x
-                                                               -4   // end_y
+                                                               8    // end_y
                                                            },
                                                            {
                                                                -4,  // start_x
-                                                               -4,  // start_y
+                                                               8,   // start_y
                                                                -4,  // end_x
                                                                4    // end_y
                                                            }};
@@ -50,7 +50,7 @@ int main() {
       10,  // center_x
       10,  // center_y
       4,   // length
-      2,   // width
+      1,   // width
       0    // heading
   }};
 
@@ -59,9 +59,9 @@ int main() {
   Eigen::VectorXd theta(5);
 
   std::vector<std::array<double, 3>> _OpenSpace_Trajectory;
-  x << 0, 0, 0.1, 0.3, -0.4;
-  y << 0, 1, 2, 3, 4;
-  theta << 0, 0.5 * M_PI, M_PI, 1.5 * M_PI, 0;
+  x << 0, 1, 2, 3, 4;
+  y << 0, 0, 0, 1.73e-7, 0;
+  theta << 0, 0, 0, 8.7e-8, 0;
 
   for (int i = 0; i != x.size(); ++i)
     _OpenSpace_Trajectory.push_back({x(i), y(i), theta(i)});

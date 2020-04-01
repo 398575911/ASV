@@ -20,6 +20,7 @@ struct HybridAStarConfig {
   float penalty_turning;  // penalty of turning
   float penalty_reverse;  // penalty of reverse
   float penalty_switch;   // penalty of direction switch
+  // unsigned num_interpolate;  // # of interpolation of each movement
 };
 
 // parameters used in search algorithm (Hybrid A star)

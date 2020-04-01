@@ -292,10 +292,11 @@ class Box2d {
     }
     auto p_start = line_segment.start();
     auto p_end = line_segment.end();
-    if (std::fmax(p_start(0), p_end(0)) < min_x() ||
-        std::fmin(p_start(0), p_end(0)) > max_x() ||
-        std::fmax(p_start(1), p_end(1)) < min_y() ||
-        std::fmin(p_start(1), p_end(1)) > max_y()) {
+
+    if ((std::fmax(p_start(0), p_end(0)) < min_x()) ||
+        (std::fmin(p_start(0), p_end(0)) > max_x()) ||
+        (std::fmax(p_start(1), p_end(1)) < min_y()) ||
+        (std::fmin(p_start(1), p_end(1)) > max_y())) {
       return false;
     }
     return DistanceTo(line_segment) <= kMathEpsilon;

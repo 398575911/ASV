@@ -18,8 +18,7 @@
 
 namespace ASV::planning {
 
-constexpr int DEBUG_LISTS = 0;
-constexpr int DEBUG_LIST_LENGTHS_ONLY = 0;
+constexpr int DEBUG_LISTS = 1;
 
 class HybridState4DNode {
   using HybridAStar_Search =
@@ -50,15 +49,20 @@ class HybridState4DNode {
   // Here's the heuristic function that estimates the distance from a Node
   // to the Goal.
   float GoalDistanceEstimate(const HybridState4DNode &nodeGoal) {
-    // return abs(x - nodeGoal.x) + abs(y - nodeGoal.y);
+    return std::abs(x_ - nodeGoal.x()) + std::abs(y_ - nodeGoal.y()) +
+           10 * std::abs(ASV::common::math::fNormalizeheadingangle(
+                    theta_ - nodeGoal.theta()));
 
-    return (x_ - nodeGoal.x()) * (x_ - nodeGoal.x()) +
-           (y_ - nodeGoal.y()) * (y_ - nodeGoal.y());
-    // return 0;
   }  // GoalDistanceEstimate
 
   bool IsGoal(const HybridState4DNode &nodeGoal) {
-    return IsSameState(nodeGoal);
+    if ((std::abs(x_ - nodeGoal.x()) <= 1) &&
+        (std::abs(y_ - nodeGoal.y()) <= 1) &&
+        (std::abs(ASV::common::math::fNormalizeheadingangle(
+             theta_ - nodeGoal.theta())) < 0.1)) {
+      return true;
+    }
+    return false;
   }  // IsGoal
 
   // This generates the successors to the given Node.
@@ -68,7 +72,6 @@ class HybridState4DNode {
                      const CollisionChecking &collision_checking) {
     float L = search_config.move_length;
     float max_turn = search_config.turning_angle;
-
     auto move_step = update_movement_step(L, max_turn, this->theta_);
 
     // push each possible move except allowing the search to go backwards
@@ -80,10 +83,18 @@ class HybridState4DNode {
           this->theta_ + move_at_type_i(2));
       MovementType new_type = static_cast<MovementType>(i);
 
-      if (!collision_checking.InCollision(new_x, new_x, new_theta)) {
-        HybridState4DNode NewNode =
-            HybridState4DNode(new_x, new_y, new_theta, new_type);
-        astarsearch->AddSuccessor(NewNode);
+      HybridState4DNode NewNode =
+          HybridState4DNode(new_x, new_y, new_theta, new_type);
+
+      if (parent_node) {
+        if (!(collision_checking.InCollision(new_x, new_y, new_theta) ||
+              Issamestate(*parent_node, NewNode))) {
+          astarsearch->AddSuccessor(NewNode);
+        }
+      } else {
+        if (!collision_checking.InCollision(new_x, new_y, new_theta)) {
+          astarsearch->AddSuccessor(NewNode);
+        }
       }
     }
 
@@ -91,16 +102,12 @@ class HybridState4DNode {
   }  // GetSuccessors
 
   // (g value) given this node, what does it cost to move to successor.
-  // In the case of our map the answer is the map terrain value at this node
-  // since that is conceptually where we're moving
   float GetCost(const HybridState4DNode &successor,
                 const SearchConfig &_SearchConfig) {
     int current_type = static_cast<int>(this->type_);
     int successor_type = static_cast<int>(successor.type());
-    return _SearchConfig.cost_map[current_type][successor_type];
 
-    // return (successor.x() - x_) * (successor.x() - x_) +
-    //        (successor.y() - y_) * (successor.y() - y_);
+    return _SearchConfig.cost_map[current_type][successor_type];
 
   }  // GetCost
 
@@ -108,14 +115,16 @@ class HybridState4DNode {
     // same state in a maze search is simply when (x,y) are the same
     if ((std::abs(x_ - rhs.x()) <= 0.05) && (std::abs(y_ - rhs.y()) < 0.05) &&
         (std::abs(ASV::common::math::fNormalizeheadingangle(
-             theta_ - rhs.theta())) < 0.01)) {
+             theta_ - rhs.theta())) < 0.01) &&
+        (type_ == rhs.type())) {
       return true;
     }
     return false;
   }  // IsSameState
 
   void PrintNodeInfo() {
-    std::cout << "Node position : " << x_ << ", " << y_;
+    std::cout << "Node position : " << x_ << ", " << y_ << ", " << theta_
+              << ", " << type_ << std::endl;
   }  // PrintNodeInfo
 
  private:
@@ -160,6 +169,17 @@ class HybridState4DNode {
     return movement_step;
   }  // update_movement_step
 
+  bool Issamestate(const HybridState4DNode &lhs, const HybridState4DNode &rhs) {
+    // same state in a maze search is simply when (x,y) are the same
+    if ((std::abs(lhs.x() - rhs.x()) <= 0.05) &&
+        (std::abs(lhs.y() - rhs.y()) <= 0.05) &&
+        (std::abs(ASV::common::math::fNormalizeheadingangle(
+             lhs.theta() - rhs.theta())) < 0.01)) {
+      return true;
+    }
+    return false;
+  }  // Issamestate
+
 };  // end class HybridState4DNode
 
 class HybridAStar {
@@ -169,8 +189,16 @@ class HybridAStar {
  public:
   HybridAStar(const CollisionData &collisiondata,
               const HybridAStarConfig &hybridastarconfig)
-      : collision_checker_(collisiondata),
-        rscurve_(1.0 / collisiondata.MAX_CURVATURE) {
+      : startpoint_({0, 0, 0}),
+        endpoint_({0, 0, 0}),
+        collision_checker_(collisiondata),
+        rscurve_(1.0 / collisiondata.MAX_CURVATURE),
+        searchconfig_({
+            0,     // move_length
+            0,     // turning_angle
+            {{0}}  // cost_map
+        }),
+        astarsearch_(3000) {
     searchconfig_ = GenerateSearchConfig(collisiondata, hybridastarconfig);
   }
   virtual ~HybridAStar() = default;
@@ -186,15 +214,17 @@ class HybridAStar {
   }  // update_obstacles
 
   // update the start and ending points
-  void setup_start_end(const float start_x, const float start_y,
-                       const float start_theta, const float end_x,
-                       const float end_y, const float end_theta) {
+  HybridAStar &setup_start_end(const float start_x, const float start_y,
+                               const float start_theta, const float end_x,
+                               const float end_y, const float end_theta) {
+    startpoint_ = {start_x, start_y, start_theta};
+    endpoint_ = {end_x, end_y, end_theta};
+
     HybridState4DNode nodeStart(start_x, start_y, start_theta);
     HybridState4DNode nodeEnd(end_x, end_y, end_theta);
     astarsearch_.SetStartAndGoalStates(nodeStart, nodeEnd);
-  }
-
-  auto hybridastar_trajecotry() const { return hybridastar_trajecotry_; }
+    return *this;
+  }  // setup_start_end
 
   void performsearch() {
     unsigned int SearchState;
@@ -214,8 +244,7 @@ class HybridAStar {
         HybridState4DNode *p = astarsearch_.GetOpenListStart();
         while (p) {
           len++;
-          if constexpr (DEBUG_LIST_LENGTHS_ONLY == 0)
-            ((HybridState4DNode *)p)->PrintNodeInfo();
+          ((HybridState4DNode *)p)->PrintNodeInfo();
           p = astarsearch_.GetOpenListNext();
         }
 
@@ -227,7 +256,7 @@ class HybridAStar {
         p = astarsearch_.GetClosedListStart();
         while (p) {
           len++;
-          if constexpr (DEBUG_LIST_LENGTHS_ONLY == 0) p->PrintNodeInfo();
+          p->PrintNodeInfo();
           p = astarsearch_.GetClosedListNext();
         }
 
@@ -255,7 +284,6 @@ class HybridAStar {
     } else if (SearchState == HybridAStar_Search::SEARCH_STATE_FAILED) {
       std::cout << "Search terminated. Did not find goal state\n";
     }
-
     // Display the number of loops the search went through
     std::cout << "SearchSteps : " << SearchSteps << "\n";
 
@@ -263,7 +291,17 @@ class HybridAStar {
 
   }  // performsearch
 
+  auto hybridastar_trajecotry() const noexcept {
+    return hybridastar_trajecotry_;
+  }  // hybridastar_trajecotry
+
+  std::array<float, 3> startpoint() const noexcept { return startpoint_; }
+  std::array<float, 3> endpoint() const noexcept { return endpoint_; }
+
  private:
+  std::array<float, 3> startpoint_;
+  std::array<float, 3> endpoint_;
+
   CollisionChecking collision_checker_;
   ASV::common::math::ReedsSheppStateSpace rscurve_;
 
@@ -307,7 +345,19 @@ class HybridAStar {
     return searchconfig;
   }  // GenerateSearchConfig
 
-};  // end class HybridAStar
+  void RSCurveCollisionFree(float rs_x, float rs_y, float rs_theta) {
+    std::array<double, 3> rs_start = {(double)rs_x, (double)rs_y,
+                                      (double)rs_theta};
+
+    std::array<double, 3> rs_end = {static_cast<double>(endpoint_[0]),
+                                    static_cast<double>(endpoint_[1]),
+                                    static_cast<double>(endpoint_[2])};
+
+    auto finalpath = rscurve_.rs_state(rs_start, rs_end, 0.2);
+
+  }  // RSCurveCollisionFree
+
+};  // namespace ASV::planning
 
 }  // namespace ASV::planning
 

@@ -55,8 +55,9 @@ class CollisionChecking {
     // check vertex
     for (auto const &vertex : Obstacles_Vertex_) {
       if (ego_box.IsPointIn(
-              (Eigen::Vector2d() << vertex.x, vertex.y).finished()))
+              (Eigen::Vector2d() << vertex.x, vertex.y).finished())) {
         return true;
+      }
     }
     // check legement
     for (auto const &legment_para : Obstacles_LineSegment_) {
@@ -64,16 +65,18 @@ class CollisionChecking {
               (Eigen::Vector2d() << legment_para.start_x, legment_para.start_y)
                   .finished(),
               (Eigen::Vector2d() << legment_para.end_x, legment_para.end_y)
-                  .finished())))
+                  .finished()))) {
         return true;
+      }
     }
     // check box
     for (auto const &box_para : Obstacles_Box2d_) {
       if (ego_box.HasOverlap(ASV::common::math::Box2d(
               (Eigen::Vector2d() << box_para.center_x, box_para.center_y)
                   .finished(),
-              box_para.heading, box_para.length, box_para.width)))
+              box_para.heading, box_para.length, box_para.width))) {
         return true;
+      }
     }
     return false;
   }  // InCollision
