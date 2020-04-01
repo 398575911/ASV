@@ -71,50 +71,20 @@ class HybridState4DNode {
 
     auto move_step = update_movement_step(L, max_turn, this->theta_);
 
-    // for (int i = 0; i != 6; ++i) {
-    //   if () {
-    //     auto move_at_type_i = move_step.col(i);
-    //     float new_x = this->x_ + move_at_type_i(0);
-    //     float new_y = this->y_ + move_at_type_i(1);
-    //     float new_theta = ASV::common::math::fNormalizeheadingangle(
-    //         this->theta_ + move_at_type_i(2));
-    //     MovementType new_type = static_cast<MovementType>(i);
-    //     HybridState4DNode NewNode =
-    //         HybridState4DNode(new_x, new_y, new_theta, new_type);
-    //     astarsearch->AddSuccessor(NewNode);
-    //   }
-    // }
-
     // push each possible move except allowing the search to go backwards
+    for (int i = 0; i != 6; ++i) {
+      auto move_at_type_i = move_step.col(i);
+      float new_x = this->x_ + move_at_type_i(0);
+      float new_y = this->y_ + move_at_type_i(1);
+      float new_theta = ASV::common::math::fNormalizeheadingangle(
+          this->theta_ + move_at_type_i(2));
+      MovementType new_type = static_cast<MovementType>(i);
 
-    int x_int = static_cast<int>(x_);
-    int y_int = static_cast<int>(y_);
-
-    if (GetMap(x_int - 1, y_int) < 9) {
-      HybridState4DNode NewNode =
-          HybridState4DNode(x_int - 1, y_int, 0, STRAIGHT_FORWARD);
-
-      astarsearch->AddSuccessor(NewNode);
-    }
-
-    if (GetMap(x_int, y_int - 1) < 9) {
-      HybridState4DNode NewNode =
-          HybridState4DNode(x_int, y_int - 1, 0, STRAIGHT_FORWARD);
-
-      astarsearch->AddSuccessor(NewNode);
-    }
-
-    if (GetMap(x_int + 1, y_int) < 9) {
-      HybridState4DNode NewNode =
-          HybridState4DNode(x_int + 1, y_int, 0, STRAIGHT_FORWARD);
-
-      astarsearch->AddSuccessor(NewNode);
-    }
-
-    if (GetMap(x_int, y_int + 1) < 9) {
-      HybridState4DNode NewNode =
-          HybridState4DNode(x_int, y_int + 1, 0, STRAIGHT_FORWARD);
-      astarsearch->AddSuccessor(NewNode);
+      if (!collision_checking.InCollision(new_x, new_x, new_theta)) {
+        HybridState4DNode NewNode =
+            HybridState4DNode(new_x, new_y, new_theta, new_type);
+        astarsearch->AddSuccessor(NewNode);
+      }
     }
 
     return true;
@@ -125,80 +95,28 @@ class HybridState4DNode {
   // since that is conceptually where we're moving
   float GetCost(const HybridState4DNode &successor,
                 const SearchConfig &_SearchConfig) {
-    // int current_type = static_cast<int>(this->type_);
-    // int successor_type = static_cast<int>(successor.type());
+    int current_type = static_cast<int>(this->type_);
+    int successor_type = static_cast<int>(successor.type());
+    return _SearchConfig.cost_map[current_type][successor_type];
 
-    // return _SearchConfig.cost_map[current_type][successor_type];
+    // return (successor.x() - x_) * (successor.x() - x_) +
+    //        (successor.y() - y_) * (successor.y() - y_);
 
-    // auto successor_type = successor.type();
-
-    return (successor.x() - x_) * (successor.x() - x_) +
-           (successor.y() - y_) * (successor.y() - y_);
-
-    // return _G;
   }  // GetCost
 
   bool IsSameState(const HybridState4DNode &rhs) {
     // same state in a maze search is simply when (x,y) are the same
-    if ((std::abs(x_ - rhs.x()) <= 0.1) && (std::abs(y_ - rhs.y()) < 0.1) &&
+    if ((std::abs(x_ - rhs.x()) <= 0.05) && (std::abs(y_ - rhs.y()) < 0.05) &&
         (std::abs(ASV::common::math::fNormalizeheadingangle(
-             theta_ - rhs.theta())) < 0.1)) {
+             theta_ - rhs.theta())) < 0.01)) {
       return true;
     }
     return false;
-
   }  // IsSameState
 
   void PrintNodeInfo() {
     std::cout << "Node position : " << x_ << ", " << y_;
   }  // PrintNodeInfo
-
-  static int GetMap(int x, int y) {
-    constexpr static int _MAP_WIDTH = 20;
-    constexpr static int _MAP_HEIGHT = 30;
-
-    constexpr static int world_map[_MAP_WIDTH * _MAP_HEIGHT] = {
-
-        // 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 00
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 9, 1,  // 01
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 9, 1, 1,  // 02
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 9, 1, 1,  // 03
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 9, 1, 1,  // 04
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1,  // 05
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1,  // 06
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 9, 9, 1,  // 07
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1,  // 08
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 9, 1, 1, 1, 9, 1, 1, 9, 9, 1,  // 09
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1,  // 10
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1,  // 11
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 9, 1, 1,  // 12
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 9, 1, 1,  // 13
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 9, 1, 1,  // 14
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1,  // 15
-        1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 9, 9, 9, 1, 1, 1, 1, 1,  // 16
-        1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 1, 1, 9, 9, 9,  // 17
-        1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1,  // 18
-        1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 9, 1,  // 19
-        1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 9, 9, 9, 1,  // 20
-        1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1,  // 21
-        9, 9, 9, 9, 9, 9, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 9, 1, 1, 1,  // 22
-        1, 1, 9, 1, 1, 1, 1, 9, 9, 9, 9, 1, 1, 9, 1, 1, 1, 1, 1, 1,  // 23
-        1, 1, 9, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 24
-        1, 9, 9, 9, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1,  // 25
-        1, 1, 9, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 9, 9, 1, 1, 1, 9, 1,  // 26
-        1, 1, 9, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1,  // 27
-        1, 1, 1, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 1, 1, 1, 1, 1, 9, 1,  // 28
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 29
-
-    };
-
-    if (x < 0 || x >= _MAP_WIDTH || y < 0 || y >= _MAP_HEIGHT) {
-      return 9;
-    }
-
-    return world_map[(y * _MAP_WIDTH) + x];
-  }  // GetMap
 
  private:
   float x_;  // the (x,y) positions of the node
@@ -232,6 +150,7 @@ class HybridState4DNode {
         L_sin_theta * sin_varphi - L_cos_theta * one_cos_varphi;
     movement_step(2, 2) = -varphi;
 
+    // reverse
     for (int i = 3; i != 6; ++i) {
       movement_step(0, i) = -movement_step(0, i - 3);
       movement_step(1, i) = -movement_step(1, i - 3);
@@ -241,28 +160,41 @@ class HybridState4DNode {
     return movement_step;
   }  // update_movement_step
 
-};  // namespace ASV::planning
+};  // end class HybridState4DNode
 
-class HybridAStar : public CollisionChecking {
+class HybridAStar {
   using HybridAStar_Search =
       HybridAStarSearch<HybridState4DNode, SearchConfig, CollisionChecking>;
 
  public:
   HybridAStar(const CollisionData &collisiondata,
               const HybridAStarConfig &hybridastarconfig)
-      : nodeStart_(5, 6, 0),
-        nodeEnd_(11, 24, 0),
-        collision_checker_(collisiondata),
-        rscurve_(3) {
+      : collision_checker_(collisiondata),
+        rscurve_(1.0 / collisiondata.MAX_CURVATURE) {
     searchconfig_ = GenerateSearchConfig(collisiondata, hybridastarconfig);
-    astarsearch_.SetStartAndGoalStates(nodeStart_, nodeEnd_);
   }
   virtual ~HybridAStar() = default;
 
-  HybridState4DNode nodeStart() const { return nodeStart_; }
-  HybridState4DNode nodeEnd() const { return nodeEnd_; }
+  HybridAStar &update_obstacles(
+      const std::vector<Obstacle_Vertex> &Obstacles_Vertex,
+      const std::vector<Obstacle_LineSegment> &Obstacles_LineSegment,
+      const std::vector<Obstacle_Box2d> &Obstacles_Box2d) {
+    collision_checker_.set_Obstacles_Vertex(Obstacles_Vertex)
+        .set_Obstacles_LineSegment(Obstacles_LineSegment)
+        .set_Obstacles_Box2d(Obstacles_Box2d);
+    return *this;
+  }  // update_obstacles
 
-  auto results() const { return results_; }
+  // update the start and ending points
+  void setup_start_end(const float start_x, const float start_y,
+                       const float start_theta, const float end_x,
+                       const float end_y, const float end_theta) {
+    HybridState4DNode nodeStart(start_x, start_y, start_theta);
+    HybridState4DNode nodeEnd(end_x, end_y, end_theta);
+    astarsearch_.SetStartAndGoalStates(nodeStart, nodeEnd);
+  }
+
+  auto hybridastar_trajecotry() const { return hybridastar_trajecotry_; }
 
   void performsearch() {
     unsigned int SearchState;
@@ -313,7 +245,8 @@ class HybridAStar : public CollisionChecking {
 
       while (node) {
         node->PrintNodeInfo();
-        results_.push_back({node->x(), node->y(), node->theta()});
+        hybridastar_trajecotry_.push_back(
+            {node->x(), node->y(), node->theta()});
         node = astarsearch_.GetSolutionNext();
       }
 
@@ -331,14 +264,12 @@ class HybridAStar : public CollisionChecking {
   }  // performsearch
 
  private:
-  HybridState4DNode nodeStart_;
-  HybridState4DNode nodeEnd_;
   CollisionChecking collision_checker_;
   ASV::common::math::ReedsSheppStateSpace rscurve_;
 
   SearchConfig searchconfig_;
   HybridAStar_Search astarsearch_;
-  std::vector<std::tuple<float, float, float>> results_;
+  std::vector<std::array<double, 3>> hybridastar_trajecotry_;
 
   SearchConfig GenerateSearchConfig(
       const CollisionData &collisiondata,
@@ -351,7 +282,6 @@ class HybridAStar : public CollisionChecking {
     float Cs = hybridastarconfig.penalty_switch;
 
     searchconfig.move_length = L;
-
     searchconfig.turning_angle = L * collisiondata.MAX_CURVATURE;
     //
     for (int i = 0; i != 3; ++i) {

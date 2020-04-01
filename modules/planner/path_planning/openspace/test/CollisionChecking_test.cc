@@ -54,24 +54,17 @@ int main() {
       0    // heading
   }};
 
-  Eigen::VectorXd t(5);
   Eigen::VectorXd x(5);
   Eigen::VectorXd y(5);
   Eigen::VectorXd theta(5);
-  Eigen::VectorXd speed(5);
 
-  t << 0, 1, 2, 3, 4;
+  std::vector<std::array<double, 3>> _OpenSpace_Trajectory;
   x << 0, 0, 0.1, 0.3, -0.4;
   y << 0, 1, 2, 3, 4;
   theta << 0, 0.5 * M_PI, M_PI, 1.5 * M_PI, 0;
 
-  planning::OpenSpace_Trajectory _OpenSpace_Trajectory{
-      t,      // t
-      x,      // x
-      y,      // y
-      theta,  // theta
-      speed   // speed
-  };
+  for (int i = 0; i != x.size(); ++i)
+    _OpenSpace_Trajectory.push_back({x(i), y(i), theta(i)});
 
   planning::CollisionChecking _CollisionChecking(_collisiondata);
   _CollisionChecking.set_Obstacles_Vertex(Obstacles_Vertex)
