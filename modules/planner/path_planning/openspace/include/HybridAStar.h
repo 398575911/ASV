@@ -18,8 +18,6 @@
 
 namespace ASV::planning {
 
-constexpr int DEBUG_LISTS = 1;
-
 class HybridState4DNode {
   using HybridAStar_Search =
       HybridAStarSearch<HybridState4DNode, SearchConfig, CollisionChecking>;
@@ -56,10 +54,10 @@ class HybridState4DNode {
   }  // GoalDistanceEstimate
 
   bool IsGoal(const HybridState4DNode &nodeGoal) {
-    if ((std::abs(x_ - nodeGoal.x()) <= 1) &&
-        (std::abs(y_ - nodeGoal.y()) <= 1) &&
+    if ((std::abs(x_ - nodeGoal.x()) <= 0.2) &&
+        (std::abs(y_ - nodeGoal.y()) <= 0.2) &&
         (std::abs(ASV::common::math::fNormalizeheadingangle(
-             theta_ - nodeGoal.theta())) < 0.1)) {
+             theta_ - nodeGoal.theta())) < 0.03)) {
       return true;
     }
     return false;
@@ -115,8 +113,7 @@ class HybridState4DNode {
     // same state in a maze search is simply when (x,y) are the same
     if ((std::abs(x_ - rhs.x()) <= 0.05) && (std::abs(y_ - rhs.y()) < 0.05) &&
         (std::abs(ASV::common::math::fNormalizeheadingangle(
-             theta_ - rhs.theta())) < 0.01) &&
-        (type_ == rhs.type())) {
+             theta_ - rhs.theta())) < 0.01)) {
       return true;
     }
     return false;
@@ -198,7 +195,7 @@ class HybridAStar {
             0,     // turning_angle
             {{0}}  // cost_map
         }),
-        astarsearch_(3000) {
+        astarsearch_(2000) {
     searchconfig_ = GenerateSearchConfig(collisiondata, hybridastarconfig);
   }
   virtual ~HybridAStar() = default;
@@ -231,62 +228,49 @@ class HybridAStar {
     unsigned int SearchSteps = 0;
 
     do {
+      // perform a hybrid A* search
       SearchState = astarsearch_.SearchStep(searchconfig_, collision_checker_);
-
       SearchSteps++;
 
-      if constexpr (DEBUG_LISTS == 1) {
-        std::cout << "Steps:" << SearchSteps << "\n";
+      // get the closed list of nodes
+      HybridState4DNode *p = astarsearch_.GetClosedListStart();
+      std::vector<std::array<double, 3>> closedlist_trajecotry;
+      while (p) {
+        closedlist_trajecotry.push_back({p->x(), p->y(), p->theta()});
+        p = astarsearch_.GetClosedListNext();
+      }
 
-        int len = 0;
-
-        std::cout << "Open:\n";
-        HybridState4DNode *p = astarsearch_.GetOpenListStart();
-        while (p) {
-          len++;
-          ((HybridState4DNode *)p)->PrintNodeInfo();
-          p = astarsearch_.GetOpenListNext();
+      std::cout << closedlist_trajecotry.size() << std::endl;
+      // try a collision-free RS curve
+      if (!closedlist_trajecotry.empty()) {
+        hybridastar_trajecotry_ = closedlist_trajecotry;
+        auto rscurve_generated = TryRSCurve(closedlist_trajecotry.back());
+        if (!collision_checker_.InCollision(rscurve_generated)) {
+          hybridastar_trajecotry_.insert(hybridastar_trajecotry_.end(),
+                                         rscurve_generated.begin(),
+                                         rscurve_generated.end());
+          astarsearch_.CancelSearch();
+          std::cout << "find a collision free RS curve!\n";
         }
-
-        std::cout << "Open list has " << len << " nodes\n";
-
-        len = 0;
-
-        std::cout << "Closed:\n";
-        p = astarsearch_.GetClosedListStart();
-        while (p) {
-          len++;
-          p->PrintNodeInfo();
-          p = astarsearch_.GetClosedListNext();
-        }
-
-        std::cout << "Closed list has " << len << " nodes\n";
       }
 
     } while (SearchState == HybridAStar_Search::SEARCH_STATE_SEARCHING);
 
     if (SearchState == HybridAStar_Search::SEARCH_STATE_SUCCEEDED) {
-      std::cout << "Search found goal state\n";
-
       HybridState4DNode *node = astarsearch_.GetSolutionStart();
-
-      std::cout << "Displaying solution\n";
-
+      hybridastar_trajecotry_.clear();
       while (node) {
-        node->PrintNodeInfo();
         hybridastar_trajecotry_.push_back(
             {node->x(), node->y(), node->theta()});
         node = astarsearch_.GetSolutionNext();
       }
-
       // Once you're done with the solution you can free the nodes up
       astarsearch_.FreeSolutionNodes();
-    } else if (SearchState == HybridAStar_Search::SEARCH_STATE_FAILED) {
-      std::cout << "Search terminated. Did not find goal state\n";
     }
+
     // Display the number of loops the search went through
     std::cout << "SearchSteps : " << SearchSteps << "\n";
-
+    // astarsearch_.FreeSolutionNodes();
     astarsearch_.EnsureMemoryFreed();
 
   }  // performsearch
@@ -345,17 +329,15 @@ class HybridAStar {
     return searchconfig;
   }  // GenerateSearchConfig
 
-  void RSCurveCollisionFree(float rs_x, float rs_y, float rs_theta) {
-    std::array<double, 3> rs_start = {(double)rs_x, (double)rs_y,
-                                      (double)rs_theta};
-
+  std::vector<std::array<double, 3>> TryRSCurve(
+      const std::array<double, 3> &rs_start) {
     std::array<double, 3> rs_end = {static_cast<double>(endpoint_[0]),
                                     static_cast<double>(endpoint_[1]),
                                     static_cast<double>(endpoint_[2])};
 
-    auto finalpath = rscurve_.rs_state(rs_start, rs_end, 0.2);
+    return rscurve_.rs_state(rs_start, rs_end, 0.4);
 
-  }  // RSCurveCollisionFree
+  }  // TryRSCurve
 
 };  // namespace ASV::planning
 

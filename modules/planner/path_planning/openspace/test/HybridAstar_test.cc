@@ -9,9 +9,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "../include/HybridAStar.h"
+#include <chrono>
 #include <iostream>
+#include <thread>
 #include "common/plotting/include/gnuplot-iostream.h"
-
 using namespace ASV;
 
 planning::CollisionData _collisiondata{
@@ -34,38 +35,34 @@ double ego_center_local_y = 0.0;
 
 // illustrate the hybrid A* planner at a time instant
 void rtplotting_bestpath(
-    Gnuplot &_gp, const std::vector<std::array<double, 3>> &trajectory,
+    Gnuplot &_gp, const std::array<double, 3> &state,
     const std::vector<planning::Obstacle_Vertex> &Obstacles_Vertex,
     const std::vector<planning::Obstacle_LineSegment> &Obstacles_LineSegment,
     const std::vector<planning::Obstacle_Box2d> &Obstacles_Box2d) {
   std::vector<std::pair<double, double>> xy_pts_A;
 
-  for (std::size_t i = 0; i != trajectory.size(); i++) {
-    auto state = trajectory[i];
-    double cvalue = std::cos(state.at(2));
-    double svalue = std::sin(state.at(2));
-    double ego_center_x =
-        state.at(0) + cvalue * ego_center_local_x - svalue * ego_center_local_y;
-    double ego_center_y =
-        state.at(1) + svalue * ego_center_local_x + cvalue * ego_center_local_y;
+  double cvalue = std::cos(state.at(2));
+  double svalue = std::sin(state.at(2));
+  double ego_center_x =
+      state.at(0) + cvalue * ego_center_local_x - svalue * ego_center_local_y;
+  double ego_center_y =
+      state.at(1) + svalue * ego_center_local_x + cvalue * ego_center_local_y;
 
-    common::math::Box2d ego_box(
-        (Eigen::Vector2d() << ego_center_x, ego_center_y).finished(),
-        state.at(2), ego_length, ego_width);
+  common::math::Box2d ego_box(
+      (Eigen::Vector2d() << ego_center_x, ego_center_y).finished(), state.at(2),
+      ego_length, ego_width);
 
-    auto allcorners = ego_box.GetAllCorners();
+  auto allcorners = ego_box.GetAllCorners();
 
-    xy_pts_A.push_back(std::make_pair(state.at(0), state.at(1)));
+  xy_pts_A.push_back(std::make_pair(state.at(0), state.at(1)));
 
-    //
-    _gp << "set object " + std::to_string(i + 1) + " polygon from";
-    for (int j = 0; j != 4; ++j) {
-      _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
-    }
-    _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
-    _gp << "set object " + std::to_string(i + 1) +
-               " fc rgb 'blue' fillstyle solid 0.2 noborder\n";
+  //
+  _gp << "set object 1 polygon from";
+  for (int j = 0; j != 4; ++j) {
+    _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
   }
+  _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
+  _gp << "set object 1 fc rgb 'blue' fillstyle solid 0.1 noborder\n";
 
   // obstacle (box)
   for (std::size_t i = 0; i != Obstacles_Box2d.size(); ++i) {
@@ -78,13 +75,12 @@ void rtplotting_bestpath(
     auto allcorners = ob_box.GetAllCorners();
 
     //
-    _gp << "set object " + std::to_string(i + trajectory.size() + 1) +
-               " polygon from";
+    _gp << "set object " + std::to_string(i + 2) + " polygon from";
     for (int j = 0; j != 4; ++j) {
       _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
     }
     _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
-    _gp << "set object " + std::to_string(i + trajectory.size() + 1) +
+    _gp << "set object " + std::to_string(i + 2) +
                " fc rgb '#000000' fillstyle solid lw 0\n";
   }
 
@@ -120,56 +116,169 @@ void rtplotting_bestpath(
 
 }  // rtplotting_bestpath
 
+// generate map and endpoint
+void generate_obstacle_map(
+    std::vector<planning::Obstacle_Vertex> &Obstacles_Vertex,
+    std::vector<planning::Obstacle_LineSegment> &Obstacles_LS,
+    std::vector<planning::Obstacle_Box2d> &Obstacles_Box,
+    std::array<float, 3> &end_point, int type) {
+  // type:
+  // 0: parking lot
+  //
+
+  switch (type) {
+    case 0:
+      // vertex
+      Obstacles_Vertex.push_back({10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          10,  // start_x
+          10,  // start_y
+          10,  // end_x
+          20   // end_y
+      });
+      Obstacles_LS.push_back({
+          10,   // start_x
+          20,   // start_y
+          -10,  // end_x
+          20    // end_y
+      });
+      Obstacles_LS.push_back({
+          -10,  // start_x
+          20,   // start_y
+          -10,  // end_x
+          10    // end_y
+      });
+      // box
+      Obstacles_Box.push_back({
+          10,  // center_x
+          10,  // center_y
+          4,   // length
+          1,   // width
+          0    // heading
+      });
+
+      // end point
+      end_point = {20, 10, 0.0 * M_PI};
+      break;
+    case 1:
+      // vertex
+      Obstacles_Vertex.push_back({10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          1.5,  // start_x
+          0,    // start_y
+          1.5,  // end_x
+          5     // end_y
+      });
+      Obstacles_LS.push_back({
+          1.5,   // start_x
+          5,     // start_y
+          -1.5,  // end_x
+          5      // end_y
+      });
+      Obstacles_LS.push_back({
+          -1.5,  // start_x
+          5,     // start_y
+          -1.5,  // end_x
+          0      // end_y
+      });
+      // box
+      Obstacles_Box.push_back({
+          10,  // center_x
+          10,  // center_y
+          4,   // length
+          1,   // width
+          0    // heading
+      });
+
+      // end point
+      end_point = {0, 0.5, 0.5 * M_PI};
+      break;
+    case 2:
+      // vertex
+      Obstacles_Vertex.push_back({10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          0,   // start_x
+          4,   // start_y
+          24,  // end_x
+          4    // end_y
+      });
+      Obstacles_LS.push_back({
+          8,  // start_x
+          4,  // start_y
+          8,  // end_x
+          -1  // end_y
+      });
+      Obstacles_LS.push_back({
+          24,  // start_x
+          8,   // start_y
+          24,  // end_x
+          2    // end_y
+      });
+      Obstacles_LS.push_back({
+          24,  // start_x
+          -8,  // start_y
+          24,  // end_x
+          -2   // end_y
+      });
+      Obstacles_LS.push_back({
+          0,   // start_x
+          -4,  // start_y
+          20,  // end_x
+          -4   // end_y
+      });
+      Obstacles_LS.push_back({
+          16,  // start_x
+          -4,  // start_y
+          16,  // end_x
+          1    // end_y
+      });
+      // box
+      Obstacles_Box.push_back({
+          10,  // center_x
+          10,  // center_y
+          4,   // length
+          1,   // width
+          0    // heading
+      });
+
+      // end point
+      end_point = {23, 0.5, 0.0 * M_PI};
+      break;
+    default:
+      break;
+  };
+
+}  // generate_obstacle_map
+
 // Main
 int main() {
   planning::HybridAStarConfig _HybridAStarConfig{
-      0.5,  // move_length
+      1,    // move_length
       1.2,  // penalty_turning
-      1.5,  // penalty_reverse
-      2,    // penalty_switch
+      1.2,  // penalty_reverse
+      1.3,  // penalty_switch
             // 5,    // num_interpolate
   };
 
   // obstacles
-  std::vector<planning::Obstacle_Vertex> Obstacles_Vertex{{
-      10,  // x
-      4    // y
-  }};
-  std::vector<planning::Obstacle_LineSegment> Obstacles_lS{{
-                                                               10,  // start_x
-                                                               10,  // start_y
-                                                               10,  // end_x
-                                                               20   // end_y
-                                                           },
-                                                           {
-                                                               10,   // start_x
-                                                               20,   // start_y
-                                                               -10,  // end_x
-                                                               20    // end_y
-                                                           },
-                                                           {
-                                                               -10,  // start_x
-                                                               20,   // start_y
-                                                               -10,  // end_x
-                                                               10    // end_y
-                                                           }};
-  std::vector<planning::Obstacle_Box2d> Obstacles_Box{{
-      10,  // center_x
-      10,  // center_y
-      4,   // length
-      1,   // width
-      0    // heading
-  }};
+  std::vector<planning::Obstacle_Vertex> Obstacles_Vertex;
+  std::vector<planning::Obstacle_LineSegment> Obstacles_LS;
+  std::vector<planning::Obstacle_Box2d> Obstacles_Box;
+  std::array<float, 3> end_point;
+  generate_obstacle_map(Obstacles_Vertex, Obstacles_LS, Obstacles_Box,
+                        end_point, 2);
+  float end_x = end_point.at(0);
+  float end_y = end_point.at(1);
+  float end_theta = end_point.at(2);
 
   float start_x = 0;
   float start_y = 0;
-  float start_theta = 0;
-  float end_x = 10;
-  float end_y = 0;
-  float end_theta = 0.0 * M_PI;
-
+  float start_theta = 0.0 * M_PI;
   planning::HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
-  Hybrid_AStar.update_obstacles(Obstacles_Vertex, Obstacles_lS, Obstacles_Box)
+  Hybrid_AStar.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box)
       .setup_start_end(start_x, start_y, start_theta, end_x, end_y, end_theta);
 
   Hybrid_AStar.performsearch();
@@ -183,7 +292,11 @@ int main() {
   gp << "set yrange [-20:20]\n";
   gp << "set size ratio -1\n";
 
-  rtplotting_bestpath(gp, hr, Obstacles_Vertex, Obstacles_lS, Obstacles_Box);
+  for (std::size_t i = 0; i != hr.size(); ++i) {
+    rtplotting_bestpath(gp, hr[i], Obstacles_Vertex, Obstacles_LS,
+                        Obstacles_Box);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
 
   return 0;
 }

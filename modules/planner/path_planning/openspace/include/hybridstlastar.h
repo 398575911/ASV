@@ -107,7 +107,7 @@ class HybridAStarSearch {
     m_OpenList.push_back(m_Start);  // heap now unsorted
 
     // Sort back element into heap
-    push_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
+    std::push_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
 
     // Initialise counter for search steps
     m_Steps = 0;
@@ -141,7 +141,7 @@ class HybridAStarSearch {
 
     // Pop the best node (the one with the lowest f)
     Node *n = m_OpenList.front();  // get pointer to the node
-    pop_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
+    std::pop_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
     m_OpenList.pop_back();
 
     // Check for the goal, once we pop that we're done
@@ -297,7 +297,7 @@ class HybridAStarSearch {
           m_ClosedList.erase(closedlist_result);
 
           // Sort back element into heap
-          push_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
+          std::push_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
 
           // Fix thanks to ...
           // Greg Douglas <gregdouglasmail@gmail.com>
@@ -325,7 +325,7 @@ class HybridAStarSearch {
           // make_heap rather than sort_heap is an essential bug fix
           // thanks to Mike Ryynanen for pointing this out and then explaining
           // it in detail. sort_heap called on an invalid heap does not work
-          make_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
+          std::make_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
         }
 
         // New successor
@@ -337,7 +337,7 @@ class HybridAStarSearch {
           m_OpenList.push_back((*successor));
 
           // Sort back element into heap
-          push_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
+          std::push_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
         }
       }
 
