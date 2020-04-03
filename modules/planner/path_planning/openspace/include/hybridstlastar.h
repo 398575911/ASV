@@ -16,7 +16,7 @@ namespace ASV::planning {
 
 // The AStar search class. UserState is the users state space type
 template <class UserState, class util_class_first, class util_class_second,
-          class util_class_third>
+          class util_class_third = std::nullptr_t>
 class HybridAStarSearch {
  public:  // data
   enum {
@@ -85,7 +85,7 @@ class HybridAStarSearch {
 
   // Set Start and goal states
   void SetStartAndGoalStates(const UserState &Start, const UserState &Goal,
-                             const util_class_third &t3) {
+                             const util_class_third &t3 = nullptr) {
     m_CancelRequest = false;
 
     m_Start = AllocateNode();
@@ -121,7 +121,7 @@ class HybridAStarSearch {
   // Advances search one step
   unsigned int SearchStep(const util_class_first &_util_class_first,
                           const util_class_second &_util_class_second,
-                          const util_class_third &_util_class_third) {
+                          const util_class_third &_util_class_third = nullptr) {
     // Firstly break if the user has not initialised the search
     assert((m_State > SEARCH_STATE_NOT_INITIALISED) &&
            (m_State < SEARCH_STATE_INVALID));
@@ -713,14 +713,14 @@ class HybridAStarSearch {
 };
 
 template <class UserState, class util_class_first, class util_class_second,
-          class util_class_third>
+          class util_class_third = std::nullptr_t>
 class HybridAStarState {
  public:
   virtual ~HybridAStarState() {}
 
   // Heuristic function which computes the estimated cost to the goal node
   virtual float GoalDistanceEstimate(const UserState &nodeGoal,
-                                     const util_class_third &t3) = 0;
+                                     const util_class_third &t3 = nullptr) = 0;
   // Returns true if this node is the goal node
   virtual bool IsGoal(const UserState &nodeGoal) = 0;
 

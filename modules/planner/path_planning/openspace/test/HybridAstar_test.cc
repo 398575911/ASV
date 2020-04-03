@@ -592,7 +592,7 @@ int main() {
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 3;
+  int test_scenario = 2;
 
   // obstacles
   std::vector<planning::Obstacle_Vertex> Obstacles_Vertex;
@@ -608,7 +608,7 @@ int main() {
       .setup_start_end(start_point.at(0), start_point.at(1), start_point.at(2),
                        end_point.at(0), end_point.at(1), end_point.at(2));
 
-  Hybrid_AStar.performsearch();
+  Hybrid_AStar.perform_4dnode_search();
 
   std::vector<std::array<double, 3>> hr = Hybrid_AStar.hybridastar_trajecotry();
   // std::vector<std::array<double, 3>> hr = {{1, 20, 0}};
