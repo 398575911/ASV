@@ -33,36 +33,44 @@ double ego_width = _collisiondata.HULL_WIDTH;
 double ego_center_local_x = 0.5 * ego_length - _collisiondata.HULL_BACK2COG;
 double ego_center_local_y = 0.0;
 
+void plot_vessel(Gnuplot &_gp, const std::array<double, 3> &vessel_state,
+                 const int id) {
+  double cvalue = std::cos(vessel_state.at(2));
+  double svalue = std::sin(vessel_state.at(2));
+  double ego_center_x = vessel_state.at(0) + cvalue * ego_center_local_x -
+                        svalue * ego_center_local_y;
+  double ego_center_y = vessel_state.at(1) + svalue * ego_center_local_x +
+                        cvalue * ego_center_local_y;
+
+  common::math::Box2d ego_box(
+      (Eigen::Vector2d() << ego_center_x, ego_center_y).finished(),
+      vessel_state.at(2), ego_length, ego_width);
+
+  auto allcorners = ego_box.GetAllCorners();
+
+  //
+  _gp << "set object " + std::to_string(id) + " polygon from";
+  for (int j = 0; j != 4; ++j) {
+    _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
+  }
+  _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
+  _gp << "set object " + std::to_string(id) +
+             " fc rgb 'blue' fillstyle solid 0.1 noborder\n";
+}
+
 // illustrate the hybrid A* planner at a time instant
 void rtplotting_bestpath(
-    Gnuplot &_gp, const std::array<double, 3> &state,
+    Gnuplot &_gp, const std::array<double, 3> &start_point,
+    const std::array<double, 3> &end_point, const std::array<double, 3> &state,
+    const std::vector<std::array<double, 3>> &trajectory,
     const std::vector<planning::Obstacle_Vertex> &Obstacles_Vertex,
     const std::vector<planning::Obstacle_LineSegment> &Obstacles_LineSegment,
     const std::vector<planning::Obstacle_Box2d> &Obstacles_Box2d) {
   std::vector<std::pair<double, double>> xy_pts_A;
 
-  double cvalue = std::cos(state.at(2));
-  double svalue = std::sin(state.at(2));
-  double ego_center_x =
-      state.at(0) + cvalue * ego_center_local_x - svalue * ego_center_local_y;
-  double ego_center_y =
-      state.at(1) + svalue * ego_center_local_x + cvalue * ego_center_local_y;
-
-  common::math::Box2d ego_box(
-      (Eigen::Vector2d() << ego_center_x, ego_center_y).finished(), state.at(2),
-      ego_length, ego_width);
-
-  auto allcorners = ego_box.GetAllCorners();
-
-  xy_pts_A.push_back(std::make_pair(state.at(0), state.at(1)));
-
-  //
-  _gp << "set object 1 polygon from";
-  for (int j = 0; j != 4; ++j) {
-    _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
-  }
-  _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
-  _gp << "set object 1 fc rgb 'blue' fillstyle solid 0.1 noborder\n";
+  plot_vessel(_gp, start_point, 1);
+  plot_vessel(_gp, end_point, 2);
+  plot_vessel(_gp, state, 3);
 
   // obstacle (box)
   for (std::size_t i = 0; i != Obstacles_Box2d.size(); ++i) {
@@ -75,17 +83,20 @@ void rtplotting_bestpath(
     auto allcorners = ob_box.GetAllCorners();
 
     //
-    _gp << "set object " + std::to_string(i + 2) + " polygon from";
+    _gp << "set object " + std::to_string(i + 5) + " polygon from";
     for (int j = 0; j != 4; ++j) {
       _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
     }
     _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
-    _gp << "set object " + std::to_string(i + 2) +
+    _gp << "set object " + std::to_string(i + 5) +
                " fc rgb '#000000' fillstyle solid lw 0\n";
   }
 
   _gp << "plot ";
   // trajectory
+  for (const auto &ps : trajectory) {
+    xy_pts_A.push_back(std::make_pair(ps.at(0), ps.at(1)));
+  }
   _gp << _gp.file1d(xy_pts_A)
       << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
          "pointsize 1 title 'best path',";
@@ -108,11 +119,11 @@ void rtplotting_bestpath(
                                       Obstacles_LineSegment[i].end_y));
     _gp << _gp.file1d(xy_pts_A)
         << " with linespoints linetype 1 lw 2 lc rgb '#000000' pointtype 7 "
-           "pointsize 1 title 'obstacles_l', ";
+           "pointsize 1 notitle, ";
   }
   _gp << "\n";
 
-  // _gp.flush();
+  _gp.flush();
 
 }  // rtplotting_bestpath
 
@@ -121,7 +132,8 @@ void generate_obstacle_map(
     std::vector<planning::Obstacle_Vertex> &Obstacles_Vertex,
     std::vector<planning::Obstacle_LineSegment> &Obstacles_LS,
     std::vector<planning::Obstacle_Box2d> &Obstacles_Box,
-    std::array<float, 3> &end_point, int type) {
+    std::array<float, 3> &start_point, std::array<float, 3> &end_point,
+    int type) {
   // type:
   // 0: parking lot
   //
@@ -158,8 +170,10 @@ void generate_obstacle_map(
           0    // heading
       });
 
+      // start point
+      start_point = {0, 0, 0.5 * M_PI};
       // end point
-      end_point = {20, 10, 0.0 * M_PI};
+      end_point = {20, 0, 0.0 * M_PI};
       break;
     case 1:
       // vertex
@@ -192,8 +206,10 @@ void generate_obstacle_map(
           0    // heading
       });
 
+      // start point
+      start_point = {-20, -20, 0.0 * M_PI};
       // end point
-      end_point = {0, 0.5, 0.5 * M_PI};
+      end_point = {0, 1.5, 0.5 * M_PI};
       break;
     case 2:
       // vertex
@@ -243,9 +259,322 @@ void generate_obstacle_map(
           1,   // width
           0    // heading
       });
+      // start point
+      start_point = {0, 0, 0.0 * M_PI};
 
       // end point
-      end_point = {23, 0.5, 0.0 * M_PI};
+      end_point = {26, 0.5, 0.0 * M_PI};
+      break;
+    case 3:
+      // vertex
+      // Obstacles_Vertex.push_back({10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          20,  // start_x
+          25,  // start_y
+          20,  // end_x
+          40   // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          25,  // start_y
+          23,  // end_x
+          25   // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          40,  // start_y
+          40,  // end_x
+          35   // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          55,  // start_y
+          40,  // end_x
+          50   // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          55,  // start_y
+          20,  // end_x
+          65   // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          65,  // start_y
+          40,  // end_x
+          60   // end_y
+      });
+      Obstacles_LS.push_back({
+          40,  // start_x
+          60,  // start_y
+          40,  // end_x
+          50   // end_y
+      });
+      Obstacles_LS.push_back({
+          40,  // start_x
+          55,  // start_y
+          80,  // end_x
+          55   // end_y
+      });
+      Obstacles_LS.push_back({
+          100,  // start_x
+          70,   // start_y
+          90,   // end_x
+          70    // end_y
+      });
+      Obstacles_LS.push_back({
+          90,  // start_x
+          30,  // start_y
+          90,  // end_x
+          70   // end_y
+      });
+      Obstacles_LS.push_back({
+          38,  // start_x
+          76,  // start_y
+          95,  // end_x
+          76   // end_y
+      });
+      Obstacles_LS.push_back({
+          38,  // start_x
+          76,  // start_y
+          38,  // end_x
+          70   // end_y
+      });
+      Obstacles_LS.push_back({
+          38,  // start_x
+          70,  // start_y
+          20,  // end_x
+          73   // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          73,  // start_y
+          20,  // end_x
+          80   // end_y
+      });
+      Obstacles_LS.push_back({
+          38,  // start_x
+          76,  // start_y
+          20,  // end_x
+          80   // end_y
+      });
+      // box
+      Obstacles_Box.push_back({
+          4,          // center_x
+          7.5,        // center_y
+          15,         // length
+          8,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          19,         // center_x
+          7.5,        // center_y
+          15,         // length
+          8,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          60,         // center_x
+          12.5,       // center_y
+          55,         // length
+          5,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          45.5,       // center_x
+          2,          // center_y
+          15,         // length
+          4,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          5,          // center_x
+          35,         // center_y
+          10,         // length
+          20,         // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          3.5,        // center_x
+          55,         // center_y
+          15,         // length
+          7,          // width
+          0.4 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          58,         // center_x
+          30,         // center_y
+          70,         // length
+          10,         // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          83,         // center_x
+          55,         // center_y
+          7,          // length
+          10,         // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          70,          // center_x
+          57,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          65,          // center_x
+          57,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          60,          // center_x
+          57,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          56,          // center_x
+          57,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          53,          // center_x
+          57,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          50,          // center_x
+          53,          // center_y
+          4,           // length
+          3,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          60,          // center_x
+          53,          // center_y
+          4,           // length
+          3,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          44,          // center_x
+          52,          // center_y
+          6,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          67,          // center_x
+          53,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          23,         // center_x
+          42,         // center_y
+          5,          // length
+          3,          // width
+          0.4 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          30,         // center_x
+          40,         // center_y
+          4,          // length
+          2,          // width
+          0.4 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          34,         // center_x
+          39,         // center_y
+          4,          // length
+          2,          // width
+          0.4 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          70,          // center_x
+          37,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          60,          // center_x
+          37,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          40,          // center_x
+          37,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          50,          // center_x
+          37,          // center_y
+          4,           // length
+          2,           // width
+          -0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          88,         // center_x
+          38,         // center_y
+          3,          // length
+          6,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          48,         // center_x
+          74,         // center_y
+          20,         // length
+          4,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          68,         // center_x
+          74,         // center_y
+          2,          // length
+          4,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          78,         // center_x
+          74,         // center_y
+          2,          // length
+          4,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          88,         // center_x
+          74,         // center_y
+          2,          // length
+          4,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          10,         // center_x
+          74,         // center_y
+          4,          // length
+          4,          // width
+          0.3 * M_PI  // heading
+      });
+      // start point
+      start_point = {1, 20, 0.0 * M_PI};
+
+      // end point
+      end_point = {76, 60, -0.5 * M_PI};
       break;
     default:
       break;
@@ -263,38 +592,39 @@ int main() {
             // 5,    // num_interpolate
   };
 
+  int test_scenario = 3;
+
   // obstacles
   std::vector<planning::Obstacle_Vertex> Obstacles_Vertex;
   std::vector<planning::Obstacle_LineSegment> Obstacles_LS;
   std::vector<planning::Obstacle_Box2d> Obstacles_Box;
+  std::array<float, 3> start_point;
   std::array<float, 3> end_point;
   generate_obstacle_map(Obstacles_Vertex, Obstacles_LS, Obstacles_Box,
-                        end_point, 2);
-  float end_x = end_point.at(0);
-  float end_y = end_point.at(1);
-  float end_theta = end_point.at(2);
+                        start_point, end_point, test_scenario);
 
-  float start_x = 0;
-  float start_y = 0;
-  float start_theta = 0.0 * M_PI;
   planning::HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
   Hybrid_AStar.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box)
-      .setup_start_end(start_x, start_y, start_theta, end_x, end_y, end_theta);
+      .setup_start_end(start_point.at(0), start_point.at(1), start_point.at(2),
+                       end_point.at(0), end_point.at(1), end_point.at(2));
 
   Hybrid_AStar.performsearch();
 
-  auto hr = Hybrid_AStar.hybridastar_trajecotry();
-
+  std::vector<std::array<double, 3>> hr = Hybrid_AStar.hybridastar_trajecotry();
+  // std::vector<std::array<double, 3>> hr = {{1, 20, 0}};
+  // plotting
   Gnuplot gp;
   gp << "set terminal x11 size 1100, 1100 0\n";
   gp << "set title 'A star search'\n";
-  gp << "set xrange [-20:20]\n";
-  gp << "set yrange [-20:20]\n";
+  gp << "set xrange [0:100]\n";
+  gp << "set yrange [0:100]\n";
   gp << "set size ratio -1\n";
 
   for (std::size_t i = 0; i != hr.size(); ++i) {
-    rtplotting_bestpath(gp, hr[i], Obstacles_Vertex, Obstacles_LS,
-                        Obstacles_Box);
+    rtplotting_bestpath(
+        gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr[i], hr,
+        Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 

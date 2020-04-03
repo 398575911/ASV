@@ -52,7 +52,7 @@ int main() {
   }
 
   //--------------------q0 to q1 discrete point-----------------
-  auto finalpath = r.rs_state(q0, q1, 0.01);
+  auto finalpath = r.rs_state(q0, q1, 0.1);
 
   Gnuplot gp;
   gp << "set terminal x11 size 1000, 1000 1\n";

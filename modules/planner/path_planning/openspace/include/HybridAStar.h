@@ -20,7 +20,8 @@ namespace ASV::planning {
 
 class HybridState4DNode {
   using HybridAStar_Search =
-      HybridAStarSearch<HybridState4DNode, SearchConfig, CollisionChecking>;
+      HybridAStarSearch<HybridState4DNode, SearchConfig, CollisionChecking,
+                        ASV::common::math::ReedsSheppStateSpace>;
 
   enum MovementType {
     STRAIGHT_FORWARD = 0,
@@ -46,18 +47,25 @@ class HybridState4DNode {
 
   // Here's the heuristic function that estimates the distance from a Node
   // to the Goal.
-  float GoalDistanceEstimate(const HybridState4DNode &nodeGoal) {
-    return std::abs(x_ - nodeGoal.x()) + std::abs(y_ - nodeGoal.y()) +
-           10 * std::abs(ASV::common::math::fNormalizeheadingangle(
-                    theta_ - nodeGoal.theta()));
+  float GoalDistanceEstimate(
+      const HybridState4DNode &nodeGoal,
+      const ASV::common::math::ReedsSheppStateSpace &RSCurve) {
+    std::array<double, 3> _rsstart = {this->x_, this->y_, this->theta_};
+    std::array<double, 3> _rsend = {nodeGoal.x(), nodeGoal.y(),
+                                    nodeGoal.theta()};
+
+    double rsdistance = RSCurve.rs_distance(_rsstart, _rsend);
+    double l1distance =
+        std::abs(x_ - nodeGoal.x()) + std::abs(y_ - nodeGoal.y());
+    return std::max(rsdistance, l1distance);
 
   }  // GoalDistanceEstimate
 
   bool IsGoal(const HybridState4DNode &nodeGoal) {
-    if ((std::abs(x_ - nodeGoal.x()) <= 0.2) &&
-        (std::abs(y_ - nodeGoal.y()) <= 0.2) &&
+    if ((std::abs(x_ - nodeGoal.x()) <= 0.05) &&
+        (std::abs(y_ - nodeGoal.y()) <= 0.05) &&
         (std::abs(ASV::common::math::fNormalizeheadingangle(
-             theta_ - nodeGoal.theta())) < 0.03)) {
+             theta_ - nodeGoal.theta())) < 0.02)) {
       return true;
     }
     return false;
@@ -181,7 +189,8 @@ class HybridState4DNode {
 
 class HybridAStar {
   using HybridAStar_Search =
-      HybridAStarSearch<HybridState4DNode, SearchConfig, CollisionChecking>;
+      HybridAStarSearch<HybridState4DNode, SearchConfig, CollisionChecking,
+                        ASV::common::math::ReedsSheppStateSpace>;
 
  public:
   HybridAStar(const CollisionData &collisiondata,
@@ -195,7 +204,7 @@ class HybridAStar {
             0,     // turning_angle
             {{0}}  // cost_map
         }),
-        astarsearch_(2000) {
+        astarsearch_(5000) {
     searchconfig_ = GenerateSearchConfig(collisiondata, hybridastarconfig);
   }
   virtual ~HybridAStar() = default;
@@ -219,7 +228,7 @@ class HybridAStar {
 
     HybridState4DNode nodeStart(start_x, start_y, start_theta);
     HybridState4DNode nodeEnd(end_x, end_y, end_theta);
-    astarsearch_.SetStartAndGoalStates(nodeStart, nodeEnd);
+    astarsearch_.SetStartAndGoalStates(nodeStart, nodeEnd, rscurve_);
     return *this;
   }  // setup_start_end
 
@@ -229,18 +238,22 @@ class HybridAStar {
 
     do {
       // perform a hybrid A* search
-      SearchState = astarsearch_.SearchStep(searchconfig_, collision_checker_);
+      SearchState =
+          astarsearch_.SearchStep(searchconfig_, collision_checker_, rscurve_);
       SearchSteps++;
 
-      // get the closed list of nodes
-      HybridState4DNode *p = astarsearch_.GetClosedListStart();
+      // get the current node
       std::vector<std::array<double, 3>> closedlist_trajecotry;
-      while (p) {
-        closedlist_trajecotry.push_back({p->x(), p->y(), p->theta()});
-        p = astarsearch_.GetClosedListNext();
+      HybridState4DNode *current_p = astarsearch_.GetCurrentNode();
+      while (current_p) {
+        closedlist_trajecotry.push_back(
+            {current_p->x(), current_p->y(), current_p->theta()});
+        current_p = astarsearch_.GetCurrentNodePrev();
       }
+      std::reverse(closedlist_trajecotry.begin(), closedlist_trajecotry.end());
+      // for (const auto &value : closedlist_trajecotry)
+      //   std::cout << value.at(0) << " " << value.at(2) << std::endl;
 
-      std::cout << closedlist_trajecotry.size() << std::endl;
       // try a collision-free RS curve
       if (!closedlist_trajecotry.empty()) {
         hybridastar_trajecotry_ = closedlist_trajecotry;

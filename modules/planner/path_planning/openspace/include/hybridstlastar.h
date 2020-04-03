@@ -15,7 +15,8 @@
 namespace ASV::planning {
 
 // The AStar search class. UserState is the users state space type
-template <class UserState, class util_class_first, class util_class_second>
+template <class UserState, class util_class_first, class util_class_second,
+          class util_class_third>
 class HybridAStarSearch {
  public:  // data
   enum {
@@ -59,6 +60,7 @@ class HybridAStarSearch {
   // constructor just initialises private data
   HybridAStarSearch()
       : m_State(SEARCH_STATE_NOT_INITIALISED),
+        m_CurrentNode(NULL),
         m_CurrentSolutionNode(NULL),
 #if USE_FSA_MEMORY
         m_FixedSizeAllocator(1000),
@@ -69,6 +71,7 @@ class HybridAStarSearch {
 
   HybridAStarSearch(int MaxNodes)
       : m_State(SEARCH_STATE_NOT_INITIALISED),
+        m_CurrentNode(NULL),
         m_CurrentSolutionNode(NULL),
 #if USE_FSA_MEMORY
         m_FixedSizeAllocator(MaxNodes),
@@ -81,7 +84,8 @@ class HybridAStarSearch {
   void CancelSearch() { m_CancelRequest = true; }
 
   // Set Start and goal states
-  void SetStartAndGoalStates(UserState &Start, UserState &Goal) {
+  void SetStartAndGoalStates(const UserState &Start, const UserState &Goal,
+                             const util_class_third &t3) {
     m_CancelRequest = false;
 
     m_Start = AllocateNode();
@@ -98,7 +102,8 @@ class HybridAStarSearch {
     // The user only needs fill out the state information
 
     m_Start->g = 0;
-    m_Start->h = m_Start->m_UserState.GoalDistanceEstimate(m_Goal->m_UserState);
+    m_Start->h =
+        m_Start->m_UserState.GoalDistanceEstimate(m_Goal->m_UserState, t3);
     m_Start->f = m_Start->g + m_Start->h;
     m_Start->parent = 0;
 
@@ -115,7 +120,8 @@ class HybridAStarSearch {
 
   // Advances search one step
   unsigned int SearchStep(const util_class_first &_util_class_first,
-                          const util_class_second &_util_class_second) {
+                          const util_class_second &_util_class_second,
+                          const util_class_third &_util_class_third) {
     // Firstly break if the user has not initialised the search
     assert((m_State > SEARCH_STATE_NOT_INITIALISED) &&
            (m_State < SEARCH_STATE_INVALID));
@@ -133,6 +139,8 @@ class HybridAStarSearch {
     if (m_OpenList.empty() || m_CancelRequest) {
       FreeAllNodes();
       m_State = SEARCH_STATE_FAILED;
+      m_CurrentNode = NULL;
+      m_CurrentSolutionNode = NULL;
       return m_State;
     }
 
@@ -143,6 +151,8 @@ class HybridAStarSearch {
     Node *n = m_OpenList.front();  // get pointer to the node
     std::pop_heap(m_OpenList.begin(), m_OpenList.end(), HeapCompare_f());
     m_OpenList.pop_back();
+
+    m_CurrentNode = n;
 
     // Check for the goal, once we pop that we're done
     if (n->m_UserState.IsGoal(m_Goal->m_UserState)) {
@@ -270,8 +280,9 @@ class HybridAStarSearch {
 
         (*successor)->parent = n;
         (*successor)->g = newg;
-        (*successor)->h =
-            (*successor)->m_UserState.GoalDistanceEstimate(m_Goal->m_UserState);
+        (*successor)->h = (*successor)
+                              ->m_UserState.GoalDistanceEstimate(
+                                  m_Goal->m_UserState, _util_class_third);
         (*successor)->f = (*successor)->g + (*successor)->h;
 
         // Successor in closed list
@@ -427,7 +438,7 @@ class HybridAStarSearch {
     } else {
       return NULL;
     }
-  }
+  }  // GetSolutionEnd
 
   // Step solution iterator backwards
   UserState *GetSolutionPrev() {
@@ -442,7 +453,30 @@ class HybridAStarSearch {
     }
 
     return NULL;
+  }  // GetSolutionPrev
+
+  // Get current node
+  UserState *GetCurrentNode() {
+    if (m_CurrentNode) {
+      return &m_CurrentNode->m_UserState;
+    } else {
+      return NULL;
+    }
   }
+
+  UserState *GetCurrentNodePrev() {
+    if (m_CurrentNode) {
+      if (m_CurrentNode->parent) {
+        Node *parent_node = m_CurrentNode->parent;
+
+        m_CurrentNode = m_CurrentNode->parent;
+
+        return &parent_node->m_UserState;
+      }
+    }
+
+    return NULL;
+  }  // GetCurrentNodePrev
 
   // Get final cost of solution
   // Returns FLT_MAX if goal is not defined or there is no solution
@@ -658,6 +692,8 @@ class HybridAStarSearch {
   Node *m_Start;
   Node *m_Goal;
 
+  Node *m_CurrentNode;
+
   Node *m_CurrentSolutionNode;
 
 #if USE_FSA_MEMORY
@@ -676,23 +712,25 @@ class HybridAStarSearch {
   bool m_CancelRequest;
 };
 
-template <class UserState, class util_class_first, class util_class_second>
+template <class UserState, class util_class_first, class util_class_second,
+          class util_class_third>
 class HybridAStarState {
  public:
   virtual ~HybridAStarState() {}
-  virtual float GoalDistanceEstimate(
-      UserState &nodeGoal) = 0;  // Heuristic function which computes the
-                                 // estimated cost to the goal node
 
+  // Heuristic function which computes the estimated cost to the goal node
+  virtual float GoalDistanceEstimate(const UserState &nodeGoal,
+                                     const util_class_third &t3) = 0;
   // Returns true if this node is the goal node
   virtual bool IsGoal(const UserState &nodeGoal) = 0;
 
   // Retrieves all successors to this node and adds them via
   // astarsearch.addSuccessor()
-  virtual bool GetSuccessors(HybridAStarSearch<UserState, util_class_first,
-                                               util_class_second> *astarsearch,
-                             UserState *parent_node, const util_class_first *t1,
-                             const util_class_second *t2) = 0;
+  virtual bool GetSuccessors(
+      HybridAStarSearch<UserState, util_class_first, util_class_second,
+                        util_class_third> *astarsearch,
+      UserState *parent_node, const util_class_first *t1,
+      const util_class_second *t2) = 0;
 
   // Computes the cost of travelling from this node to the successor node
   virtual float GetCost(const UserState &successor,

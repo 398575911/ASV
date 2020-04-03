@@ -62,7 +62,7 @@ struct ReedsSheppPath {
                    std::fabs(x);
   }
 
-  double length() const { return totalLength_; }
+  double length() const noexcept { return totalLength_; }
   const ReedsSheppPathSegmentType *type_;
   double length_[5];
   double totalLength_;
@@ -78,7 +78,7 @@ class ReedsSheppStateSpace {
   virtual ~ReedsSheppStateSpace() = default;
 
   double rs_distance(const std::array<double, 3> &q0,
-                     const std::array<double, 3> &q1) {
+                     const std::array<double, 3> &q1) const {
     return rho_ * reedsShepp(q0, q1).length();
   }  // rs_distance
 
@@ -94,21 +94,21 @@ class ReedsSheppStateSpace {
 
   std::vector<std::array<double, 3> > rs_state(const std::array<double, 3> &q0,
                                                const std::array<double, 3> &q1,
-                                               double step_size) {
+                                               double step_size) const {
     ReedsSheppPath path = reedsShepp(q0, q1);
     double dist = rho_ * path.length();
     std::vector<std::array<double, 3> > result;
 
-    for (double seg = 0.0; seg <= dist; seg += step_size) {
-      auto qnew = interpolate(q0, path, seg / rho_);
-      result.emplace_back(qnew);
+    for (double seg = 0.0; seg < dist; seg += step_size) {
+      result.emplace_back(interpolate(q0, path, seg / rho_));
     }
+    result.emplace_back(q1);
 
     return result;
   }  // rs_state
 
   ReedsSheppPath reedsShepp(const std::array<double, 3> &q0,
-                            const std::array<double, 3> &q1) {
+                            const std::array<double, 3> &q1) const {
     double dx = q1[0] - q0[0];
     double dy = q1[1] - q0[1];
     double dth = q1[2] - q0[2];
@@ -120,7 +120,8 @@ class ReedsSheppStateSpace {
   }  // reedsShepp
 
   std::array<double, 3> interpolate(const std::array<double, 3> &q0,
-                                    const ReedsSheppPath &path, double seg) {
+                                    const ReedsSheppPath &path,
+                                    double seg) const {
     if (seg < 0.0) seg = 0.0;
     if (seg > path.length()) seg = path.length();
 
@@ -175,7 +176,7 @@ class ReedsSheppStateSpace {
   const double RS_EPS_;
   const double twopi_;
 
-  ReedsSheppPath reedsShepp(double x, double y, double phi) {
+  ReedsSheppPath reedsShepp(double x, double y, double phi) const {
     ReedsSheppPath path;
     CSC(x, y, phi, path);
     CCC(x, y, phi, path);
@@ -185,7 +186,7 @@ class ReedsSheppStateSpace {
     return path;
   }  // reedsShepp
 
-  inline double mod2pi(double x) {
+  inline double mod2pi(double x) const {
     double v = std::fmod(x, twopi_);
     if (v < -M_PI)
       v += twopi_;
@@ -194,13 +195,13 @@ class ReedsSheppStateSpace {
     return v;
   }  // mod2pi
 
-  inline void polar(double x, double y, double &r, double &theta) {
+  inline void polar(double x, double y, double &r, double &theta) const {
     r = std::sqrt(x * x + y * y);
     theta = std::atan2(y, x);
   }  // polar
 
   inline void tauOmega(double u, double v, double xi, double eta, double phi,
-                       double &tau, double &omega) {
+                       double &tau, double &omega) const {
     double delta = mod2pi(u - v), A = std::sin(u) - std::sin(delta),
            B = std::cos(u) - std::cos(delta) - 1.;
     double t1 = std::atan2(eta * A - xi * B, xi * A + eta * B),
@@ -211,7 +212,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.1 in Reeds-Shepp paper
   inline bool LpSpLp(double x, double y, double phi, double &t, double &u,
-                     double &v) {
+                     double &v) const {
     polar(x - std::sin(phi), y - 1. + std::cos(phi), u, t);
     if (t >= -ZERO_) {
       v = mod2pi(phi - t);
@@ -227,7 +228,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.2
   inline bool LpSpRp(double x, double y, double phi, double &t, double &u,
-                     double &v) {
+                     double &v) const {
     double t1, u1;
     polar(x + std::sin(phi), y - 1. - std::cos(phi), u1, t1);
     u1 = u1 * u1;
@@ -247,7 +248,7 @@ class ReedsSheppStateSpace {
     return false;
   }  // LpSpRp
 
-  void CSC(double x, double y, double phi, ReedsSheppPath &path) {
+  void CSC(double x, double y, double phi, ReedsSheppPath &path) const {
     double t, u, v, Lmin = path.length(), L;
     if (LpSpLp(x, y, phi, t, u, v) &&
         Lmin > (L = std::fabs(t) + std::fabs(u) + std::fabs(v))) {
@@ -298,7 +299,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.3 / 8.4  *** TYPO IN PAPER ***
   inline bool LpRmL(double x, double y, double phi, double &t, double &u,
-                    double &v) {
+                    double &v) const {
     double xi = x - std::sin(phi), eta = y - 1. + std::cos(phi), u1, theta;
     polar(xi, eta, u1, theta);
     if (u1 <= 4.) {
@@ -315,7 +316,7 @@ class ReedsSheppStateSpace {
     return false;
   }  // LpRmL
 
-  void CCC(double x, double y, double phi, ReedsSheppPath &path) {
+  void CCC(double x, double y, double phi, ReedsSheppPath &path) const {
     double t, u, v, Lmin = path.length(), L;
     if (LpRmL(x, y, phi, t, u, v) &&
         Lmin > (L = std::fabs(t) + std::fabs(u) + std::fabs(v))) {
@@ -370,7 +371,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.7
   inline bool LpRupLumRm(double x, double y, double phi, double &t, double &u,
-                         double &v) {
+                         double &v) const {
     double xi = x + std::sin(phi), eta = y - 1. - std::cos(phi),
            rho = 0.25 * (2. + std::sqrt(xi * xi + eta * eta));
     if (rho <= 1.) {
@@ -390,7 +391,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.8
   inline bool LpRumLumRp(double x, double y, double phi, double &t, double &u,
-                         double &v) {
+                         double &v) const {
     double xi = x + std::sin(phi), eta = y - 1. - std::cos(phi),
            rho = (20. - xi * xi - eta * eta) / 16.;
     if (rho >= 0 && rho <= 1) {
@@ -408,7 +409,7 @@ class ReedsSheppStateSpace {
     return false;
   }  // LpRumLumRp
 
-  void CCCC(double x, double y, double phi, ReedsSheppPath &path) {
+  void CCCC(double x, double y, double phi, ReedsSheppPath &path) const {
     double t, u, v, Lmin = path.length(), L;
     if (LpRupLumRm(x, y, phi, t, u, v) &&
         Lmin > (L = std::fabs(t) + 2. * std::fabs(u) + std::fabs(v))) {
@@ -464,7 +465,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.9
   inline bool LpRmSmLm(double x, double y, double phi, double &t, double &u,
-                       double &v) {
+                       double &v) const {
     double xi = x - std::sin(phi), eta = y - 1. + std::cos(phi), rho, theta;
     polar(xi, eta, rho, theta);
     if (rho >= 2.) {
@@ -484,7 +485,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.10
   inline bool LpRmSmRm(double x, double y, double phi, double &t, double &u,
-                       double &v) {
+                       double &v) const {
     double xi = x + std::sin(phi), eta = y - 1. - std::cos(phi), rho, theta;
     polar(-eta, xi, rho, theta);
     if (rho >= 2.) {
@@ -501,7 +502,7 @@ class ReedsSheppStateSpace {
     return false;
   }  // LpRmSmRm
 
-  void CCSC(double x, double y, double phi, ReedsSheppPath &path) {
+  void CCSC(double x, double y, double phi, ReedsSheppPath &path) const {
     double t, u, v, Lmin = path.length() - .5 * M_PI, L;
     if (LpRmSmLm(x, y, phi, t, u, v) &&
         Lmin > (L = std::fabs(t) + std::fabs(u) + std::fabs(v))) {
@@ -606,7 +607,7 @@ class ReedsSheppStateSpace {
 
   // formula 8.11 *** TYPO IN PAPER ***
   inline bool LpRmSLmRp(double x, double y, double phi, double &t, double &u,
-                        double &v) {
+                        double &v) const {
     double xi = x + std::sin(phi), eta = y - 1. - std::cos(phi), rho, theta;
     polar(xi, eta, rho, theta);
     if (rho >= 2.) {
@@ -625,7 +626,7 @@ class ReedsSheppStateSpace {
     return false;
   }  // LpRmSLmRp
 
-  void CCSCC(double x, double y, double phi, ReedsSheppPath &path) {
+  void CCSCC(double x, double y, double phi, ReedsSheppPath &path) const {
     double t, u, v, Lmin = path.length() - M_PI, L;
     if (LpRmSLmRp(x, y, phi, t, u, v) &&
         Lmin > (L = std::fabs(t) + std::fabs(u) + std::fabs(v))) {
