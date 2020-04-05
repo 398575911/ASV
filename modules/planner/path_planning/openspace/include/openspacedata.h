@@ -11,6 +11,7 @@
 #ifndef _OPENSPACEDATA_H_
 #define _OPENSPACEDATA_H_
 
+#include "common/math/Geometry/include/box2d.h"
 #include "modules/planner/path_planning/common/PathPlannerData.h"
 
 namespace ASV::planning {
@@ -61,6 +62,12 @@ struct Obstacle_Box2d {
   double length;    // length, parellel to heading-axis
   double width;     // width, perpendicular to heading-axis
   double heading;
+};
+
+template <int max_num = 50>
+struct Obstacle_Vertex_test {
+  std::array<bool, max_num> status;
+  std::array<Eigen::Vector2d, max_num> vertex;
 };
 
 }  // namespace ASV::planning

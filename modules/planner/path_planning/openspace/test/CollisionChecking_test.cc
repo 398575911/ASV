@@ -8,6 +8,8 @@
 */
 
 #include "../include/CollisionChecking.h"
+#include "common/timer/include/timecounter.h"
+
 #include <iostream>
 using namespace ASV;
 

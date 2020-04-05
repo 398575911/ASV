@@ -8,7 +8,6 @@
 *****************************************************************************
 */
 
-#include <chrono>
 #include <iostream>
 #include <thread>
 #include "../include/timecounter.h"

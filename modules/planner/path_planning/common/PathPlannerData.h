@@ -11,6 +11,7 @@
 #ifndef _PATHPLANNERDATA_H_
 #define _PATHPLANNERDATA_H_
 
+#include <array>
 #include <common/math/eigen/Eigen/Core>
 #include <common/math/eigen/Eigen/Dense>
 #include <vector>

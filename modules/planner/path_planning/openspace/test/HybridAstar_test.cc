@@ -588,11 +588,11 @@ int main() {
       1,    // move_length
       1.2,  // penalty_turning
       1.2,  // penalty_reverse
-      1.3,  // penalty_switch
+      1.3   // penalty_switch
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 2;
+  int test_scenario = 3;
 
   // obstacles
   std::vector<planning::Obstacle_Vertex> Obstacles_Vertex;
@@ -608,25 +608,41 @@ int main() {
       .setup_start_end(start_point.at(0), start_point.at(1), start_point.at(2),
                        end_point.at(0), end_point.at(1), end_point.at(2));
 
+  Hybrid_AStar.setup_2d_start_end(start_point.at(0), start_point.at(1),
+                                  start_point.at(2), end_point.at(0),
+                                  end_point.at(1), end_point.at(2));
+
   Hybrid_AStar.perform_4dnode_search();
+  Hybrid_AStar.perform_2dnode_search();
+
+  // for (int i = 0; i != 72; i++) {
+  //   std::cout << "angle: " << 5 * i << std::endl;
+  //   for (int j = 0; j != 160; j++) {
+  //     for (int k = 0; k != 160; k++) {
+  //       std::cout << test[i][j][k] << " ";
+  //     }
+  //     std::cout << std::endl;
+  //   }
+  // }
 
   std::vector<std::array<double, 3>> hr = Hybrid_AStar.hybridastar_trajecotry();
+  auto hr2d = Hybrid_AStar.hybridastar_2dtrajecotry();
   // std::vector<std::array<double, 3>> hr = {{1, 20, 0}};
   // plotting
-  Gnuplot gp;
-  gp << "set terminal x11 size 1100, 1100 0\n";
-  gp << "set title 'A star search'\n";
-  gp << "set xrange [0:100]\n";
-  gp << "set yrange [0:100]\n";
-  gp << "set size ratio -1\n";
+  // Gnuplot gp;
+  // gp << "set terminal x11 size 1100, 1100 0\n";
+  // gp << "set title 'A star search'\n";
+  // gp << "set xrange [0:100]\n";
+  // gp << "set yrange [0:100]\n";
+  // gp << "set size ratio -1\n";
 
-  for (std::size_t i = 0; i != hr.size(); ++i) {
-    rtplotting_bestpath(
-        gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr[i], hr,
-        Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
+  // for (std::size_t i = 0; i != hr2d.size(); ++i) {
+  //   rtplotting_bestpath(
+  //       gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+  //       {end_point.at(0), end_point.at(1), end_point.at(2)}, hr2d[i], hr2d,
+  //       Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+  //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  // }
 
   return 0;
 }
