@@ -44,19 +44,19 @@ struct OpenSpace_Trajectory {
 // the obstacles in openspace planner can be defined in different forms,
 // including vertex, linesegment and box. These parameters are represented
 // in the Cartesian Coordinates.
-struct Obstacle_Vertex {
+struct Obstacle_Vertex_Config {
   double x;
   double y;
 };
 
-struct Obstacle_LineSegment {
+struct Obstacle_LineSegment_Config {
   double start_x;  // x-coordinate of starting point
   double start_y;  // y-coordinate of starting point
   double end_x;    // x-coordinate of end point
   double end_y;    // y-coordinate of end point
 };
 
-struct Obstacle_Box2d {
+struct Obstacle_Box2d_Config {
   double center_x;  // x-coordinate of box center
   double center_y;  // y-coordinate of box center
   double length;    // length, parellel to heading-axis
@@ -64,10 +64,22 @@ struct Obstacle_Box2d {
   double heading;
 };
 
-template <int max_num = 50>
-struct Obstacle_Vertex_test {
+template <int max_num>
+struct Obstacle_Vertex {
   std::array<bool, max_num> status;
-  std::array<Eigen::Vector2d, max_num> vertex;
+  std::array<ASV::common::math::Vec2d, max_num> vertex;
+};
+
+template <int max_num>
+struct Obstacle_LineSegment {
+  std::array<bool, max_num> status;
+  std::array<ASV::common::math::LineSegment2d, max_num> linesegment;
+};
+
+template <int max_num>
+struct Obstacle_Box2d {
+  std::array<bool, max_num> status;
+  std::array<ASV::common::math::Box2d, max_num> box2d;
 };
 
 }  // namespace ASV::planning

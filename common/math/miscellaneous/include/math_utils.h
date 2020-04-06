@@ -10,17 +10,15 @@
 #define _MATH_UTILS_H_
 
 #include <algorithm>
-#include <cmath>
 #include <cstdlib>
 #include <tuple>
 #include <vector>
+#include "Vec2d.h"
 
 #include <common/math/eigen/Eigen/Core>
 #include <common/math/eigen/Eigen/Dense>
 
 namespace ASV::common::math {
-
-constexpr double kMathEpsilon = 1e-10;
 
 // Random float number generation
 double RandomDouble(double low, double high) {
@@ -39,8 +37,8 @@ double CrossProd(const double x0, const double y0, const double x1,
                  const double y1) {
   return x0 * y1 - x1 * y0;
 }  // CrossProd
-double CrossProd(const Eigen::Vector2d& a, const Eigen::Vector2d& b) {
-  return a(0) * b(1) - b(0) * a(1);
+double CrossProd(const Vec2d& a, const Vec2d& b) {
+  return a.x() * b.y() - b.x() * a.y();
 }  // CrossProd
 
 // inner product of two 2-dimensional vectors

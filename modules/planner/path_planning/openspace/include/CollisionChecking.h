@@ -11,11 +11,11 @@
 #ifndef _CONSTRAINTCHECKING_H_
 #define _CONSTRAINTCHECKING_H_
 
-#include "common/math/Geometry/include/box2d.h"
 #include "openspacedata.h"
 
 namespace ASV::planning {
 
+template <int max_vertex = 50, int max_ls = 50, int max_box = 20>
 class CollisionChecking {
  public:
   explicit CollisionChecking(const CollisionData &_CollisionData)
@@ -49,64 +49,120 @@ class CollisionChecking {
 
     // genereat a 2dbox for ego vessel
     ASV::common::math::Box2d ego_box(
-        (Eigen::Vector2d() << ego_center_global_x, ego_center_global_y)
-            .finished(),
+        ASV::common::math::Vec2d(ego_center_global_x, ego_center_global_y),
         ego_theta, this->ego_length_, this->ego_width_);
 
     // check vertex
-    for (auto const &vertex : Obstacles_Vertex_) {
-      if (ego_box.IsPointIn(
-              (Eigen::Vector2d() << vertex.x, vertex.y).finished())) {
+    for (int i = 0; i != max_vertex; ++i) {
+      if (Obstacles_Vertex_.status[i] &&
+          ego_box.IsPointIn(Obstacles_Vertex_.vertex[i])) {
         return true;
       }
     }
+
     // check legement
-    for (auto const &legment_para : Obstacles_LineSegment_) {
-      if (ego_box.HasOverlap(ASV::common::math::LineSegment2d(
-              (Eigen::Vector2d() << legment_para.start_x, legment_para.start_y)
-                  .finished(),
-              (Eigen::Vector2d() << legment_para.end_x, legment_para.end_y)
-                  .finished()))) {
+    for (int i = 0; i != max_ls; ++i) {
+      if (Obstacles_LineSegment_.status[i] &&
+          ego_box.HasOverlap(Obstacles_LineSegment_.linesegment[i])) {
         return true;
       }
     }
+
     // check box
-    for (auto const &box_para : Obstacles_Box2d_) {
-      if (ego_box.HasOverlap(ASV::common::math::Box2d(
-              (Eigen::Vector2d() << box_para.center_x, box_para.center_y)
-                  .finished(),
-              box_para.heading, box_para.length, box_para.width))) {
+    for (int i = 0; i != max_box; ++i) {
+      if (Obstacles_Box2d_.status[i] &&
+          ego_box.HasOverlap(Obstacles_Box2d_.box2d[i])) {
         return true;
       }
     }
+
     return false;
   }  // InCollision
 
-  std::vector<Obstacle_Vertex> Obstacles_Vertex() const {
-    return Obstacles_Vertex_;
-  }
-  std::vector<Obstacle_LineSegment> Obstacles_LineSegment() const {
-    return Obstacles_LineSegment_;
-  }
-  std::vector<Obstacle_Box2d> Obstacles_Box2d() const {
-    return Obstacles_Box2d_;
-  }
+  auto Obstacles_Vertex() const noexcept { return Obstacles_Vertex_; }
+  auto Obstacles_LineSegment() const noexcept { return Obstacles_LineSegment_; }
+  auto Obstacles_Box2d() const noexcept { return Obstacles_Box2d_; }
 
   CollisionChecking &set_Obstacles_Vertex(
-      const std::vector<Obstacle_Vertex> &Obstacles_Vertex) {
-    Obstacles_Vertex_ = Obstacles_Vertex;
+      const std::vector<Obstacle_Vertex_Config> &Obstacles_Vertex) {
+    int num_vertex = Obstacles_Vertex.size();
+    if (num_vertex > max_vertex) {
+      // TODO:: warning
+      for (int i = 0; i != max_vertex; ++i) {
+        Obstacles_Vertex_.status[i] = true;
+        Obstacles_Vertex_.vertex[i] = ASV::common::math::Vec2d(
+            Obstacles_Vertex[i].x, Obstacles_Vertex[i].y);
+      }
+
+    } else {
+      std::fill(Obstacles_Vertex_.status.begin(),
+                Obstacles_Vertex_.status.end(), false);
+      for (int i = 0; i != num_vertex; ++i) {
+        Obstacles_Vertex_.status[i] = true;
+        Obstacles_Vertex_.vertex[i] = ASV::common::math::Vec2d(
+            Obstacles_Vertex[i].x, Obstacles_Vertex[i].y);
+      }
+    }
     return *this;
   }  // set_Obstacles_Vertex
 
   CollisionChecking &set_Obstacles_LineSegment(
-      const std::vector<Obstacle_LineSegment> &Obstacles_LineSegment) {
-    Obstacles_LineSegment_ = Obstacles_LineSegment;
+      const std::vector<Obstacle_LineSegment_Config> &Obstacles_LineSegment) {
+    int num_ls = Obstacles_LineSegment.size();
+    if (num_ls > max_ls) {
+      // TODO:: warning
+      for (int i = 0; i != max_ls; ++i) {
+        Obstacles_LineSegment_.status[i] = true;
+        Obstacles_LineSegment_.linesegment[i] =
+            ASV::common::math::LineSegment2d(
+                ASV::common::math::Vec2d(Obstacles_LineSegment[i].start_x,
+                                         Obstacles_LineSegment[i].start_y),
+                ASV::common::math::Vec2d(Obstacles_LineSegment[i].end_x,
+                                         Obstacles_LineSegment[i].end_y));
+      }
+
+    } else {
+      std::fill(Obstacles_LineSegment_.status.begin(),
+                Obstacles_LineSegment_.status.end(), false);
+      for (int i = 0; i != num_ls; ++i) {
+        Obstacles_LineSegment_.status[i] = true;
+        Obstacles_LineSegment_.linesegment[i] =
+            ASV::common::math::LineSegment2d(
+                ASV::common::math::Vec2d(Obstacles_LineSegment[i].start_x,
+                                         Obstacles_LineSegment[i].start_y),
+                ASV::common::math::Vec2d(Obstacles_LineSegment[i].end_x,
+                                         Obstacles_LineSegment[i].end_y));
+      }
+    }
+
     return *this;
   }  // set_Obstacles_LineSegment
 
   CollisionChecking &set_Obstacles_Box2d(
-      const std::vector<Obstacle_Box2d> &Obstacles_Box2d) {
-    Obstacles_Box2d_ = Obstacles_Box2d;
+      const std::vector<Obstacle_Box2d_Config> &Obstacles_Box2d) {
+    int num_box = Obstacles_Box2d.size();
+    if (num_box > max_box) {
+      // TODO:: warning
+      for (int i = 0; i != max_box; ++i) {
+        auto box_para = Obstacles_Box2d[i];
+        Obstacles_Box2d_.status[i] = true;
+        Obstacles_Box2d_.box2d[i] = ASV::common::math::Box2d(
+            ASV::common::math::Vec2d(box_para.center_x, box_para.center_y),
+            box_para.heading, box_para.length, box_para.width);
+      }
+
+    } else {
+      std::fill(Obstacles_Box2d_.status.begin(), Obstacles_Box2d_.status.end(),
+                false);
+      for (int i = 0; i != num_box; ++i) {
+        auto box_para = Obstacles_Box2d[i];
+        Obstacles_Box2d_.status[i] = true;
+        Obstacles_Box2d_.box2d[i] = ASV::common::math::Box2d(
+            ASV::common::math::Vec2d(box_para.center_x, box_para.center_y),
+            box_para.heading, box_para.length, box_para.width);
+      }
+    }
+
     return *this;
   }  // set_Obstacles_Box2d
 
@@ -117,9 +173,9 @@ class CollisionChecking {
   const double ego_center_local_x_;
   const double ego_center_local_y_;
 
-  std::vector<Obstacle_Vertex> Obstacles_Vertex_;
-  std::vector<Obstacle_LineSegment> Obstacles_LineSegment_;
-  std::vector<Obstacle_Box2d> Obstacles_Box2d_;
+  Obstacle_Vertex<max_vertex> Obstacles_Vertex_;
+  Obstacle_LineSegment<max_ls> Obstacles_LineSegment_;
+  Obstacle_Box2d<max_box> Obstacles_Box2d_;
 
   std::tuple<double, double> local2global(const double local_x,
                                           const double local_y,

@@ -10,11 +10,7 @@
 #ifndef _AABOX2D_H_
 #define _AABOX2D_H_
 
-#include <common/math/eigen/Eigen/Core>
-#include <common/math/eigen/Eigen/Dense>
 #include "common/math/miscellaneous/include/math_utils.h"
-
-#include <iostream>
 
 namespace ASV::common::math {
 
@@ -27,8 +23,7 @@ class AABox2d {
    * @param length The size of the box along the x-axis
    * @param width The size of the box along the y-axis
    */
-  explicit AABox2d(const Eigen::Vector2d &center, const double length,
-                   const double width)
+  explicit AABox2d(const Vec2d &center, const double length, const double width)
       : center_(center),
         length_(length),
         width_(width),
@@ -40,28 +35,33 @@ class AABox2d {
    * @param one_corner One corner of the box
    * @param opposite_corner The opposite corner to the first one
    */
-  explicit AABox2d(const Eigen::Vector2d &one_corner,
-                   const Eigen::Vector2d &opposite_corner)
+  explicit AABox2d(const Vec2d &one_corner, const Vec2d &opposite_corner)
       : AABox2d(0.5 * (one_corner + opposite_corner),
-                std::abs(one_corner(0) - opposite_corner(0)),
-                std::abs(one_corner(1) - opposite_corner(1))) {}
+                std::abs(one_corner.x() - opposite_corner.x()),
+                std::abs(one_corner.y() - opposite_corner.y())) {}
   /**
    * @brief Parameterized constructor.
    * Creates an axes-aligned box containing all points in a given vector.
    * @param points Vector of points to be included inside the box.
    */
-  explicit AABox2d(const Eigen::VectorXd &points_x,
-                   const Eigen::VectorXd &points_y)
-      : center_(Eigen::Vector2d::Zero()),
+  explicit AABox2d(const std::vector<Vec2d> &points)
+      : center_(Vec2d(0, 0)),
         length_(0),
         width_(0),
         half_length_(0),
         half_width_(0) {
-    double min_x = points_x.minCoeff();
-    double max_x = points_x.maxCoeff();
-    double min_y = points_y.minCoeff();
-    double max_y = points_y.maxCoeff();
-    center_ << 0.5 * (min_x + max_x), 0.5 * (min_y + max_y);
+    double min_x = points[0].x();
+    double max_x = points[0].x();
+    double min_y = points[0].y();
+    double max_y = points[0].y();
+    for (const auto &point : points) {
+      min_x = std::min(min_x, point.x());
+      max_x = std::max(max_x, point.x());
+      min_y = std::min(min_y, point.y());
+      max_y = std::max(max_y, point.y());
+    }
+
+    center_ = Vec2d((min_x + max_x) * 0.5, (min_y + max_y) * 0.5);
     length_ = max_x - min_x;
     width_ = max_y - min_y;
     half_length_ = 0.5 * length_;
@@ -70,13 +70,11 @@ class AABox2d {
 
   virtual ~AABox2d() = default;
 
-  Eigen::Vector2d center() const { return center_; }
-
+  Vec2d center() const noexcept { return center_; }
   // Getter of x-component of center_
-  double center_x() const noexcept { return center_(0); }
-
+  double center_x() const noexcept { return center_.x(); }
   // Getter of y-component of center_
-  double center_y() const noexcept { return center_(1); }
+  double center_y() const noexcept { return center_.y(); }
 
   double length() const noexcept { return length_; }
   double width() const noexcept { return width_; }
@@ -100,29 +98,30 @@ class AABox2d {
   double min_y() const noexcept { return center_y() - half_width_; }
 
   // Returns the maximum y-coordinate of the box
-  double max_y() const { return center_y() + half_width_; }
+  double max_y() const noexcept { return center_y() + half_width_; }
 
   // Gets all corners in counter clockwise order.
-  Eigen::Matrix<double, 2, 4> GetAllCorners() const {
-    Eigen::Matrix<double, 2, 4> allcorners =
-        Eigen::Matrix<double, 2, 4>::Zero();
+  std::array<Vec2d, 4> GetAllCorners() const {
+    std::array<Vec2d, 4> allcorners;
 
-    allcorners << max_x(), max_x(), min_x(), min_x(),  //
-        min_y(), max_y(), max_y(), min_y();
+    allcorners[0] = Vec2d(max_x(), min_y());
+    allcorners[1] = Vec2d(max_x(), max_y());
+    allcorners[2] = Vec2d(min_x(), max_y());
+    allcorners[3] = Vec2d(min_x(), min_y());
 
     return allcorners;
   }  // GetAllCorners
 
   // Determines whether a given point is in the box.
-  bool IsPointIn(const Eigen::Vector2d &point) const {
-    return std::abs(point(0) - center_(0)) <= half_length_ + kMathEpsilon &&
-           std::abs(point(1) - center_(1)) <= half_width_ + kMathEpsilon;
+  bool IsPointIn(const Vec2d &point) const {
+    return std::abs(point.x() - center_.x()) <= half_length_ + kMathEpsilon &&
+           std::abs(point.y() - center_.y()) <= half_width_ + kMathEpsilon;
   }  // IsPointIn
 
   // Determines whether a given point is on the boundary of the box.
-  bool IsPointOnBoundary(const Eigen::Vector2d &point) const {
-    const double dx = std::abs(point(0) - center_(0));
-    const double dy = std::abs(point(1) - center_(1));
+  bool IsPointOnBoundary(const Vec2d &point) const {
+    const double dx = std::abs(point.x() - center_.x());
+    const double dy = std::abs(point.y() - center_.y());
     return (std::abs(dx - half_length_) <= kMathEpsilon &&
             dy <= half_width_ + kMathEpsilon) ||
            (std::abs(dy - half_width_) <= kMathEpsilon &&
@@ -131,9 +130,9 @@ class AABox2d {
   }  // IsPointOnBoundary
 
   // Determines the distance between a point and the box.
-  double DistanceTo(const Eigen::Vector2d &point) const {
-    const double dx = std::abs(point(0) - center_(0)) - half_length_;
-    const double dy = std::abs(point(1) - center_(1)) - half_width_;
+  double DistanceTo(const Vec2d &point) const {
+    const double dx = std::abs(point.x() - center_.x()) - half_length_;
+    const double dy = std::abs(point.y() - center_.y()) - half_width_;
     if (dx <= 0.0) {
       return std::max(0.0, dy);
     }
@@ -146,10 +145,10 @@ class AABox2d {
 
   // brief Determines the distance between two boxes.
   double DistanceTo(const AABox2d &box) const {
-    const double dx = std::abs(box.center_x() - center_(0)) -
+    const double dx = std::abs(box.center_x() - center_.x()) -
                       box.half_length() - half_length_;
     const double dy =
-        std::abs(box.center_y() - center_(1)) - box.half_width() - half_width_;
+        std::abs(box.center_y() - center_.y()) - box.half_width() - half_width_;
     if (dx <= 0.0) {
       return std::max(0.0, dy);
     }
@@ -162,16 +161,14 @@ class AABox2d {
 
   // brief Determines whether two boxes overlap.
   bool HasOverlap(const AABox2d &box) const {
-    return std::abs(box.center_x() - center_(0)) <=
+    return std::abs(box.center_x() - center_.x()) <=
                box.half_length() + half_length_ &&
-           std::abs(box.center_y() - center_(1)) <=
+           std::abs(box.center_y() - center_.y()) <=
                box.half_width() + half_width_;
   }  // HasOverlap
 
   // Shift the center of AABox by the input vector.
-  void Shift(const Eigen::Vector2d &shift_vec) {
-    center_ += shift_vec;
-  }  // Shift
+  void Shift(const Vec2d &shift_vec) { center_ += shift_vec; }  // Shift
 
   // Changes box to include another given box, as well as the current one.
   void MergeFrom(const AABox2d &other_box) {
@@ -179,7 +176,7 @@ class AABox2d {
     const double x2 = std::max(max_x(), other_box.max_x());
     const double y1 = std::min(min_y(), other_box.min_y());
     const double y2 = std::max(max_y(), other_box.max_y());
-    center_ << 0.5 * (x1 + x2), 0.5 * (y1 + y2);
+    center_ = Vec2d((x1 + x2) * 0.5, (y1 + y2) * 0.5);
     length_ = x2 - x1;
     width_ = y2 - y1;
     half_length_ = 0.5 * length_;
@@ -187,12 +184,12 @@ class AABox2d {
   }  // MergeFrom
 
   // Changes box to include a given point, as well as the current box.
-  void MergeFrom(const Eigen::Vector2d &other_point) {
-    const double x1 = std::min(min_x(), other_point(0));
-    const double x2 = std::max(max_x(), other_point(0));
-    const double y1 = std::min(min_y(), other_point(1));
-    const double y2 = std::max(max_y(), other_point(1));
-    center_ << 0.5 * (x1 + x2), 0.5 * (y1 + y2);
+  void MergeFrom(const Vec2d &other_point) {
+    const double x1 = std::min(min_x(), other_point.x());
+    const double x2 = std::max(max_x(), other_point.x());
+    const double y1 = std::min(min_y(), other_point.y());
+    const double y2 = std::max(max_y(), other_point.y());
+    center_ = Vec2d((x1 + x2) * 0.5, (y1 + y2) * 0.5);
     length_ = x2 - x1;
     width_ = y2 - y1;
     half_length_ = 0.5 * length_;
@@ -200,7 +197,7 @@ class AABox2d {
   }  // MergeFrom
 
  private:
-  Eigen::Vector2d center_;
+  Vec2d center_;
   double length_;
   double width_;
   double half_length_;

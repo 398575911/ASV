@@ -26,35 +26,38 @@ int main() {
       1,     // HULL_BACK2COG
       3.3    // ROBOT_RADIUS
   };
-  std::vector<planning::Obstacle_Vertex> Obstacles_Vertex{{
+  std::vector<planning::Obstacle_Vertex_Config> Obstacles_Vertex{{
       10,  // x
       4    // y
   }};
-  std::vector<planning::Obstacle_LineSegment> Obstacles_lS{{
-                                                               4,  // start_x
-                                                               4,  // start_y
-                                                               4,  // end_x
-                                                               8   // end_y
-                                                           },
-                                                           {
-                                                               4,   // start_x
-                                                               8,   // start_y
-                                                               -4,  // end_x
-                                                               8    // end_y
-                                                           },
-                                                           {
-                                                               -4,  // start_x
-                                                               8,   // start_y
-                                                               -4,  // end_x
-                                                               4    // end_y
-                                                           }};
-  std::vector<planning::Obstacle_Box2d> Obstacles_Box{{
+  std::vector<planning::Obstacle_LineSegment_Config> Obstacles_lS{
+      {
+          4,  // start_x
+          4,  // start_y
+          4,  // end_x
+          8   // end_y
+      },
+      {
+          4,   // start_x
+          8,   // start_y
+          -4,  // end_x
+          8    // end_y
+      },
+      {
+          -4,  // start_x
+          8,   // start_y
+          -4,  // end_x
+          4    // end_y
+      }};
+  std::vector<planning::Obstacle_Box2d_Config> Obstacles_Box{{
       10,  // center_x
       10,  // center_y
       4,   // length
       1,   // width
       0    // heading
   }};
+
+  common::timecounter _timer;
 
   Eigen::VectorXd x(5);
   Eigen::VectorXd y(5);
@@ -68,13 +71,20 @@ int main() {
   for (int i = 0; i != x.size(); ++i)
     _OpenSpace_Trajectory.push_back({x(i), y(i), theta(i)});
 
-  planning::CollisionChecking _CollisionChecking(_collisiondata);
+  planning::CollisionChecking<> _CollisionChecking(_collisiondata);
   _CollisionChecking.set_Obstacles_Vertex(Obstacles_Vertex)
       .set_Obstacles_LineSegment(Obstacles_lS)
       .set_Obstacles_Box2d(Obstacles_Box);
 
-  if (_CollisionChecking.InCollision(_OpenSpace_Trajectory))
-    std::cout << "collison occur!\n";
-  else
-    std::cout << "collison free\n";
+  _timer.timeelapsed();
+
+  for (int i = 0; i != 1000; i++)
+    if (_CollisionChecking.InCollision(_OpenSpace_Trajectory))
+      std::cout << "collison occur!\n";
+    else
+      std::cout << "collison free\n";
+
+  long int et = _timer.timeelapsed();
+
+  std::cout << "elapsed time: " << et << std::endl;
 }

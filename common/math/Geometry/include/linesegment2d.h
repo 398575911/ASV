@@ -10,73 +10,70 @@
 #ifndef _LINESEGMENT2D_H_
 #define _LINESEGMENT2D_H_
 
-#include <common/math/eigen/Eigen/Core>
-#include <common/math/eigen/Eigen/Dense>
 #include "common/math/miscellaneous/include/math_utils.h"
 
 namespace ASV::common::math {
 
 class LineSegment2d {
  public:
-  explicit LineSegment2d(const Eigen::Vector2d &start,
-                         const Eigen::Vector2d &end)
+  LineSegment2d()
+      : start_(Vec2d(0, 0)),
+        end_(Vec2d(0, 0)),
+        unit_direction_(Vec2d(1, 0)),
+        heading_(0),
+        length_(0) {}
+
+  LineSegment2d(const Vec2d &start, const Vec2d &end)
       : start_(start),
         end_(end),
-        unit_direction_(Eigen::Vector2d::Zero()),
+        unit_direction_(Vec2d(1, 0)),
         heading_(0),
         length_(0) {
-    const double dx = end_(0) - start_(0);
-    const double dy = end_(1) - start_(1);
-
-    length_ = std::sqrt(dx * dx + dy * dy);
-
+    const double dx = end_.x() - start_.x();
+    const double dy = end_.y() - start_.y();
+    length_ = std::hypot(dx, dy);
     unit_direction_ =
-        (length_ <= kMathEpsilon
-             ? Eigen::Vector2d::Zero()
-             : (Eigen::Vector2d() << dx / length_, dy / length_).finished());
-
-    heading_ = std::atan2(dy, dx);
+        (length_ <= kMathEpsilon ? Vec2d(0, 0)
+                                 : Vec2d(dx / length_, dy / length_));
+    heading_ = unit_direction_.Angle();
   }
   virtual ~LineSegment2d() = default;
 
-  Eigen::Vector2d start() const { return start_; }  // start
-  Eigen::Vector2d end() const { return end_; }      // end
-  Eigen::Vector2d unit_direction() const {
-    return unit_direction_;
-  }  // unit_direction
+  Vec2d start() const noexcept { return start_; }
+  Vec2d end() const noexcept { return end_; }
+  Vec2d unit_direction() const noexcept { return unit_direction_; }
 
   // Get the center of the line segment.
-  Eigen::Vector2d center() const { return 0.5 * (start_ + end_); }  // center
+  Vec2d center() const { return (start_ + end_) * 0.5; }  // center
 
   /** @brief Get a new line-segment with the same start point, but rotated
    * counterclock-wise by the given amount.
    * @return The rotated line-segment's end-point.
    */
-  Eigen::Vector2d rotate(const double angle) const {
-    Eigen::Vector2d diff_vec = end_ - start_;
-
-    double delta_x =
-        diff_vec(0) * std::cos(angle) - diff_vec(1) * std::sin(angle);
-    double delta_y =
-        diff_vec(0) * std::sin(angle) + diff_vec(1) * std::cos(angle);
-
-    return start_ + (Eigen::Vector2d() << delta_x, delta_y).finished();
+  Vec2d rotate(const double angle) const {
+    Vec2d diff_vec = end_ - start_;
+    diff_vec.SelfRotate(angle);
+    return start_ + diff_vec;
   }  // rotate
 
-  double heading() const { return heading_; }
+  double heading() const noexcept { return heading_; }
 
   // Get the cosine of the heading.
-  double cos_heading() const { return unit_direction_(0); }  // cos_heading
+  double cos_heading() const noexcept {
+    return unit_direction_.x();
+  }  // cos_heading
 
   // @brief Get the sine of the heading.
-  double sin_heading() const { return unit_direction_(1); }  // sin_heading
+  double sin_heading() const noexcept {
+    return unit_direction_.y();
+  }  // sin_heading
 
-  double length() const { return length_; }
+  double length() const noexcept { return length_; }
   // Get the square of length of the line segment.
-  double length_sqr() const { return length_ * length_; }
+  double length_sqr() const noexcept { return length_ * length_; }
 
   // find the nearst points on the line segment
-  Eigen::Vector2d find_nearest_point(const Eigen::Vector2d &point) const {
+  Vec2d find_nearest_point(const Vec2d &point) const {
     if (length_ <= kMathEpsilon) {
       return start_;
     }
@@ -100,8 +97,7 @@ class LineSegment2d {
    *        the straight line expanded from the line segment.
    * @return The distance from the input point to the perpendicular foot.
    */
-  std::pair<double, Eigen::Vector2d> GetPerpendicularFoot(
-      const Eigen::Vector2d &point) const {
+  std::pair<double, Vec2d> GetPerpendicularFoot(const Vec2d &point) const {
     if (length_ <= kMathEpsilon) {
       return DistanceTo(start_);
     }
@@ -113,26 +109,24 @@ class LineSegment2d {
 
   // Compute the shortest distance from a point on the line segment to a point
   // in 2-D.
-  std::pair<double, Eigen::Vector2d> DistanceTo(
-      const Eigen::Vector2d &point) const {
-    Eigen::Vector2d nearstpoint = find_nearest_point(point);
+  std::pair<double, Vec2d> DistanceTo(const Vec2d &point) const {
+    Vec2d nearstpoint = find_nearest_point(point);
 
-    return {(nearstpoint - point).norm(), nearstpoint};
+    return {(nearstpoint - point).Length(), nearstpoint};
   }  // DistanceTo
 
   //  Check if a point is within the line segment.
-  bool IsPointIn(const Eigen::Vector2d &point) const {
+  bool IsPointIn(const Vec2d &point) const {
     if (length_ <= kMathEpsilon) {
-      return std::abs(point(0) - start_(0)) <= kMathEpsilon &&
-             std::abs(point(1) - start_(1)) <= kMathEpsilon;
+      return (start_ == point);
     }
 
     double prod = CrossProd(start_ - point, end_ - point);
     if (std::abs(prod) > kMathEpsilon) {
       return false;
     }
-    return IsWithin(point(0), start_(0), end_(0)) &&
-           IsWithin(point(1), start_(1), end_(1));
+    return IsWithin(point.x(), start_.x(), end_.x()) &&
+           IsWithin(point.y(), start_.y(), end_.y());
   }
 
   // Check if the line segment has an intersect with another 2d line segment
@@ -148,7 +142,7 @@ class LineSegment2d {
    *         with the input other_segment, and point the computed intersect
    *          between the line segment and the input other_segment.
    */
-  std::pair<bool, Eigen::Vector2d> GetIntersect(
+  std::pair<bool, Vec2d> GetIntersect(
       const LineSegment2d &other_segment) const {
     if (IsPointIn(other_segment.start())) {
       return {true, other_segment.start()};
@@ -164,51 +158,49 @@ class LineSegment2d {
     }
 
     if (length_ <= kMathEpsilon || other_segment.length() <= kMathEpsilon) {
-      return {false, Eigen::Vector2d::Zero()};
+      return {false, Vec2d(0, 0)};
     }
     const double cc1 = CrossProd(end_ - start_, other_segment.start() - start_);
     const double cc2 = CrossProd(end_ - start_, other_segment.end() - start_);
     if (cc1 * cc2 >= -kMathEpsilon) {
-      return {false, Eigen::Vector2d::Zero()};
+      return {false, Vec2d(0, 0)};
     }
     const double cc3 = CrossProd(other_segment.end() - other_segment.start(),
                                  start_ - other_segment.start());
     const double cc4 = CrossProd(other_segment.end() - other_segment.start(),
                                  end_ - other_segment.start());
     if (cc3 * cc4 >= -kMathEpsilon) {
-      return {false, Eigen::Vector2d::Zero()};
+      return {false, Vec2d(0, 0)};
     }
 
     const double ratio = cc4 / (cc4 - cc3);
-    return {true,
-            (Eigen::Vector2d() << start_(0) * ratio + end_(0) * (1.0 - ratio),
-             start_(1) * ratio + end_(1) * (1.0 - ratio))
-                .finished()};
+    return {true, Vec2d(start_.x() * ratio + end_.x() * (1.0 - ratio),
+                        start_.y() * ratio + end_.y() * (1.0 - ratio))};
 
   }  // GetIntersect
 
   // Compute the projection of a vector onto the line segment,
   // which is from the start point of the line segment to the input point,
   // onto the unit direction
-  double ProjectOntoUnit(const Eigen::Vector2d &point) const {
+  double ProjectOntoUnit(const Vec2d &point) const {
     auto vectorps = point - start_;
-    return InnerProd(vectorps(0), vectorps(1), unit_direction_(0),
-                     unit_direction_(1));
+    return InnerProd(vectorps.x(), vectorps.y(), unit_direction_.x(),
+                     unit_direction_.y());
   }
 
   // Compute the cross product of a vector onto the line segment,
   // which is from the start point of the line segment to the input point.
-  double ProductOntoUnit(const Eigen::Vector2d &point) const {
+  double ProductOntoUnit(const Vec2d &point) const {
     auto vectorps = point - start_;
-    return CrossProd(unit_direction_(0), unit_direction_(1), vectorps(0),
-                     vectorps(1));
+    return CrossProd(unit_direction_.x(), unit_direction_.y(), vectorps.x(),
+                     vectorps.y());
   }
 
  private:
-  Eigen::Vector2d start_;
-  Eigen::Vector2d end_;
+  Vec2d start_;
+  Vec2d end_;
   // the unit direction from the start point to the end point.
-  Eigen::Vector2d unit_direction_;
+  Vec2d unit_direction_;
   double heading_;
   double length_;
 };  // end class LineSegment2d

@@ -22,6 +22,20 @@ namespace ASV::common::math {
 
 class Box2d {
  public:
+  Box2d()
+      : center_(Vec2d(0, 0)),
+        length_(0),
+        width_(0),
+        half_length_(0),
+        half_width_(0),
+        heading_(0),
+        cos_heading_(0),
+        sin_heading_(0),
+        max_x_(0.0),
+        min_x_(0.0),
+        max_y_(0.0),
+        min_y_(0.0),
+        corners_({Vec2d(0, 0)}) {}
   /**
    * @brief Constructor which takes the center, heading, length and width.
    * @param center The center of the rectangular bounding box.
@@ -30,8 +44,8 @@ class Box2d {
    * @param length The size of the heading-axis.
    * @param width The size of the axis perpendicular to the heading-axis.
    */
-  explicit Box2d(const Eigen::Vector2d &center, const double heading,
-                 const double length, const double width)
+  Box2d(const Vec2d &center, const double heading, const double length,
+        const double width)
       : center_(center),
         length_(length),
         width_(width),
@@ -44,7 +58,7 @@ class Box2d {
         min_x_(0.0),
         max_y_(0.0),
         min_y_(0.0),
-        corners_(Eigen::Matrix<double, 2, 4>::Zero()) {
+        corners_({Vec2d(0, 0)}) {
     InitCorners();
   }
 
@@ -54,7 +68,7 @@ class Box2d {
    * @param width The width of the box, which is taken perpendicularly
    * to the heading direction.
    */
-  explicit Box2d(const LineSegment2d &axis, const double width)
+  Box2d(const LineSegment2d &axis, const double width)
       : center_(axis.center()),
         length_(axis.length()),
         width_(width),
@@ -67,20 +81,20 @@ class Box2d {
         min_x_(0.0),
         max_y_(0.0),
         min_y_(0.0),
-        corners_(Eigen::Matrix<double, 2, 4>::Zero()) {
+        corners_({Vec2d(0, 0)}) {
     InitCorners();
   }
 
   // Constructor which takes an AABox2d (axes-aligned box).
-  explicit Box2d(const AABox2d &aabox)
+  Box2d(const AABox2d &aabox)
       : Box2d(aabox.center(), 0, aabox.length(), aabox.width()) {}
 
   // Getter of the center of the box
-  Eigen::Vector2d center() const noexcept { return center_; }
+  Vec2d center() const noexcept { return center_; }
 
   // Getter of the x/y coordinate of the center of the box
-  double center_x() const noexcept { return center_(0); }
-  double center_y() const noexcept { return center_(1); }
+  double center_x() const noexcept { return center_.x(); }
+  double center_y() const noexcept { return center_.y(); }
 
   double length() const noexcept { return length_; }
   double width() const noexcept { return width_; }
@@ -107,7 +121,7 @@ class Box2d {
   double diagonal() const { return std::hypot(length_, width_); }
 
   // Getter of the corners of the box
-  Eigen::Matrix<double, 2, 4> GetAllCorners() const { return corners_; }
+  std::array<Vec2d, 4> GetAllCorners() const noexcept { return corners_; }
 
   double max_x() const noexcept { return max_x_; }
   double min_x() const noexcept { return min_x_; }
@@ -119,10 +133,10 @@ class Box2d {
    * @param point A point that we wish to test for membership in the box
    * @return True iff the point is contained in the box
    */
-  bool IsPointIn(const Eigen::Vector2d &point) const {
+  bool IsPointIn(const Vec2d &point) const {
     auto local_coord = Global2Local(point - center_);
-    double dx = std::abs(local_coord(0));
-    double dy = std::abs(local_coord(1));
+    double dx = std::abs(local_coord.x());
+    double dy = std::abs(local_coord.y());
 
     return dx <= half_length_ + kMathEpsilon &&
            dy <= half_width_ + kMathEpsilon;
@@ -134,10 +148,10 @@ class Box2d {
    * @param point A point that we wish to test for membership in the boundary
    * @return True iff the point is a boundary point of the box
    */
-  bool IsPointOnBoundary(const Eigen::Vector2d &point) const {
+  bool IsPointOnBoundary(const Vec2d &point) const {
     auto local_coord = Global2Local(point - center_);
-    double dx = std::abs(local_coord(0));
-    double dy = std::abs(local_coord(1));
+    double dx = std::abs(local_coord.x());
+    double dy = std::abs(local_coord.y());
 
     return (std::abs(dx - half_length_) <= kMathEpsilon &&
             dy <= half_width_ + kMathEpsilon) ||
@@ -146,10 +160,10 @@ class Box2d {
   }  // IsPointOnBoundary
 
   // Determines the distance between the box and a given point
-  double DistanceTo(const Eigen::Vector2d &point) const {
+  double DistanceTo(const Vec2d &point) const {
     auto local_coord = Global2Local(point - center_);
-    double dx = std::abs(local_coord(0)) - half_length_;
-    double dy = std::abs(local_coord(1)) - half_width_;
+    double dx = std::abs(local_coord.x()) - half_length_;
+    double dy = std::abs(local_coord.y()) - half_width_;
 
     if (dx <= 0.0) {
       return std::max(0.0, dy);
@@ -169,8 +183,8 @@ class Box2d {
     double box_y = half_width_;
 
     auto local_coord1 = Global2Local(line_segment.start() - center_);
-    double x1 = local_coord1(0);
-    double y1 = local_coord1(1);
+    double x1 = local_coord1.x();
+    double y1 = local_coord1.y();
     int gx1 = (x1 >= box_x ? 1 : (x1 <= -box_x ? -1 : 0));
     int gy1 = (y1 >= box_y ? 1 : (y1 <= -box_y ? -1 : 0));
     if (gx1 == 0 && gy1 == 0) {
@@ -178,8 +192,8 @@ class Box2d {
     }
 
     auto local_coord2 = Global2Local(line_segment.end() - center_);
-    double x2 = local_coord2(0);
-    double y2 = local_coord2(1);
+    double x2 = local_coord2.x();
+    double y2 = local_coord2.y();
     int gx2 = (x2 >= box_x ? 1 : (x2 <= -box_x ? -1 : 0));
     int gy2 = (y2 >= box_y ? 1 : (y2 <= -box_y ? -1 : 0));
     if (gx2 == 0 && gy2 == 0) {
@@ -260,26 +274,25 @@ class Box2d {
 
   // Determines the distance between two boxes
   double DistanceTo(const Box2d &other_box) const {
+    auto other_corners = other_box.GetAllCorners();
+    if (IsPointIn(other_corners[0])) {
+      return 0.0;
+    }
+    if (other_box.IsPointIn(corners_[0])) {
+      return 0.0;
+    }
     double distance = std::numeric_limits<double>::infinity();
 
-    // if (IsPointIn(polygon.points()[0])) {
-    //   return 0.0;
-    // }
-    // if (polygon.IsPointIn(points_[0])) {
-    //   return 0.0;
-    // }
-
-    auto other_corners = other_box.GetAllCorners();
     for (int i = 0; i < 3; ++i) {
       distance = std::min(distance,
-                          DistanceTo(LineSegment2d(other_corners.col(i),
-                                                   other_corners.col(i + 1))));
+                          DistanceTo(LineSegment2d(other_corners.at(i),
+                                                   other_corners.at(i + 1))));
     }
     distance = std::min(
         distance,
-        DistanceTo(LineSegment2d(other_corners.col(3), other_corners.col(0))));
+        DistanceTo(LineSegment2d(other_corners.at(3), other_corners.at(0))));
     return distance;
-  }
+  }  // DistanceTo
 
   /**
    * @brief Determines whether this box overlaps a given line segment
@@ -290,13 +303,10 @@ class Box2d {
     if (line_segment.length() <= kMathEpsilon) {
       return IsPointIn(line_segment.start());
     }
-    auto p_start = line_segment.start();
-    auto p_end = line_segment.end();
-
-    if ((std::fmax(p_start(0), p_end(0)) < min_x()) ||
-        (std::fmin(p_start(0), p_end(0)) > max_x()) ||
-        (std::fmax(p_start(1), p_end(1)) < min_y()) ||
-        (std::fmin(p_start(1), p_end(1)) > max_y())) {
+    if (std::fmax(line_segment.start().x(), line_segment.end().x()) < min_x() ||
+        std::fmin(line_segment.start().x(), line_segment.end().x()) > max_x() ||
+        std::fmax(line_segment.start().y(), line_segment.end().y()) < min_y() ||
+        std::fmin(line_segment.start().y(), line_segment.end().y()) > max_y()) {
       return false;
     }
     return DistanceTo(line_segment) <= kMathEpsilon;
@@ -313,8 +323,8 @@ class Box2d {
       return false;
     }
 
-    const double shift_x = box.center_x() - center_(0);
-    const double shift_y = box.center_y() - center_(1);
+    const double shift_x = box.center_x() - center_.x();
+    const double shift_y = box.center_y() - center_.y();
 
     const double dx1 = cos_heading_ * half_length_;
     const double dy1 = sin_heading_ * half_length_;
@@ -364,7 +374,7 @@ class Box2d {
   }  // RotateFromCenter
 
   // Shifts this box by a given vector
-  void Shift(const Eigen::Vector2d &shift_vec) {
+  void Shift(const Vec2d &shift_vec) {
     center_ += shift_vec;
     InitCorners();
   }  // Shift
@@ -386,7 +396,7 @@ class Box2d {
   }  // LateralExtend
 
  private:
-  Eigen::Vector2d center_;
+  Vec2d center_;
   double length_;
   double width_;
   double half_length_;
@@ -399,49 +409,32 @@ class Box2d {
   double min_x_;
   double max_y_;
   double min_y_;
-  Eigen::Matrix<double, 2, 4> corners_;
+  std::array<Vec2d, 4> corners_;
 
   void InitCorners() {
-    corners_.col(0) =
-        center_ +
-        Local2Global(
-            (Eigen::Vector2d() << half_length_, -half_width_).finished());
-    corners_.col(1) =
-        center_ +
-        Local2Global(
-            (Eigen::Vector2d() << half_length_, half_width_).finished());
-    corners_.col(2) =
-        center_ +
-        Local2Global(
-            (Eigen::Vector2d() << -half_length_, half_width_).finished());
-    corners_.col(3) =
-        center_ +
-        Local2Global(
-            (Eigen::Vector2d() << -half_length_, -half_width_).finished());
-
-    max_x_ = corners_.row(0).maxCoeff();
-    min_x_ = corners_.row(0).minCoeff();
-    max_y_ = corners_.row(1).maxCoeff();
-    min_y_ = corners_.row(1).minCoeff();
+    corners_[0] = center_ + Local2Global(Vec2d(half_length_, -half_width_));
+    corners_[1] = center_ + Local2Global(Vec2d(half_length_, half_width_));
+    corners_[2] = center_ + Local2Global(Vec2d(-half_length_, half_width_));
+    corners_[3] = center_ + Local2Global(Vec2d(-half_length_, -half_width_));
+    for (const auto &corner : corners_) {
+      max_x_ = std::fmax(corner.x(), max_x_);
+      min_x_ = std::fmin(corner.x(), min_x_);
+      max_y_ = std::fmax(corner.y(), max_y_);
+      min_y_ = std::fmin(corner.y(), min_y_);
+    }
 
   }  // InitCorners
 
-  Eigen::Vector2d Local2Global(const Eigen::Vector2d &local_coord) const {
-    Eigen::Vector2d global_coor = Eigen::Vector2d::Zero();
-
-    global_coor << local_coord(0) * cos_heading_ -
-                       local_coord(1) * sin_heading_,
-        local_coord(0) * sin_heading_ + local_coord(1) * cos_heading_;
-    return global_coor;
+  Vec2d Local2Global(const Vec2d &local_coord) const {
+    return Vec2d(
+        local_coord.x() * cos_heading_ - local_coord.y() * sin_heading_,
+        local_coord.x() * sin_heading_ + local_coord.y() * cos_heading_);
   }  // Local2Global
 
-  Eigen::Vector2d Global2Local(const Eigen::Vector2d &global_coord) const {
-    Eigen::Vector2d local_coor = Eigen::Vector2d::Zero();
-
-    local_coor << global_coord(0) * cos_heading_ +
-                      global_coord(1) * sin_heading_,
-        -global_coord(0) * sin_heading_ + global_coord(1) * cos_heading_;
-    return local_coor;
+  Vec2d Global2Local(const Vec2d &global_coord) const {
+    return Vec2d(
+        global_coord.x() * cos_heading_ + global_coord.y() * sin_heading_,
+        -global_coord.x() * sin_heading_ + global_coord.y() * cos_heading_);
   }  // Global2Local
 
   double PtSegDistance(double query_x, double query_y, double start_x,

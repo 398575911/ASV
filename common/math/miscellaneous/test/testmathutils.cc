@@ -59,9 +59,7 @@ BOOST_AUTO_TEST_CASE(sign) {
 
 BOOST_AUTO_TEST_CASE(linesegment) {
   BOOST_CHECK_CLOSE(CrossProd(100, 10, 2, 3), 280, 1e-6);
-  BOOST_CHECK_CLOSE(CrossProd((Eigen::Vector2d() << 100, 10).finished(),
-                              (Eigen::Vector2d() << 100, 10).finished()),
-                    0, 1e-6);
+  BOOST_CHECK_CLOSE(CrossProd(Vec2d(100, 10), Vec2d(100, 10)), 0, 1e-6);
 
   BOOST_CHECK_CLOSE(InnerProd(-12, 9, 10, 11), -21, 1e-6);
   BOOST_TEST(IsWithin(0, 10, 20) == false);

@@ -44,6 +44,7 @@ class timecounter {
   }
 
   // return the UTC time (ISO)
+  // TODO: C++20 support utc_time
   std::string getUTCtime() {
     std::time_t result = std::time(nullptr);
     std::string _utc = std::asctime(std::localtime(&result));

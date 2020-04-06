@@ -42,6 +42,9 @@ add_executable (testmath testmathutils.cc)
 target_include_directories(testmath PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(testmath ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
+add_executable (vec2d_test Vec2d_test.cc)
+target_include_directories(vec2d_test PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(vec2d_test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
 
 add_executable (testeigenmvnd testeigenmvnd.cc)
