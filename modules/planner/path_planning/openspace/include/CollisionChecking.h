@@ -47,15 +47,14 @@ class CollisionChecking {
     ego_center_global_x += ego_x;
     ego_center_global_y += ego_y;
 
-    // genereat a 2dbox for ego vessel
-    ASV::common::math::Box2d ego_box(
+    // update the 2dbox for ego vessel
+    ASV::common::math::Box2d ego_box_(
         ASV::common::math::Vec2d(ego_center_global_x, ego_center_global_y),
         ego_theta, this->ego_length_, this->ego_width_);
-
     // check vertex
     for (int i = 0; i != max_vertex; ++i) {
       if (Obstacles_Vertex_.status[i] &&
-          ego_box.IsPointIn(Obstacles_Vertex_.vertex[i])) {
+          ego_box_.IsPointIn(Obstacles_Vertex_.vertex[i])) {
         return true;
       }
     }
@@ -63,7 +62,7 @@ class CollisionChecking {
     // check legement
     for (int i = 0; i != max_ls; ++i) {
       if (Obstacles_LineSegment_.status[i] &&
-          ego_box.HasOverlap(Obstacles_LineSegment_.linesegment[i])) {
+          ego_box_.HasOverlap(Obstacles_LineSegment_.linesegment[i])) {
         return true;
       }
     }
@@ -71,7 +70,7 @@ class CollisionChecking {
     // check box
     for (int i = 0; i != max_box; ++i) {
       if (Obstacles_Box2d_.status[i] &&
-          ego_box.HasOverlap(Obstacles_Box2d_.box2d[i])) {
+          ego_box_.HasOverlap(Obstacles_Box2d_.box2d[i])) {
         return true;
       }
     }

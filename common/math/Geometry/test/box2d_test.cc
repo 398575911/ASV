@@ -219,6 +219,21 @@ BOOST_AUTO_TEST_CASE(RotateFromCenterAndShift) {
   BOOST_CHECK_CLOSE(corners[3].y(), 38.0, 1e-6);
 }
 
+BOOST_AUTO_TEST_CASE(updatebox) {
+  Box2d box_test(Vec2d(0, 0), 0, 4, 2);
+  box_test.updatebox2d(1, 2, M_PI / 2);
+  auto corners = box_test.GetAllCorners();
+
+  BOOST_CHECK_SMALL(corners[0].x() - 2.0, 1e-6);
+  BOOST_CHECK_SMALL(corners[0].y() - 4.0, 1e-6);
+  BOOST_CHECK_SMALL(corners[1].x() - 0.0, 1e-6);
+  BOOST_CHECK_SMALL(corners[1].y() - 4.0, 1e-6);
+  BOOST_CHECK_SMALL(corners[2].x() - 0.0, 1e-6);
+  BOOST_CHECK_SMALL(corners[2].y() - 0.0, 1e-6);
+  BOOST_CHECK_SMALL(corners[3].x() - 2.0, 1e-6);
+  BOOST_CHECK_SMALL(corners[3].y() - 0.0, 1e-6);
+}
+
 BOOST_AUTO_TEST_CASE(TESTRANDOM) {
   bool ambiguous = false;
 

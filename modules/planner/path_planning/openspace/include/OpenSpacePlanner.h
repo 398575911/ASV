@@ -13,14 +13,29 @@
 #ifndef _OPENSPACEPLANNER_H_
 #define _OPENSPACEPLANNER_H_
 
+#include "HybridAStar.h"
+
 namespace ASV::planning {
 
 class OpenSpacePlanner {
  public:
-  OpenSpacePlanner() {}
+  OpenSpacePlanner(const CollisionData &collisiondata)
+      : collision_checker_(collisiondata) {}
   virtual ~OpenSpacePlanner() = default;
 
+  OpenSpacePlanner &update_obstacles(
+      const std::vector<Obstacle_Vertex_Config> &Obstacles_Vertex,
+      const std::vector<Obstacle_LineSegment_Config> &Obstacles_LineSegment,
+      const std::vector<Obstacle_Box2d_Config> &Obstacles_Box2d) {
+    collision_checker_.set_Obstacles_Vertex(Obstacles_Vertex)
+        .set_Obstacles_LineSegment(Obstacles_LineSegment)
+        .set_Obstacles_Box2d(Obstacles_Box2d);
+    return *this;
+  }  // update_obstacles
+
  private:
+  CollisionChecking_Astar collision_checker_;
+
 };  // end class OpenSpacePlanner
 
 }  // namespace ASV::planning

@@ -43,17 +43,17 @@ void plot_vessel(Gnuplot &_gp, const std::array<double, 3> &vessel_state,
                         cvalue * ego_center_local_y;
 
   common::math::Box2d ego_box(
-      (Eigen::Vector2d() << ego_center_x, ego_center_y).finished(),
-      vessel_state.at(2), ego_length, ego_width);
+      ASV::common::math::Vec2d(ego_center_x, ego_center_y), vessel_state.at(2),
+      ego_length, ego_width);
 
   auto allcorners = ego_box.GetAllCorners();
 
   //
   _gp << "set object " + std::to_string(id) + " polygon from";
   for (int j = 0; j != 4; ++j) {
-    _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
+    _gp << " " << allcorners[j].x() << ", " << allcorners[j].y() << " to";
   }
-  _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
+  _gp << " " << allcorners[0].x() << ", " << allcorners[0].y() << "\n";
   _gp << "set object " + std::to_string(id) +
              " fc rgb 'blue' fillstyle solid 0.1 noborder\n";
 }
@@ -63,9 +63,10 @@ void rtplotting_bestpath(
     Gnuplot &_gp, const std::array<double, 3> &start_point,
     const std::array<double, 3> &end_point, const std::array<double, 3> &state,
     const std::vector<std::array<double, 3>> &trajectory,
-    const std::vector<planning::Obstacle_Vertex> &Obstacles_Vertex,
-    const std::vector<planning::Obstacle_LineSegment> &Obstacles_LineSegment,
-    const std::vector<planning::Obstacle_Box2d> &Obstacles_Box2d) {
+    const std::vector<planning::Obstacle_Vertex_Config> &Obstacles_Vertex,
+    const std::vector<planning::Obstacle_LineSegment_Config>
+        &Obstacles_LineSegment,
+    const std::vector<planning::Obstacle_Box2d_Config> &Obstacles_Box2d) {
   std::vector<std::pair<double, double>> xy_pts_A;
 
   plot_vessel(_gp, start_point, 1);
@@ -75,9 +76,8 @@ void rtplotting_bestpath(
   // obstacle (box)
   for (std::size_t i = 0; i != Obstacles_Box2d.size(); ++i) {
     ASV::common::math::Box2d ob_box(
-        (Eigen::Vector2d() << Obstacles_Box2d[i].center_x,
-         Obstacles_Box2d[i].center_y)
-            .finished(),
+        ASV::common::math::Vec2d(Obstacles_Box2d[i].center_x,
+                                 Obstacles_Box2d[i].center_y),
         Obstacles_Box2d[i].heading, Obstacles_Box2d[i].length,
         Obstacles_Box2d[i].width);
     auto allcorners = ob_box.GetAllCorners();
@@ -85,9 +85,9 @@ void rtplotting_bestpath(
     //
     _gp << "set object " + std::to_string(i + 5) + " polygon from";
     for (int j = 0; j != 4; ++j) {
-      _gp << " " << allcorners(0, j) << ", " << allcorners(1, j) << " to";
+      _gp << " " << allcorners[j].x() << ", " << allcorners[j].y() << " to";
     }
-    _gp << " " << allcorners(0, 0) << ", " << allcorners(1, 0) << "\n";
+    _gp << " " << allcorners[0].x() << ", " << allcorners[0].y() << "\n";
     _gp << "set object " + std::to_string(i + 5) +
                " fc rgb '#000000' fillstyle solid lw 0\n";
   }
@@ -129,9 +129,9 @@ void rtplotting_bestpath(
 
 // generate map and endpoint
 void generate_obstacle_map(
-    std::vector<planning::Obstacle_Vertex> &Obstacles_Vertex,
-    std::vector<planning::Obstacle_LineSegment> &Obstacles_LS,
-    std::vector<planning::Obstacle_Box2d> &Obstacles_Box,
+    std::vector<planning::Obstacle_Vertex_Config> &Obstacles_Vertex,
+    std::vector<planning::Obstacle_LineSegment_Config> &Obstacles_LS,
+    std::vector<planning::Obstacle_Box2d_Config> &Obstacles_Box,
     std::array<float, 3> &start_point, std::array<float, 3> &end_point,
     int type) {
   // type:
@@ -571,10 +571,136 @@ void generate_obstacle_map(
           0.3 * M_PI  // heading
       });
       // start point
-      start_point = {1, 20, 0.0 * M_PI};
+      start_point = {5, 20, 0.0 * M_PI};
 
       // end point
       end_point = {76, 60, -0.5 * M_PI};
+      break;
+
+    case 4:
+      // vertex
+      Obstacles_Vertex.push_back({-10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          0,    // start_x
+          3,    // start_y
+          9.5,  // end_x
+          3     // end_y
+      });
+      Obstacles_LS.push_back({
+          9.5,  // start_x
+          3,    // start_y
+          9.5,  // end_x
+          0     // end_y
+      });
+      Obstacles_LS.push_back({
+          9.5,   // start_x
+          0,     // start_y
+          15.5,  // end_x
+          0      // end_y
+      });
+      Obstacles_LS.push_back({
+          15.5,  // start_x
+          0,     // start_y
+          15.5,  // end_x
+          3      // end_y
+      });
+      Obstacles_LS.push_back({
+          15.5,  // start_x
+          3,     // start_y
+          30,    // end_x
+          3      // end_y
+      });
+      Obstacles_LS.push_back({
+          0,   // start_x
+          10,  // start_y
+          30,  // end_x
+          10   // end_y
+      });
+      // start point
+      start_point = {14, 6, 0.3 * M_PI};
+      // end point
+      end_point = {11.5, 1.5, 0 * M_PI};
+      break;
+
+    case 5:
+      // vertex
+      Obstacles_Vertex.push_back({-10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          0,   // start_x
+          4,   // start_y
+          20,  // end_x
+          4    // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          4,   // start_y
+          20,  // end_x
+          0    // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          0,   // start_y
+          23,  // end_x
+          0    // end_y
+      });
+      Obstacles_LS.push_back({
+          23,  // start_x
+          0,   // start_y
+          23,  // end_x
+          4    // end_y
+      });
+      Obstacles_LS.push_back({
+          23,  // start_x
+          4,   // start_y
+          40,  // end_x
+          4    // end_y
+      });
+      // start point
+      start_point = {30, 7, 0.0 * M_PI};
+      // end point
+      end_point = {21.5, 1.5, 0.5 * M_PI};
+      break;
+
+    case 6:
+      // vertex
+      Obstacles_Vertex.push_back({-10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          0,   // start_x
+          5,   // start_y
+          20,  // end_x
+          5    // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          5,   // start_y
+          20,  // end_x
+          0    // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          0,   // start_y
+          23,  // end_x
+          0    // end_y
+      });
+      Obstacles_LS.push_back({
+          23,  // start_x
+          0,   // start_y
+          23,  // end_x
+          5    // end_y
+      });
+      Obstacles_LS.push_back({
+          23,  // start_x
+          5,   // start_y
+          40,  // end_x
+          5    // end_y
+      });
+      // start point
+      start_point = {30, 7, 0.0 * M_PI};
+      // end point
+      end_point = {21.5, 3.5, -0.5 * M_PI};
       break;
     default:
       break;
@@ -586,63 +712,59 @@ void generate_obstacle_map(
 int main() {
   planning::HybridAStarConfig _HybridAStarConfig{
       1,    // move_length
-      1.2,  // penalty_turning
-      1.2,  // penalty_reverse
-      1.3   // penalty_switch
+      1.5,  // penalty_turning
+      2,    // penalty_reverse
+      2     // penalty_switch
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 3;
+  int test_scenario = 4;
 
   // obstacles
-  std::vector<planning::Obstacle_Vertex> Obstacles_Vertex;
-  std::vector<planning::Obstacle_LineSegment> Obstacles_LS;
-  std::vector<planning::Obstacle_Box2d> Obstacles_Box;
+  std::vector<planning::Obstacle_Vertex_Config> Obstacles_Vertex;
+  std::vector<planning::Obstacle_LineSegment_Config> Obstacles_LS;
+  std::vector<planning::Obstacle_Box2d_Config> Obstacles_Box;
   std::array<float, 3> start_point;
   std::array<float, 3> end_point;
   generate_obstacle_map(Obstacles_Vertex, Obstacles_LS, Obstacles_Box,
                         start_point, end_point, test_scenario);
 
   planning::HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
-  Hybrid_AStar.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box)
-      .setup_start_end(start_point.at(0), start_point.at(1), start_point.at(2),
-                       end_point.at(0), end_point.at(1), end_point.at(2));
+
+  ASV::planning::CollisionChecking_Astar collision_checker_(_collisiondata);
+  collision_checker_.set_Obstacles_Vertex(Obstacles_Vertex)
+      .set_Obstacles_LineSegment(Obstacles_LS)
+      .set_Obstacles_Box2d(Obstacles_Box);
+
+  Hybrid_AStar.setup_start_end(start_point.at(0), start_point.at(1),
+                               start_point.at(2), end_point.at(0),
+                               end_point.at(1), end_point.at(2));
 
   Hybrid_AStar.setup_2d_start_end(start_point.at(0), start_point.at(1),
                                   start_point.at(2), end_point.at(0),
                                   end_point.at(1), end_point.at(2));
 
-  Hybrid_AStar.perform_4dnode_search();
-  Hybrid_AStar.perform_2dnode_search();
+  Hybrid_AStar.perform_4dnode_search(collision_checker_);
+  Hybrid_AStar.perform_2dnode_search(collision_checker_);
 
-  // for (int i = 0; i != 72; i++) {
-  //   std::cout << "angle: " << 5 * i << std::endl;
-  //   for (int j = 0; j != 160; j++) {
-  //     for (int k = 0; k != 160; k++) {
-  //       std::cout << test[i][j][k] << " ";
-  //     }
-  //     std::cout << std::endl;
-  //   }
-  // }
-
-  std::vector<std::array<double, 3>> hr = Hybrid_AStar.hybridastar_trajecotry();
+  auto hr = Hybrid_AStar.hybridastar_trajecotry();
   auto hr2d = Hybrid_AStar.hybridastar_2dtrajecotry();
   // std::vector<std::array<double, 3>> hr = {{1, 20, 0}};
   // plotting
-  // Gnuplot gp;
-  // gp << "set terminal x11 size 1100, 1100 0\n";
-  // gp << "set title 'A star search'\n";
-  // gp << "set xrange [0:100]\n";
-  // gp << "set yrange [0:100]\n";
-  // gp << "set size ratio -1\n";
+  Gnuplot gp;
+  gp << "set terminal x11 size 1100, 1100 0\n";
+  gp << "set title 'A star search'\n";
+  gp << "set xrange [0:40]\n";
+  gp << "set yrange [0:40]\n";
+  gp << "set size ratio -1\n";
 
-  // for (std::size_t i = 0; i != hr2d.size(); ++i) {
-  //   rtplotting_bestpath(
-  //       gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-  //       {end_point.at(0), end_point.at(1), end_point.at(2)}, hr2d[i], hr2d,
-  //       Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
-  //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  // }
+  for (std::size_t i = 0; i != hr.size(); ++i) {
+    rtplotting_bestpath(
+        gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr[i], hr,
+        Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
 
   return 0;
 }

@@ -78,7 +78,7 @@ int main() {
 
   _timer.timeelapsed();
 
-  for (int i = 0; i != 1000; i++)
+  for (int i = 0; i != 100; i++)
     if (_CollisionChecking.InCollision(_OpenSpace_Trajectory))
       std::cout << "collison occur!\n";
     else

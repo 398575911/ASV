@@ -89,6 +89,17 @@ class Box2d {
   Box2d(const AABox2d &aabox)
       : Box2d(aabox.center(), 0, aabox.length(), aabox.width()) {}
 
+  // update the
+  void updatebox2d(const double ego_x, const double ego_y,
+                   const double ego_theta) {
+    center_.set_x(ego_x);
+    center_.set_y(ego_y);
+    heading_ = ego_theta;
+    cos_heading_ = std::cos(heading_);
+    sin_heading_ = std::sin(heading_);
+    InitCorners();
+  }  // updatebox2d
+
   // Getter of the center of the box
   Vec2d center() const noexcept { return center_; }
 
