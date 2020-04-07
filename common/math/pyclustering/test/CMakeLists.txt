@@ -48,6 +48,6 @@ target_link_libraries(testDBScan PUBLIC ${CLUSTER_LIBRARY})
 target_link_libraries(testDBScan PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
 
-add_executable (kdtree_test kdtree_test1.cc)
+add_executable (kdtree_test kdtree_test.cc)
 target_include_directories(kdtree_test PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(kdtree_test PUBLIC ${CLUSTER_LIBRARY})

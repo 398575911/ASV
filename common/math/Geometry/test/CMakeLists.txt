@@ -49,7 +49,6 @@ target_include_directories(test_RScurve PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(test_RScurve ${RARE_LIBRARIES})
 
 
-
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
 add_executable (linesegment2d_test linesegment2d_test.cc)
 target_include_directories(linesegment2d_test PRIVATE ${HEADER_DIRECTORY})
