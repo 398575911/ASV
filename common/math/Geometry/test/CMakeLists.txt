@@ -29,11 +29,6 @@ add_executable (miniball_example miniball_example.cc)
 add_executable (miniball_example_containers miniball_example_containers.cc)
 
 
-add_executable (testkdtree testkdtree.cc "../../src/kdtree.c")
-
-add_executable (testkdtree2 testkdtree2.cc "../../src/kdtree.c")
-
-
 add_executable (simple_voronoi simple_voronoi.cc)
 target_include_directories(simple_voronoi PRIVATE ${HEADER_DIRECTORY})
 
@@ -48,10 +43,6 @@ add_executable (plot_voronoi plot_voronoi.cc)
 target_include_directories(plot_voronoi PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(plot_voronoi ${RARE_LIBRARIES})
 
-
-add_executable (plot_2dkdtree plot_2dkdtree.cc "../../src/kdtree.c")
-target_include_directories(plot_2dkdtree PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(plot_2dkdtree ${RARE_LIBRARIES})
 
 add_executable (test_RScurve test_RScurve.cc)
 target_include_directories(test_RScurve PRIVATE ${HEADER_DIRECTORY})
