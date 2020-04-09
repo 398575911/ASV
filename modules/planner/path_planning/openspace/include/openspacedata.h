@@ -64,19 +64,19 @@ struct Obstacle_Box2d_Config {
   double heading;
 };
 
-template <int max_num>
+template <std::size_t max_num>
 struct Obstacle_Vertex {
   std::array<bool, max_num> status;
   std::array<ASV::common::math::Vec2d, max_num> vertex;
 };
 
-template <int max_num>
+template <std::size_t max_num>
 struct Obstacle_LineSegment {
   std::array<bool, max_num> status;
   std::array<ASV::common::math::LineSegment2d, max_num> linesegment;
 };
 
-template <int max_num>
+template <std::size_t max_num>
 struct Obstacle_Box2d {
   std::array<bool, max_num> status;
   std::array<ASV::common::math::Box2d, max_num> box2d;

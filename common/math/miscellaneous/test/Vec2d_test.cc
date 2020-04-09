@@ -91,3 +91,11 @@ BOOST_AUTO_TEST_CASE(selfrotate) {
   BOOST_CHECK_SMALL(p4.x() + 4.0, 1e-7);
   BOOST_CHECK_SMALL(p4.y() - 0.0, 1e-7);
 }
+
+BOOST_AUTO_TEST_CASE(Smaller) {
+  Vec2d p1(0, 0);
+  Vec2d p2(1, 0);
+
+  BOOST_TEST(p1.IsSmall() == true);
+  BOOST_TEST(p2.IsSmall() == false);
+}

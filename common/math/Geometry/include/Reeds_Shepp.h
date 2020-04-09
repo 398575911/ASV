@@ -16,7 +16,10 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <tuple>
 #include <vector>
+
+#include <iostream>
 
 namespace ASV::common::math {
 
@@ -86,21 +89,68 @@ class ReedsSheppStateSpace {
                              const std::array<double, 3> &q1) {
     ReedsSheppPath path = reedsShepp(q0, q1);
     std::array<int, 5> types;
-    for (int i = 0; i < 5; ++i) {
+    for (std::size_t i = 0; i < 5; ++i) {
       types[i] = static_cast<int>(path.type_[i]);
     }
     return types;
   }  // rs_type
 
-  std::vector<std::array<double, 3> > rs_state(const std::array<double, 3> &q0,
-                                               const std::array<double, 3> &q1,
-                                               double step_size) const {
+  // interpolate the rs curve, and separate the curve when reverse/forward
+  // switch occurs
+  std::vector<std::tuple<double, double, double, bool>> rs_trajectory(
+      const std::array<double, 3> &q0, const std::array<double, 3> &q1,
+      double step_size) const {
+    ReedsSheppPath path = reedsShepp(q0, q1);
+
+    // separate each segment of rs curve
+    std::vector<std::array<double, 2>> segment_arclengths;
+    std::vector<bool> segment_IsForward;
+
+    double current_seg = 0.0;
+    segment_arclengths.push_back({current_seg, path.length()});
+    segment_IsForward.push_back((path.length_[0] > 0));
+    for (std::size_t i = 0; i != 4; i++) {
+      current_seg += std::abs(path.length_[i]);
+      // if there exists a switch point
+      if (path.length_[i] * path.length_[i + 1] < 0) {
+        segment_arclengths.back().at(1) = current_seg;
+        segment_arclengths.push_back({current_seg, path.length()});
+        segment_IsForward.push_back((path.length_[i + 1] > 0));
+      }
+    }
+
+    // interploate
+    std::size_t num_segment = segment_arclengths.size();
+    std::vector<std::tuple<double, double, double, bool>> results;
+    // results.resize(num_segment);
+
+    for (std::size_t index = 0; index != num_segment; ++index) {
+      double current_arclength = segment_arclengths[index].at(0);
+      while (current_arclength < segment_arclengths[index].at(1)) {
+        auto interpolate_results = interpolate(q0, path, current_arclength);
+        results.push_back({interpolate_results[0], interpolate_results[1],
+                           interpolate_results[2], segment_IsForward[index]});
+        current_arclength += (step_size / rho_);
+      }
+      // Don't forget the end point
+      auto interpolate_results =
+          interpolate(q0, path, segment_arclengths[index].at(1));
+      results.push_back({interpolate_results[0], interpolate_results[1],
+                         interpolate_results[2], segment_IsForward[index]});
+    }
+
+    return results;
+  }  // rs_trajectory
+
+  std::vector<std::array<double, 3>> rs_state(const std::array<double, 3> &q0,
+                                              const std::array<double, 3> &q1,
+                                              double step_size) const {
     ReedsSheppPath path = reedsShepp(q0, q1);
     double dist = rho_ * path.length();
-    std::vector<std::array<double, 3> > result;
+    std::vector<std::array<double, 3>> result;
 
-    for (double seg = 0.0; seg < dist; seg += step_size) {
-      result.emplace_back(interpolate(q0, path, seg / rho_));
+    for (double arclength = 0.0; arclength < dist; arclength += step_size) {
+      result.emplace_back(interpolate(q0, path, arclength / rho_));
     }
     result.emplace_back(q1);
 
@@ -133,7 +183,7 @@ class ReedsSheppStateSpace {
     s[0] = s[1] = 0.0;
     s[2] = q0[2];
 
-    for (unsigned int i = 0; i < 5 && seg > 0; ++i) {
+    for (std::size_t i = 0; i < 5 && seg > 0; ++i) {
       if (path.length_[i] < 0) {
         v = std::max(-seg, path.length_[i]);
         seg += v;

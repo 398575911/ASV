@@ -9,7 +9,4 @@
 
 #include "../include/PathSmoothing.h"
 
-int main() {
-  ASV::planning::PathSmoothing pathsmoother;
-  pathsmoother.test();
-}
+int main() { ASV::planning::PathSmoothing pathsmoother; }

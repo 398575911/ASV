@@ -64,17 +64,16 @@ int main() {
   Eigen::VectorXd theta(5);
 
   std::vector<std::array<double, 3>> _OpenSpace_Trajectory;
-  x << 0, 1, 2, 3, 4;
-  y << 0, 0, 0, 1.73e-7, 0;
+  x << 0, 1.1, 2.0, 3.4, 4.5;
+  y << 0, -3.1, 10, 20, 11.3;
   theta << 0, 0, 0, 8.7e-8, 0;
 
   for (int i = 0; i != x.size(); ++i)
     _OpenSpace_Trajectory.push_back({x(i), y(i), theta(i)});
 
   planning::CollisionChecking<> _CollisionChecking(_collisiondata);
-  _CollisionChecking.set_Obstacles_Vertex(Obstacles_Vertex)
-      .set_Obstacles_LineSegment(Obstacles_lS)
-      .set_Obstacles_Box2d(Obstacles_Box);
+  _CollisionChecking.set_all_obstacls(Obstacles_Vertex, Obstacles_lS,
+                                      Obstacles_Box);
 
   _timer.timeelapsed();
 
@@ -85,6 +84,15 @@ int main() {
       std::cout << "collison free\n";
 
   long int et = _timer.timeelapsed();
+  std::cout << "elapsed time of collision checking: " << et << std::endl;
 
-  std::cout << "elapsed time: " << et << std::endl;
+  auto nearst_results =
+      _CollisionChecking.FindNearstObstacle(_OpenSpace_Trajectory);
+
+  et = _timer.timeelapsed();
+
+  std::cout << "elapsed time of nearest point: " << et << std::endl;
+
+  for (const auto &nearst_result : nearst_results)
+    std::cout << nearst_result[0] << " " << nearst_result[1] << std::endl;
 }

@@ -13,7 +13,7 @@
 #include "../include/Reeds_Shepp.h"
 
 void rtplotting(Gnuplot &_gp, const double *state,
-                const std::vector<std::array<double, 3> > &allstate) {
+                const std::vector<std::array<double, 3>> &allstate) {
   static double length_ = 0.5;
 
   double arrow_start_x = state[0];
@@ -25,7 +25,7 @@ void rtplotting(Gnuplot &_gp, const double *state,
   _gp << "set arrow from " << arrow_start_x << ", " << arrow_start_y << " to "
       << arrow_end_x << ", " << arrow_end_y << "as 1 \n";
 
-  std::vector<std::pair<double, double> > xy_pts_C;
+  std::vector<std::pair<double, double>> xy_pts_C;
 
   for (unsigned int i = 0; i != allstate.size(); ++i) {
     xy_pts_C.push_back(std::make_pair(allstate[i][0], allstate[i][1]));
@@ -40,13 +40,14 @@ void rtplotting(Gnuplot &_gp, const double *state,
 }  // rtplotting
 
 int main() {
-  std::array<double, 3> q0 = {2, 2, 0};
-  std::array<double, 3> q1 = {6, -8, 0.75 * M_PI};
+  std::array<double, 3> q0 = {2, 2, 0.0 * M_PI};
+  std::array<double, 3> q1 = {-6, 8, 1 * M_PI};
 
   ASV::common::math::ReedsSheppStateSpace r(3);
 
   //----------------------------get curve type-------------------------
   auto RStypes = r.rs_type(q0, q1);
+  std::cout << "rscurve type\n";
   for (unsigned int i = 0; i < RStypes.size(); i++) {
     std::cout << RStypes[i] << std::endl;
   }
@@ -54,6 +55,13 @@ int main() {
   //--------------------q0 to q1 discrete point-----------------
   auto finalpath = r.rs_state(q0, q1, 0.1);
 
+  //
+  auto switch_test = r.rs_trajectory(q0, q1, 0.1);
+
+  for (const auto &value : switch_test) {
+    std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
+              << std::get<2>(value) << ", " << std::get<3>(value) << std::endl;
+  }
   Gnuplot gp;
   gp << "set terminal x11 size 1000, 1000 1\n";
   gp << "set grid \n";

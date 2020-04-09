@@ -27,9 +27,9 @@ class OpenSpacePlanner {
       const std::vector<Obstacle_Vertex_Config> &Obstacles_Vertex,
       const std::vector<Obstacle_LineSegment_Config> &Obstacles_LineSegment,
       const std::vector<Obstacle_Box2d_Config> &Obstacles_Box2d) {
-    collision_checker_.set_Obstacles_Vertex(Obstacles_Vertex)
-        .set_Obstacles_LineSegment(Obstacles_LineSegment)
-        .set_Obstacles_Box2d(Obstacles_Box2d);
+    collision_checker_.set_all_obstacls(Obstacles_Vertex, Obstacles_LineSegment,
+                                        Obstacles_Box2d);
+
     return *this;
   }  // update_obstacles
 

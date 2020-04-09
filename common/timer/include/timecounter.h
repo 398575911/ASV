@@ -1,8 +1,7 @@
 /*
 ***********************************************************************
-* timecounter.h: to give the precise elapsed time in milliseconds.
-* Boost date_time is not a header-only library.  Please build the library
-* and then add it.
+* timecounter.h: to give the precise elapsed time in milliseconds, or
+* in microseconds. And it can also give the UTC time.
 * This header file can be read by C++ compilers
 *
 *  by Hu.ZH(CrossOcean.ai)

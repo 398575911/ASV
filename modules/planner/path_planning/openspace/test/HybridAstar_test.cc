@@ -618,7 +618,7 @@ void generate_obstacle_map(
           10   // end_y
       });
       // start point
-      start_point = {14, 6, 0.3 * M_PI};
+      start_point = {4, 6, 0.3 * M_PI};
       // end point
       end_point = {11.5, 1.5, 0 * M_PI};
       break;
@@ -718,7 +718,7 @@ int main() {
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 4;
+  int test_scenario = 3;
 
   // obstacles
   std::vector<planning::Obstacle_Vertex_Config> Obstacles_Vertex;
@@ -732,9 +732,8 @@ int main() {
   planning::HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
 
   ASV::planning::CollisionChecking_Astar collision_checker_(_collisiondata);
-  collision_checker_.set_Obstacles_Vertex(Obstacles_Vertex)
-      .set_Obstacles_LineSegment(Obstacles_LS)
-      .set_Obstacles_Box2d(Obstacles_Box);
+  collision_checker_.set_all_obstacls(Obstacles_Vertex, Obstacles_LS,
+                                      Obstacles_Box);
 
   Hybrid_AStar.setup_start_end(start_point.at(0), start_point.at(1),
                                start_point.at(2), end_point.at(0),
@@ -754,16 +753,16 @@ int main() {
   Gnuplot gp;
   gp << "set terminal x11 size 1100, 1100 0\n";
   gp << "set title 'A star search'\n";
-  gp << "set xrange [0:40]\n";
-  gp << "set yrange [0:40]\n";
+  gp << "set xrange [0:100]\n";
+  gp << "set yrange [0:100]\n";
   gp << "set size ratio -1\n";
 
-  for (std::size_t i = 0; i != hr.size(); ++i) {
+  for (std::size_t i = 0; i != hr2d.size(); ++i) {
     rtplotting_bestpath(
         gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr[i], hr,
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr2d[i], hr2d,
         Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 
   return 0;

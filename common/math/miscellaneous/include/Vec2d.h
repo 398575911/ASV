@@ -62,6 +62,9 @@ class Vec2d {
   //! Gets the angle between the vector and the positive x semi-axis
   double Angle() const { return std::atan2(y_, x_); }
 
+  // check the length of vector, if too small return true
+  bool IsSmall() const { return (Length() <= kMathEpsilon); }
+
   //! Returns the unit vector that is co-linear with this vector
   void Normalize() {
     const double l = Length();
