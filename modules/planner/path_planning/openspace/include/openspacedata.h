@@ -40,6 +40,10 @@ struct OpenSpace_Trajectory {
   Eigen::VectorXd speed;  // speed (rad/s)
 };
 
+struct SmootherConfig {
+  double d_max;
+};
+
 /**************************** obstacles  ******************************/
 // the obstacles in openspace planner can be defined in different forms,
 // including vertex, linesegment and box. These parameters are represented

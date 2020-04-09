@@ -62,6 +62,6 @@ add_executable (OpenSpace_test OpenSpace_test.cc ${SOURCE_FILES} )
 target_include_directories(OpenSpace_test PRIVATE ${HEADER_DIRECTORY})
 
 
-# add_executable (Smoothing_test Smoothing_test.cc ${SOURCE_FILES} )
-# target_include_directories(Smoothing_test PRIVATE ${HEADER_DIRECTORY})
-# target_link_libraries(Smoothing_test PUBLIC ${CLUSTER_LIBRARY})
+add_executable (Smoothing_test Smoothing_test.cc ${SOURCE_FILES} )
+target_include_directories(Smoothing_test PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(Smoothing_test PUBLIC ${CLUSTER_LIBRARY})

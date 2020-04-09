@@ -163,7 +163,6 @@ class HybridState4DNode {
     // float rsdistance =
     //     (std::abs(this->x_ - nodeGoal.x()) + std::abs(this->y_ -
     //     nodeGoal.y()));
-    std::cout << "rsdistance: " << rsdistance << std::endl;
 
     return rsdistance;
 
@@ -365,40 +364,42 @@ class HybridAStar {
 
         // check the collision for the generated RS curve
         if (!collision_checker.InCollision(rscurve_generated)) {
-          hybridastar_trajecotry_.clear();
-
+          std::vector<std::tuple<double, double, double, bool>>
+              closedlist_trajecotry;
           while (current_p) {
             double current_node_x = static_cast<double>(current_p->x());
             double current_node_y = static_cast<double>(current_p->y());
             double current_node_theta = static_cast<double>(current_p->theta());
             bool current_move_type = current_p->IsForward();
-            hybridastar_trajecotry_.push_back({current_node_x, current_node_y,
-                                               current_node_theta,
-                                               current_move_type});
+            closedlist_trajecotry.push_back({current_node_x, current_node_y,
+                                             current_node_theta,
+                                             current_move_type});
             current_p = astar_4d_search_.GetCurrentNodePrev();
             // check the forward/reverse switch
             if (current_p) {
               bool pre_move_type = current_p->IsForward();
               if (pre_move_type != current_move_type)
-                hybridastar_trajecotry_.push_back(
-                    {current_node_x, current_node_y, current_node_theta,
-                     pre_move_type});
+                closedlist_trajecotry.push_back({current_node_x, current_node_y,
+                                                 current_node_theta,
+                                                 pre_move_type});
             }
-          }
+          }  // end while
           // reverse the trajectory
-          std::reverse(hybridastar_trajecotry_.begin(),
-                       hybridastar_trajecotry_.end());
+          std::reverse(closedlist_trajecotry.begin(),
+                       closedlist_trajecotry.end());
 
           // combine two kinds of trajectory
           auto rscurve_trajectory = rscurve_.rs_trajectory(
               closedlist_end, rscurve_end, 0.5 * searchconfig_.move_length);
 
-          hybridastar_trajecotry_.insert(hybridastar_trajecotry_.end(),
-                                         rscurve_trajectory.begin(),
-                                         rscurve_trajectory.end());
+          closedlist_trajecotry.insert(closedlist_trajecotry.end(),
+                                       rscurve_trajectory.begin(),
+                                       rscurve_trajectory.end());
+
+          hybridastar_trajecotry_ = closedlist_trajecotry;
           astar_4d_search_.CancelSearch();
           std::cout << "find a collision free RS curve!\n";
-        }
+        }  // end if collision checking
       }
 
     } while (SearchState == HybridAStar_4dNode_Search::SEARCH_STATE_SEARCHING);
@@ -531,6 +532,7 @@ class HybridAStar {
     return searchconfig;
   }  // GenerateSearchConfig
 
+  // tempo function
   float twodnode_search(const CollisionChecking_Astar &collision_checker) {
     unsigned int SearchState;
     unsigned int SearchSteps = 0;

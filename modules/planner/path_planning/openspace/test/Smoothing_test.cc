@@ -9,4 +9,10 @@
 
 #include "../include/PathSmoothing.h"
 
-int main() { ASV::planning::PathSmoothing pathsmoother; }
+int main() {
+  ASV::planning::SmootherConfig smoothconfig{
+      1,
+  };
+
+  ASV::planning::PathSmoothing pathsmoother(smoothconfig);
+}

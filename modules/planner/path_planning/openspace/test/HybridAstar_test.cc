@@ -59,7 +59,78 @@ void plot_vessel(Gnuplot &_gp, const std::array<double, 3> &vessel_state,
 }
 
 // illustrate the hybrid A* planner at a time instant
-void rtplotting_bestpath(
+void rtplotting_4dbestpath(
+    Gnuplot &_gp, const std::array<double, 3> &start_point,
+    const std::array<double, 3> &end_point,
+    const std::tuple<double, double, double, bool> &state,
+    const std::vector<std::tuple<double, double, double, bool>> &trajectory,
+    const std::vector<planning::Obstacle_Vertex_Config> &Obstacles_Vertex,
+    const std::vector<planning::Obstacle_LineSegment_Config>
+        &Obstacles_LineSegment,
+    const std::vector<planning::Obstacle_Box2d_Config> &Obstacles_Box2d) {
+  std::vector<std::pair<double, double>> xy_pts_A;
+
+  plot_vessel(_gp, start_point, 1);
+  plot_vessel(_gp, end_point, 2);
+  plot_vessel(_gp, {std::get<0>(state), std::get<1>(state), std::get<2>(state)},
+              3);
+
+  // obstacle (box)
+  for (std::size_t i = 0; i != Obstacles_Box2d.size(); ++i) {
+    ASV::common::math::Box2d ob_box(
+        ASV::common::math::Vec2d(Obstacles_Box2d[i].center_x,
+                                 Obstacles_Box2d[i].center_y),
+        Obstacles_Box2d[i].heading, Obstacles_Box2d[i].length,
+        Obstacles_Box2d[i].width);
+    auto allcorners = ob_box.GetAllCorners();
+
+    //
+    _gp << "set object " + std::to_string(i + 5) + " polygon from";
+    for (int j = 0; j != 4; ++j) {
+      _gp << " " << allcorners[j].x() << ", " << allcorners[j].y() << " to";
+    }
+    _gp << " " << allcorners[0].x() << ", " << allcorners[0].y() << "\n";
+    _gp << "set object " + std::to_string(i + 5) +
+               " fc rgb '#000000' fillstyle solid lw 0\n";
+  }
+
+  _gp << "plot ";
+  // trajectory
+  for (const auto &ps : trajectory) {
+    xy_pts_A.push_back(std::make_pair(std::get<0>(ps), std::get<1>(ps)));
+  }
+  _gp << _gp.file1d(xy_pts_A)
+      << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
+         "pointsize 1 title 'best path',";
+
+  // obstacle (vertex)
+  xy_pts_A.clear();
+  for (std::size_t i = 0; i != Obstacles_Vertex.size(); ++i) {
+    xy_pts_A.push_back(
+        std::make_pair(Obstacles_Vertex[i].x, Obstacles_Vertex[i].y));
+  }
+  _gp << _gp.file1d(xy_pts_A)
+      << " with points pt 9 ps 3 lc rgb '#000000' title 'obstacles_v', ";
+
+  // obstacle (Line Segment)
+  for (std::size_t i = 0; i != Obstacles_LineSegment.size(); ++i) {
+    xy_pts_A.clear();
+    xy_pts_A.push_back(std::make_pair(Obstacles_LineSegment[i].start_x,
+                                      Obstacles_LineSegment[i].start_y));
+    xy_pts_A.push_back(std::make_pair(Obstacles_LineSegment[i].end_x,
+                                      Obstacles_LineSegment[i].end_y));
+    _gp << _gp.file1d(xy_pts_A)
+        << " with linespoints linetype 1 lw 2 lc rgb '#000000' pointtype 7 "
+           "pointsize 1 notitle, ";
+  }
+  _gp << "\n";
+
+  _gp.flush();
+
+}  // rtplotting_4dbestpath
+
+// illustrate the hybrid A* planner at a time instant
+void rtplotting_2dbestpath(
     Gnuplot &_gp, const std::array<double, 3> &start_point,
     const std::array<double, 3> &end_point, const std::array<double, 3> &state,
     const std::vector<std::array<double, 3>> &trajectory,
@@ -125,7 +196,7 @@ void rtplotting_bestpath(
 
   _gp.flush();
 
-}  // rtplotting_bestpath
+}  // rtplotting_2dbestpath
 
 // generate map and endpoint
 void generate_obstacle_map(
@@ -718,7 +789,7 @@ int main() {
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 3;
+  int test_scenario = 6;
 
   // obstacles
   std::vector<planning::Obstacle_Vertex_Config> Obstacles_Vertex;
@@ -752,18 +823,35 @@ int main() {
   // plotting
   Gnuplot gp;
   gp << "set terminal x11 size 1100, 1100 0\n";
-  gp << "set title 'A star search'\n";
+  gp << "set title 'A star search (4d)'\n";
   gp << "set xrange [0:100]\n";
   gp << "set yrange [0:100]\n";
   gp << "set size ratio -1\n";
 
-  for (std::size_t i = 0; i != hr2d.size(); ++i) {
-    rtplotting_bestpath(
+  for (std::size_t i = 0; i != hr.size(); ++i) {
+    std::cout << std::get<0>(hr[i]) << ", " << std::get<1>(hr[i]) << ", "
+              << std::get<2>(hr[i]) << ", " << std::get<3>(hr[i]) << std::endl;
+    rtplotting_4dbestpath(
         gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr2d[i], hr2d,
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr[i], hr,
         Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
+
+  // Gnuplot gp1;
+  // gp1 << "set terminal x11 size 1100, 1100 1\n";
+  // gp1 << "set title 'A star search (2d)'\n";
+  // gp1 << "set xrange [0:100]\n";
+  // gp1 << "set yrange [0:100]\n";
+  // gp1 << "set size ratio -1\n";
+
+  // for (std::size_t i = 0; i != hr2d.size(); ++i) {
+  //   rtplotting_2dbestpath(
+  //       gp1, {start_point.at(0), start_point.at(1), start_point.at(2)},
+  //       {end_point.at(0), end_point.at(1), end_point.at(2)}, hr2d[i], hr2d,
+  //       Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+  //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  // }
 
   return 0;
 }
