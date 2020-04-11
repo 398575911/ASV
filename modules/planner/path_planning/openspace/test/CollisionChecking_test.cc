@@ -94,5 +94,13 @@ int main() {
   std::cout << "elapsed time of nearest point: " << et << std::endl;
 
   for (const auto &nearst_result : nearst_results)
-    std::cout << nearst_result[0] << " " << nearst_result[1] << std::endl;
+    std::cout << nearst_result.x() << " " << nearst_result.y() << std::endl;
+
+  auto nn_results = _CollisionChecking.FindNearestNeighbors(10, 2, 10);
+
+  et = _timer.timeelapsed();
+  std::cout << "elapsed time of nn point: " << et << std::endl;
+
+  for (const auto &nn_result : nn_results)
+    std::cout << nn_result.x() << " " << nn_result.y() << std::endl;
 }

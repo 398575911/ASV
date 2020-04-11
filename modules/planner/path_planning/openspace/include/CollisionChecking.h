@@ -80,8 +80,34 @@ class CollisionChecking {
     return false;
   }  // InCollision
 
+  // find the nearest obstacle, given position (x, y), and radius
+  std::vector<ASV::common::math::Vec2d> FindNearestNeighbors(
+      const double px, const double py,
+      const double radius_search = 10.0) const {
+    pyclustering::container::kdtree_searcher searcher(
+        {px, py}, tree_.get_root(), radius_search);
+
+    // Find Nearest Neighbours
+    std::vector<double> nearest_distances;
+    std::vector<pyclustering::container::kdnode::ptr> nearest_nodes;
+    searcher.find_nearest_nodes(nearest_distances, nearest_nodes);
+
+    // generate the obstacles in the nearest neighbors
+    std::size_t total_num = nearest_nodes.size();
+    std::vector<ASV::common::math::Vec2d> nearest_obstacles(
+        total_num, ASV::common::math::Vec2d(0, 0));
+
+    for (std::size_t index = 0; index != total_num; index++) {
+      auto nearest_node = nearest_nodes[index]->get_data();
+      nearest_obstacles[index] =
+          ASV::common::math::Vec2d(nearest_node[0], nearest_node[1]);
+    }
+
+    return nearest_obstacles;
+  }  // FindNearestNeighbors
+
   // find the nearest obstacle, given position (x, y)
-  std::vector<std::vector<double>> FindNearstObstacle(
+  std::vector<ASV::common::math::Vec2d> FindNearstObstacle(
       const std::vector<std::array<double, 3>> &positions) const {
     // convert from std::vector to vec2d
     std::size_t total_num = positions.size();
@@ -96,24 +122,32 @@ class CollisionChecking {
   }  // FindNearstObstacle
 
   // find the nearest obstacle, given position (x, y)
-  std::vector<std::vector<double>> FindNearstObstacle(
+  std::vector<ASV::common::math::Vec2d> FindNearstObstacle(
       const std::vector<ASV::common::math::Vec2d> &positions) const {
     std::size_t total_num = positions.size();
-    std::vector<std::vector<double>> nearest_obstacles(total_num, {0});
+    std::vector<ASV::common::math::Vec2d> nearest_obstacles(
+        total_num, ASV::common::math::Vec2d(0, 0));
 
-    // kd search
-    const double radius_search = 10.0;  // not used
     for (std::size_t index = 0; index != total_num; index++) {
-      pyclustering::container::kdtree_searcher searcher(
-          {positions[index].x(), positions[index].y()}, tree_.get_root(),
-          radius_search);
-      // FindNearestNode
-      pyclustering::container::kdnode::ptr nearest_node =
-          searcher.find_nearest_node();
-      nearest_obstacles[index] = nearest_node->get_data();
+      nearest_obstacles[index] =
+          FindNearstObstacle(positions[index].x(), positions[index].y());
     }
 
     return nearest_obstacles;
+  }  // FindNearstObstacle
+
+  // find the nearest obstacle, given position (x, y)
+  ASV::common::math::Vec2d FindNearstObstacle(const double px,
+                                              const double py) const {
+    // kd search
+    const static double radius_search = 10.0;  // not used
+    pyclustering::container::kdtree_searcher searcher(
+        {px, py}, tree_.get_root(), radius_search);
+    // FindNearestNode
+    pyclustering::container::kdnode::ptr nearest_node =
+        searcher.find_nearest_node();
+    auto nearest_obstacle = nearest_node->get_data();
+    return {nearest_obstacle[0], nearest_obstacle[1]};
   }  // FindNearstObstacle
 
   auto Obstacles_Vertex() const noexcept { return Obstacles_Vertex_; }

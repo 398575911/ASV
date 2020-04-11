@@ -789,7 +789,7 @@ int main() {
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 6;
+  int test_scenario = 5;
 
   // obstacles
   std::vector<planning::Obstacle_Vertex_Config> Obstacles_Vertex;

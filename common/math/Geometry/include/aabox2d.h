@@ -36,7 +36,7 @@ class AABox2d {
    * @param opposite_corner The opposite corner to the first one
    */
   explicit AABox2d(const Vec2d &one_corner, const Vec2d &opposite_corner)
-      : AABox2d(0.5 * (one_corner + opposite_corner),
+      : AABox2d((one_corner + opposite_corner) * 0.5,
                 std::abs(one_corner.x() - opposite_corner.x()),
                 std::abs(one_corner.y() - opposite_corner.y())) {}
   /**

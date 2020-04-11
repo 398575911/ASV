@@ -39,7 +39,11 @@ class Vec2d {
   //! Creates a unit-vector with a given angle to the positive x semi-axis
   static Vec2d CreateUnitVec2d(const double angle) {
     return Vec2d(std::cos(angle), std::sin(angle));
-  }
+  }  // CreateUnitVec2d
+
+  static double AngleTwoVectors(const Vec2d &a, const Vec2d &b) {
+    return std::acos(a.InnerProd(b) / (a.Length() * b.Length()));
+  }  // AngleTwoVectors
 
   //! Getter for x component
   double x() const noexcept { return x_; }
@@ -77,37 +81,47 @@ class Vec2d {
   //! Returns the distance to the given vector
   double DistanceTo(const Vec2d &other) const {
     return std::hypot(x_ - other.x(), y_ - other.y());
-  }
+  }  // DistanceTo
 
   //! Returns the squared distance to the given vector
   double DistanceSquareTo(const Vec2d &other) const {
     const double dx = x_ - other.x_;
     const double dy = y_ - other.y_;
     return dx * dx + dy * dy;
-  }
+  }  // DistanceSquareTo
 
   //! Returns the "cross" product between these two Vec2d (non-standard).
   double CrossProd(const Vec2d &other) const {
     return x_ * other.y() - y_ * other.x();
-  }
+  }  // CrossProd
 
   //! Returns the inner product between these two Vec2d.
   double InnerProd(const Vec2d &other) const {
     return x_ * other.x() + y_ * other.y();
-  }
+  }  // InnerProd
 
   //! rotate the vector by angle.
   Vec2d rotate(const double angle) const {
     return Vec2d(x_ * std::cos(angle) - y_ * std::sin(angle),
                  x_ * std::sin(angle) + y_ * std::cos(angle));
-  }
+  }  // rotate
+
+  // orthogonal complement of self vector
+  Vec2d OrthogonalComplement(const Vec2d &other) const {
+    return *this - other * (InnerProd(other) / other.LengthSquare());
+  }  // OrthogonalComplement
+
+  // normalized orthogonal complement of self vector
+  Vec2d OrthogonalComplementNormal(const Vec2d &other) const {
+    return OrthogonalComplement(other) / (this->Length() * other.Length());
+  }  // OrthogonalComplementNormal
 
   //! rotate the vector itself by angle.
   void SelfRotate(const double angle) {
     double tmp_x = x_;
     x_ = x_ * std::cos(angle) - y_ * std::sin(angle);
     y_ = tmp_x * std::sin(angle) + y_ * std::cos(angle);
-  }
+  }  // SelfRotate
 
   //! Sums two Vec2d
   Vec2d operator+(const Vec2d &other) const {
@@ -122,6 +136,11 @@ class Vec2d {
   //! Multiplies Vec2d by a scalar
   Vec2d operator*(const double scalar) const {
     return Vec2d(x_ * scalar, y_ * scalar);
+  }
+
+  //! divide Vec2d by a scalar
+  Vec2d operator/(const double scalar) const {
+    return Vec2d(x_ / scalar, y_ / scalar);
   }
 
   //! Sums another Vec2d to the current one
@@ -145,6 +164,13 @@ class Vec2d {
     return *this;
   }
 
+  //! divide this Vec2d by a scalar
+  Vec2d &operator/=(const double ratio) {
+    x_ /= ratio;
+    y_ /= ratio;
+    return *this;
+  }
+
   //! Compares two Vec2d
   bool operator==(const Vec2d &other) const {
     return (std::abs(x_ - other.x()) < kMathEpsilon &&
@@ -157,7 +183,7 @@ class Vec2d {
 };
 
 //! Multiplies the given Vec2d by a given scalar
-Vec2d operator*(const double ratio, const Vec2d &vec) { return vec * ratio; }
+// Vec2d operator*(const double ratio, const Vec2d &vec) { return vec * ratio; }
 
 }  // namespace ASV::common::math
 

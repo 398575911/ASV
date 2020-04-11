@@ -99,3 +99,13 @@ BOOST_AUTO_TEST_CASE(Smaller) {
   BOOST_TEST(p1.IsSmall() == true);
   BOOST_TEST(p2.IsSmall() == false);
 }
+
+BOOST_AUTO_TEST_CASE(OrthogonalComplement) {
+  Vec2d p1(0, 3);
+  Vec2d p2(-1, 1);
+
+  BOOST_CHECK_SMALL(p2.InnerProd(p1.OrthogonalComplement(p2)) - 0.0, 1e-7);
+  BOOST_CHECK_SMALL(p2.InnerProd(p1.OrthogonalComplementNormal(p2)) - 0.0,
+                    1e-7);
+  BOOST_CHECK_SMALL(Vec2d::AngleTwoVectors(p1, p2) - 0.25 * M_PI, 1e-7);
+}
