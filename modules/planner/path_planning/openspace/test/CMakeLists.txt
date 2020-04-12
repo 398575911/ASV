@@ -49,7 +49,7 @@ set(RARE_LIBRARIES ${RARE_LIBRARIES}
 
 add_executable (HybridAstar_test HybridAstar_test.cc ${SOURCE_FILES} )
 target_include_directories(HybridAstar_test PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(HybridAstar_test PUBLIC ${RARE_LIBRARIES} )
+target_link_libraries(HybridAstar_test PUBLIC ${RARE_LIBRARIES})
 target_link_libraries(HybridAstar_test PUBLIC ${CLUSTER_LIBRARY})
 
 
@@ -65,3 +65,5 @@ target_include_directories(OpenSpace_test PRIVATE ${HEADER_DIRECTORY})
 add_executable (Smoothing_test Smoothing_test.cc ${SOURCE_FILES} )
 target_include_directories(Smoothing_test PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(Smoothing_test PUBLIC ${CLUSTER_LIBRARY})
+target_link_libraries(Smoothing_test PUBLIC ${RARE_LIBRARIES})
+
