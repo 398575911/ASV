@@ -130,8 +130,14 @@ int main() {
       {11.5, 1.5, 0.0, true},
 
   };
-  auto p_coarse = pathsmoother.SetupCoarsePath(coarse_path).coarse_path();
-  pathsmoother.PerformSmoothing(collision_checker_);
+  pathsmoother.SetupCoarsePath(coarse_path)
+      .PerformSmoothing(collision_checker_)
+      .InterpolateTrajectory();
+
+  auto p_coarse_vec2d = pathsmoother.coarse_vec2d();
+  auto p_coarse_forward = pathsmoother.coarse_isforward();
+  auto p_smooth_path = pathsmoother.smooth_path();
+  auto p_fine_path = pathsmoother.fine_path();
 
   // plotting
   Gnuplot gp;
@@ -141,8 +147,23 @@ int main() {
   gp << "set yrange [0:50]\n";
   gp << "set size ratio -1\n";
 
-  for (const auto &value : p_coarse) {
-    std::cout << std::get<0>(value).x() << ", " << std::get<0>(value).y()
-              << ", " << std::get<1>(value) << std::endl;
+  std::cout << "coarse path\n";
+  for (std::size_t index = 0; index != p_coarse_forward.size(); ++index) {
+    std::cout << "one segment: " << p_coarse_forward[index] << std::endl;
+    for (const auto &state : p_coarse_vec2d[index])
+      std::cout << state.x() << ", " << state.y() << std::endl;
+  }
+
+  std::cout << "smooth path\n";
+  for (const auto &segment : p_smooth_path) {
+    std::cout << "one segment" << std::endl;
+    for (const auto &state : segment)
+      std::cout << state.x() << ", " << state.y() << std::endl;
+  }
+
+  std::cout << "fine path\n";
+  for (const auto &state : p_fine_path) {
+    std::cout << state.at(0) << ", " << state.at(1) << ", " << state.at(2)
+              << std::endl;
   }
 }
