@@ -7,6 +7,7 @@
 *******************************************************************************
 */
 
+#include <thread>
 #include "../include/PathSmoothing.h"
 #include "DataFactory.hpp"
 
@@ -131,8 +132,7 @@ int main() {
 
   };
   pathsmoother.SetupCoarsePath(coarse_path)
-      .PerformSmoothing(collision_checker_)
-      .InterpolateTrajectory();
+      .PerformSmoothing(collision_checker_);
 
   auto p_coarse_vec2d = pathsmoother.coarse_vec2d();
   auto p_coarse_forward = pathsmoother.coarse_isforward();
@@ -143,8 +143,8 @@ int main() {
   Gnuplot gp;
   gp << "set terminal x11 size 1100, 1100 0\n";
   gp << "set title 'Path Smoothing'\n";
-  gp << "set xrange [0:50]\n";
-  gp << "set yrange [0:50]\n";
+  gp << "set xrange [0:40]\n";
+  gp << "set yrange [0:40]\n";
   gp << "set size ratio -1\n";
 
   std::cout << "coarse path\n";
@@ -154,16 +154,27 @@ int main() {
       std::cout << state.x() << ", " << state.y() << std::endl;
   }
 
+  std::vector<std::array<double, 3>> smooth_plot;
   std::cout << "smooth path\n";
   for (const auto &segment : p_smooth_path) {
     std::cout << "one segment" << std::endl;
-    for (const auto &state : segment)
+    for (const auto &state : segment) {
+      smooth_plot.push_back({state.x(), state.y(), 0});
       std::cout << state.x() << ", " << state.y() << std::endl;
+    }
   }
 
-  std::cout << "fine path\n";
-  for (const auto &state : p_fine_path) {
-    std::cout << state.at(0) << ", " << state.at(1) << ", " << state.at(2)
-              << std::endl;
+  // std::cout << "fine path\n";
+  // for (const auto &state : p_fine_path) {
+  //   std::cout << state.at(0) << ", " << state.at(1) << ", " << state.at(2)
+  //             << std::endl;
+  // }
+
+  for (std::size_t i = 0; i != smooth_plot.size(); ++i) {
+    rtplotting_4dbestpath(
+        gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, smooth_plot[i],
+        smooth_plot, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 }

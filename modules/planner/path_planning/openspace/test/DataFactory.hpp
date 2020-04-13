@@ -59,9 +59,8 @@ void plot_vessel(Gnuplot &_gp, const double vessel_x, const double vessel_y,
 // illustrate the hybrid A* planner at a time instant
 void rtplotting_4dbestpath(
     Gnuplot &_gp, const std::array<double, 3> &start_point,
-    const std::array<double, 3> &end_point,
-    const std::tuple<double, double, double, bool> &state,
-    const std::vector<std::tuple<double, double, double, bool>> &trajectory,
+    const std::array<double, 3> &end_point, const std::array<double, 3> &state,
+    const std::vector<std::array<double, 3>> &trajectory,
     const std::vector<Obstacle_Vertex_Config> &Obstacles_Vertex,
     const std::vector<Obstacle_LineSegment_Config> &Obstacles_LineSegment,
     const std::vector<Obstacle_Box2d_Config> &Obstacles_Box2d) {
@@ -69,8 +68,7 @@ void rtplotting_4dbestpath(
 
   plot_vessel(_gp, start_point.at(0), start_point.at(1), start_point.at(2), 1);
   plot_vessel(_gp, end_point.at(0), end_point.at(1), end_point.at(2), 2);
-  plot_vessel(_gp, std::get<0>(state), std::get<1>(state), std::get<2>(state),
-              3);
+  plot_vessel(_gp, state.at(0), state.at(1), state.at(2), 3);
 
   // obstacle (box)
   for (std::size_t i = 0; i != Obstacles_Box2d.size(); ++i) {
@@ -94,7 +92,7 @@ void rtplotting_4dbestpath(
   _gp << "plot ";
   // trajectory
   for (const auto &ps : trajectory) {
-    xy_pts_A.push_back(std::make_pair(std::get<0>(ps), std::get<1>(ps)));
+    xy_pts_A.push_back(std::make_pair(ps.at(0), ps.at(1)));
   }
   _gp << _gp.file1d(xy_pts_A)
       << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
@@ -701,6 +699,83 @@ void generate_obstacle_map(
       // end point
       end_point = {21.5, 3.5, -0.5 * M_PI};
       break;
+
+    case 7:
+      // vertex
+      Obstacles_Vertex.push_back({-10, 4});
+      // linesegment
+      Obstacles_LS.push_back({
+          0,   // start_x
+          5,   // start_y
+          20,  // end_x
+          5    // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          5,   // start_y
+          20,  // end_x
+          0    // end_y
+      });
+      Obstacles_LS.push_back({
+          20,  // start_x
+          0,   // start_y
+          23,  // end_x
+          0    // end_y
+      });
+      Obstacles_LS.push_back({
+          23,  // start_x
+          0,   // start_y
+          23,  // end_x
+          5    // end_y
+      });
+      Obstacles_LS.push_back({
+          23,  // start_x
+          5,   // start_y
+          40,  // end_x
+          5    // end_y
+      });
+
+      Obstacles_Box.push_back({
+          11,         // center_x
+          2,          // center_y
+          4,          // length
+          5,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          20,         // center_x
+          4,          // center_y
+          6,          // length
+          2,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          30,         // center_x
+          2,          // center_y
+          3,          // length
+          2,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          30,         // center_x
+          4.1,        // center_y
+          3.5,        // length
+          2,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          30,         // center_x
+          10,         // center_y
+          3.2,        // length
+          2,          // width
+          0.0 * M_PI  // heading
+      });
+      // start point
+      start_point = {30, 7, 0.0 * M_PI};
+      // end point
+      end_point = {21.5, 3.5, -0.5 * M_PI};
+      break;
+
     default:
       break;
   };

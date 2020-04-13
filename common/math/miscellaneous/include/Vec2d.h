@@ -42,7 +42,12 @@ class Vec2d {
   }  // CreateUnitVec2d
 
   static double AngleTwoVectors(const Vec2d &a, const Vec2d &b) {
-    return std::acos(a.InnerProd(b) / (a.Length() * b.Length()));
+    if (a.IsSmall() || b.IsSmall()) return 0;
+
+    double a_b = a.InnerProd(b) / (a.Length() * b.Length());
+    if (a_b > 1) a_b = 1;
+    if (a_b < -1) a_b = -1;
+    return std::acos(a_b);
   }  // AngleTwoVectors
 
   //! Getter for x component

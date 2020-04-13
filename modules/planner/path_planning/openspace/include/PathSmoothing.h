@@ -24,14 +24,14 @@ class PathSmoothing {
  public:
   explicit PathSmoothing(const SmootherConfig &smootherconfig)
       : dmax_(smootherconfig.d_max),
-        kappa_max_(0.3),
-        fine_discrete_(0.05),
+        kappa_max_(0.0),
+        fine_discrete_(0.1),
         x_resolution_(0.01),
         y_resolution_(0.01),
         theta_resolution_(0.01),
-        omega_o_(0.1),
+        omega_o_(0.00),
         omega_k_(1),
-        omega_s_(1),
+        omega_s_(0),
         start_state_({0, 0, 0}),
         end_state_({0, 0, 0}) {}
   virtual ~PathSmoothing() = default;
@@ -54,6 +54,8 @@ class PathSmoothing {
       const CollisionChecking_Astar &collision_checker) {
     smooth_path_ = coarse_vec2d_;
     for (std::size_t seg = 0; seg != coarse_vec2d_.size(); seg++) {
+      auto fine_path_seg = OneSegSuperSample(coarse_vec2d_[seg]);
+
       smooth_path_[seg] =
           OneSegmentSmoothing(collision_checker, coarse_vec2d_[seg], dmax_,
                               kappa_max_, omega_o_, omega_s_, omega_k_);
@@ -63,24 +65,14 @@ class PathSmoothing {
 
   // trajectory interpolation
   PathSmoothing &InterpolateTrajectory() {
-    std::vector<std::vector<vec2d>> smooth_path_test;
+    std::vector<std::vector<vec2d>> fine_path_segments = smooth_path_;
 
-    for (const auto &segment : smooth_path_) {
-      // super sample
-      auto oneseg_fine_path = SuperSample(segment);
-      // hold the orignal vertex and minimize the curvature
-
-      GenerateCurvatureTerm(oneseg_fine_path);
-
-      std::vector<vec2d> smoothing_segment;
-      for (const auto &value : oneseg_fine_path) {
-        smoothing_segment.push_back(std::get<0>(value));
-      }
-
-      smooth_path_test.push_back(smoothing_segment);
+    for (std::size_t seg = 0; seg != smooth_path_.size(); seg++) {
+      fine_path_segments[seg] =
+          OneSegmentInterpolation(smooth_path_[seg], kappa_max_);
     }
 
-    fine_path_ = GenerateFineTrajectory(smooth_path_test, coarse_isforward_);
+    fine_path_ = CombineFineTrajectory(fine_path_segments, coarse_isforward_);
 
     return *this;
   }  // InterpolateTrajectory
@@ -118,44 +110,103 @@ class PathSmoothing {
       const std::vector<vec2d> &coarse_path, const double dmax,
       const double kappa_max, const double omega_o, const double omega_s,
       const double omega_k) {
-    auto smooth_path = coarse_path;
     if (coarse_path.size() >= 3) {  // ensure the size
-      for (int i = 0; i != 1; ++i) {
+      auto smooth_path_ing = coarse_path;
+      for (int i = 0; i != 10; ++i) {
         std::vector<std::vector<vec2d>> _nearest_obstacles =
-            GenerateNearestNeighbors(collision_checker, coarse_path, dmax);
+            GenerateNearestNeighbors(collision_checker, smooth_path_ing, dmax);
 
         // compute the gradient of cost function
         std::vector<vec2d> _gradient =
-            GenerateGradient(_nearest_obstacles, coarse_path, dmax, kappa_max,
-                             omega_o, omega_s, omega_k);
+            GenerateGradient(_nearest_obstacles, smooth_path_ing, dmax,
+                             kappa_max, omega_o, omega_s, omega_k);
+
+        std::cout << "gradient\n";
+        for (const auto &value : _gradient) {
+          std::cout << value.x() << ", " << value.y() << std::endl;
+        }
 
         double _norm2_gradient = ComputeL2NormSquare(_gradient);
 
         // backtracking line search
-        double _alpha = 0.2;
-        double _beta = 0.5;
-        double _gamma = 2;  // 0 < gamma
-
-        double _cost = GenerateCost(_nearest_obstacles, coarse_path, dmax,
+        static double _alpha = 0.2;
+        static double _beta = 0.5;
+        double _gamma = 1;  // 0 < gamma
+        double _cost = GenerateCost(_nearest_obstacles, smooth_path_ing, dmax,
                                     kappa_max, omega_o, omega_s, omega_k);
 
-        int count = 0;
-
-        do {
-          count++;
-          // update the coarse path
+        std::size_t ls_count = 0;  // max iteration in line search
+        while (1) {
+          auto _smooth_path_ing =
+              UpdateTrajectory(smooth_path_ing, _gradient, _gamma);
+          if ((_cost - GenerateCost(_nearest_obstacles, _smooth_path_ing, dmax,
+                                    kappa_max, omega_o, omega_s, omega_k) >
+               _alpha * _gamma * _norm2_gradient) ||
+              (ls_count > 10)) {
+            smooth_path_ing = _smooth_path_ing;
+            break;
+          }
+          ls_count++;
           _gamma *= _beta;
-          smooth_path = UpdateTrajectory(coarse_path, _gradient, _gamma);
-        } while (GenerateCost(_nearest_obstacles, smooth_path, dmax, kappa_max,
-                              omega_o, omega_s, omega_k) >=
-                 _cost - _alpha * _gamma * _norm2_gradient);
+        }  // end while loop
+      }    // end for loop
+      return smooth_path_ing;
+    }
+    return coarse_path;
 
-        std::cout << "count " << count << std::endl;
+  }  // OneSegmentSmoothing
+
+  // trajectory interpolation on one segment
+  std::vector<vec2d> OneSegmentInterpolation(
+      const std::vector<vec2d> &smooth_path, const double kappa_max) {
+    if (smooth_path.size() >= 2) {
+      // super sample
+      auto fine_path_ing = SuperSample(smooth_path);
+
+      std::cout << "fine_path_ing\n";
+      for (const auto &value : fine_path_ing)
+        std::cout << std::get<0>(value).x() << ", " << std::get<0>(value).y()
+                  << ", " << std::get<1>(value) << std::endl;
+      // hold the orignal vertex and minimize the curvature
+      for (int i = 0; i != 1; ++i) {
+        // compute the gradient
+        auto _gradient = GenerateCurvatureGradient(fine_path_ing);
+        std::cout << "_gradient\n";
+        for (const auto &value : _gradient)
+          std::cout << value.x() << ", " << value.y() << std::endl;
+        // backtracking line search
+        double _norm2_gradient = ComputeL2NormSquare(_gradient);
+
+        // backtracking line search
+        static double _alpha = 0.2;
+        static double _beta = 0.5;
+        double _gamma = 1;  // 0 < gamma
+        double _cost = ComputeCurvatureCost(fine_path_ing);
+
+        std::size_t ls_count = 0;  // max iteration in line search
+        while (1) {
+          auto _fine_path_ing =
+              UpdateTrajectory(fine_path_ing, _gradient, _gamma);
+          if ((_cost - ComputeCurvatureCost(_fine_path_ing) >
+               _alpha * _gamma * _norm2_gradient) ||
+              (ls_count > 4)) {
+            fine_path_ing = _fine_path_ing;
+            break;
+          }
+          ls_count++;
+          _gamma *= _beta;
+        }  // end while loop
       }
+
+      // conversion
+      std::vector<vec2d> fine_path;
+      for (const auto &fine_state : fine_path_ing)
+        fine_path.push_back(std::get<0>(fine_state));
+      return fine_path;
     }
     return smooth_path;
 
-  }  // OneSegmentSmoothing
+  }  // OneSegmentInterpolation
 
   // compute the nearest neighbors of each vertex on one segment
   std::vector<std::vector<vec2d>> GenerateNearestNeighbors(
@@ -199,18 +250,19 @@ class PathSmoothing {
       auto _P2i = n_Xip1_Xi.OrthogonalComplementNormal(Xi_Xim1);
       double _Delta_Thetai = vec2d::AngleTwoVectors(Xi_Xim1, Xip1_Xi);
 
-      double _reciprocal_length = 1.0 / Xi_Xim1.Length();
-      double _Delta_Thetai_sin = std::sin(_Delta_Thetai);
-      double _reciprocal_length_sin = 0;
-      if (_Delta_Thetai_sin <= theta_resolution_)
-        _reciprocal_length_sin = _reciprocal_length / theta_resolution_;
-      else
-        _reciprocal_length_sin = _reciprocal_length / _Delta_Thetai_sin;
-
       _Xim1_Xi_Xip1[index] = Xip1_Xi - Xi_Xim1;
-      P1i[index] = _P1i * _reciprocal_length_sin;
-      P2i[index] = _P2i * _reciprocal_length_sin;
-      Delta_Thetai[index] = _Delta_Thetai * _reciprocal_length;
+
+      // 0 <=_Delta_Thetai <= M_PI
+      if (theta_resolution_ < _Delta_Thetai &&
+          _Delta_Thetai < (M_PI - theta_resolution_)) {
+        double _reciprocal_length = 1.0 / Xi_Xim1.Length();
+        double _reciprocal_length_sin =
+            _reciprocal_length / std::sin(_Delta_Thetai);
+
+        P1i[index] = _P1i * _reciprocal_length_sin;
+        P2i[index] = _P2i * _reciprocal_length_sin;
+        Delta_Thetai[index] = _Delta_Thetai * _reciprocal_length;
+      }
     }
 
     // gradient at start/end and fixed node are all zero
@@ -300,6 +352,15 @@ class PathSmoothing {
     return new_path;
   }  // UpdateTrajectory
 
+  // update the smooth path
+  vec3t UpdateTrajectory(const vec3t &path, const std::vector<vec2d> &gradient,
+                         const double gamma) const {
+    auto new_path = path;
+    for (std::size_t index = 0; index != new_path.size(); ++index)
+      std::get<0>(new_path[index]) -= (gradient[index] * gamma);
+    return new_path;
+  }  // UpdateTrajectory
+
   // super sample the smooth path, with smooth vertex fixed
   vec3t SuperSample(const std::vector<vec2d> &smoothpath) const {
     vec3t fine_path;
@@ -323,8 +384,33 @@ class PathSmoothing {
     return fine_path;
   }  // SuperSample
 
+  // super sample the smooth path, with smooth vertex fixed
+  std::vector<vec2d> OneSegSuperSample(
+      const std::vector<vec2d> &smoothpath) const {
+    std::size_t size_smooth_path = smoothpath.size();
+    if (size_smooth_path >= 2) {
+      std::vector<vec2d> fine_path;
+      for (std::size_t index = 0; index != (size_smooth_path - 1); ++index) {
+        auto i_smooth_path = smoothpath[index];
+        // generate the fixed vertex
+        fine_path.push_back(i_smooth_path);
+        // linear intepolation
+        auto diff_vec2d = smoothpath[index + 1] - i_smooth_path;
+        double diff_length = diff_vec2d.Length();
+        for (double j = fine_discrete_; j < diff_length; j += fine_discrete_) {
+          fine_path.push_back(i_smooth_path + diff_vec2d * (j / diff_length));
+        }
+      }
+      // don't forget the last one
+      fine_path.push_back(smoothpath.back());
+
+      return fine_path;
+    }
+    return smoothpath;
+  }  // OneSegSuperSample
+
   // generate the fine trajectory from the fine path
-  std::vector<std::array<double, 3>> GenerateFineTrajectory(
+  std::vector<std::array<double, 3>> CombineFineTrajectory(
       const std::vector<std::vector<vec2d>> &fine_path,
       const std::vector<bool> &isforward) const {
     std::vector<std::array<double, 3>> fine_trajectory;
@@ -346,67 +432,33 @@ class PathSmoothing {
     }
 
     return fine_trajectory;
-  }  // GenerateFineTrajectory
-
-  // compute the gradient of obstacle term
-  std::vector<vec2d> GenerateObstacleTerm(
-      const CollisionChecking_Astar &collision_checker, const vec3t &path) {
-    std::size_t total_num = path.size();
-    std::vector<vec2d> obstacleTerm(total_num, {0, 0});
-
-    // obstacleTerm at start/end and fixed node are all zero
-    for (std::size_t index = 1; index != (total_num - 1); ++index) {
-      if (!std::get<1>(path[index])) {  // not fixed node
-        vec2d current_obstacle_term(0, 0);
-        auto current_state_vec2d = std::get<0>(path[index]);
-
-        // find the nearest neighbors around the current node
-        auto nearest_obstacles = collision_checker.FindNearestNeighbors(
-            current_state_vec2d.x(), current_state_vec2d.y(), dmax_);
-
-        // add the obstacle potential in the nearst neighbors
-        for (const auto &nearest_obstacle : nearest_obstacles) {
-          auto x2o = current_state_vec2d -
-                     vec2d(nearest_obstacle.x(), nearest_obstacle.y());
-          // assume the x2o is not very small
-          double k = 2 * omega_o_ * (1.0 - dmax_ / x2o.Length());
-          current_obstacle_term += (x2o * k);
-        }
-
-        obstacleTerm[index] = current_obstacle_term;
-      }  // end if
-    }    // end for loop
-    return obstacleTerm;
-  }  // GenerateObstacleTerm
+  }  // CombineFineTrajectory
 
   // compute the gradient of smoothing term
-  std::vector<vec2d> GenerateSmoothTerm(const vec3t &path) {
+  double ComputeCurvatureCost(const vec3t &path) {
     std::size_t total_num = path.size();
-    std::vector<vec2d> SmoothTerm(total_num, {0, 0});
-    std::vector<vec2d> Xim1_Xi_Xip1(total_num, {0, 0});
 
-    for (std::size_t index = 1; index != (total_num - 1); ++index) {
-      Xim1_Xi_Xip1[index] = std::get<0>(path[index - 1]) +
-                            std::get<0>(path[index + 1]) -
-                            std::get<0>(path[index]) * 2;
-    }
+    double _curvature_cost = 0.0;
 
     // SmoothTerm at start/end and fixed node are all zero
     for (std::size_t index = 1; index != (total_num - 1); ++index) {
       if (!std::get<1>(path[index])) {  // not fixed node
-        vec2d current_smooth_term = Xim1_Xi_Xip1[index - 1] +
-                                    Xim1_Xi_Xip1[index + 1] -
-                                    Xim1_Xi_Xip1[index] * 2;
-        current_smooth_term *= (2 * omega_s_);
-        SmoothTerm[index] = current_smooth_term;
+
+        auto Xi_Xim1 = std::get<0>(path[index]) - std::get<0>(path[index - 1]);
+        auto Xip1_Xi = std::get<0>(path[index + 1]) - std::get<0>(path[index]);
+        // cost curvature
+        double _Delta_Thetai =
+            vec2d::AngleTwoVectors(Xi_Xim1, Xip1_Xi) / Xi_Xim1.Length();
+        _curvature_cost += std::pow(_Delta_Thetai, 2);
+
       }  // end if
     }    // end for loops
-    return SmoothTerm;
+    return _curvature_cost;
 
-  }  // GenerateSmoothTerm
+  }  // ComputeCurvatureCost
 
   // compute the gradient of curvature term ()
-  std::vector<vec2d> GenerateCurvatureTerm(const vec3t &path) {
+  std::vector<vec2d> GenerateCurvatureGradient(const vec3t &path) {
     std::size_t total_num = path.size();
 
     std::vector<vec2d> CurvatureTerm(total_num, {0, 0});
@@ -422,10 +474,17 @@ class PathSmoothing {
 
       auto _P1i = Xi_Xim1.OrthogonalComplementNormal(n_Xip1_Xi);
       auto _P2i = n_Xip1_Xi.OrthogonalComplementNormal(Xi_Xim1);
+
       double _Delta_Thetai = vec2d::AngleTwoVectors(Xi_Xim1, Xip1_Xi);
+      std::cout << "Xi_Xim1 " << Xi_Xim1.x() << ", " << Xi_Xim1.y()
+                << std::endl;
+      std::cout << "Xip1_Xi " << Xip1_Xi.x() << ", " << Xip1_Xi.y()
+                << std::endl;
+      std::cout << "_Delta_Thetai " << _Delta_Thetai << std::endl;
 
       double _reciprocal_length = 1.0 / Xi_Xim1.Length();
       double _Delta_Thetai_sin = std::sin(_Delta_Thetai);
+
       double _reciprocal_length_sin = 0;
       if (_Delta_Thetai_sin <= theta_resolution_)
         _reciprocal_length_sin = _reciprocal_length / theta_resolution_;
@@ -452,13 +511,12 @@ class PathSmoothing {
              Xi_Xim1 * (Delta_Thetai[index] / Xi_Xim1.LengthSquare())) *
                 Delta_Thetai[index] -
             P1i[index - 1] * Delta_Thetai[index - 1];
-        current_curvature_term *= (2 * omega_k_);
         CurvatureTerm[index] = current_curvature_term;
       }  // end if
     }    // end for loops
 
     return CurvatureTerm;
-  }  // GenerateCurvatureTerm
+  }  // GenerateCurvatureGradient
 
   // find the trajectory node when the forward/reverse switch occurs
   void FindForwardReverseSwitch(const vec4t &coarse_trajectory,

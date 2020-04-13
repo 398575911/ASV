@@ -95,7 +95,7 @@ int main() {
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 4;
+  int test_scenario = 7;
 
   // obstacles
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
@@ -125,6 +125,12 @@ int main() {
 
   auto hr = Hybrid_AStar.hybridastar_trajecotry();
   auto hr2d = Hybrid_AStar.hybridastar_2dtrajecotry();
+
+  std::vector<std::array<double, 3>> hr_plot;
+  for (const auto &value : hr)
+    hr_plot.push_back(
+        {std::get<0>(value), std::get<1>(value), std::get<2>(value)});
+
   // std::vector<std::array<double, 3>> hr = {{1, 20, 0}};
   // plotting
   Gnuplot gp;
@@ -134,13 +140,11 @@ int main() {
   gp << "set yrange [0:40]\n";
   gp << "set size ratio -1\n";
 
-  for (std::size_t i = 0; i != hr.size(); ++i) {
-    std::cout << std::get<0>(hr[i]) << ", " << std::get<1>(hr[i]) << ", "
-              << std::get<2>(hr[i]) << ", " << std::get<3>(hr[i]) << std::endl;
+  for (std::size_t i = 0; i != hr_plot.size(); ++i) {
     rtplotting_4dbestpath(
         gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr[i], hr,
-        Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr_plot[i],
+        hr_plot, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 
