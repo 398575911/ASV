@@ -29,9 +29,9 @@ class PathSmoothing {
         x_resolution_(0.01),
         y_resolution_(0.01),
         theta_resolution_(0.01),
-        omega_o_(0.00),
-        omega_k_(1),
-        omega_s_(0),
+        omega_o_(0.01),
+        omega_k_(0),
+        omega_s_(1),
         start_state_({0, 0, 0}),
         end_state_({0, 0, 0}) {}
   virtual ~PathSmoothing() = default;
@@ -112,7 +112,7 @@ class PathSmoothing {
       const double omega_k) {
     if (coarse_path.size() >= 3) {  // ensure the size
       auto smooth_path_ing = coarse_path;
-      for (int i = 0; i != 10; ++i) {
+      for (int i = 0; i != 2; ++i) {
         std::vector<std::vector<vec2d>> _nearest_obstacles =
             GenerateNearestNeighbors(collision_checker, smooth_path_ing, dmax);
 

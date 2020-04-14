@@ -129,13 +129,20 @@ void generate_obstacle_map(
     std::vector<Obstacle_Vertex_Config> &Obstacles_Vertex,
     std::vector<Obstacle_LineSegment_Config> &Obstacles_LS,
     std::vector<Obstacle_Box2d_Config> &Obstacles_Box,
-    std::array<float, 3> &start_point, std::array<float, 3> &end_point,
+    std::array<double, 3> &start_point, std::array<double, 3> &end_point,
     int type) {
   // type:
   // 0: parking lot
   //
 
   switch (type) {
+    case -1:
+      // start point
+      start_point = {0, 0, 0.0 * M_PI};
+      // end point
+      end_point = {20, 0, 0.0 * M_PI};
+      break;
+
     case 0:
       // vertex
       Obstacles_Vertex.push_back({10, 4});
@@ -701,40 +708,49 @@ void generate_obstacle_map(
       break;
 
     case 7:
-      // vertex
-      Obstacles_Vertex.push_back({-10, 4});
       // linesegment
       Obstacles_LS.push_back({
-          0,   // start_x
-          5,   // start_y
-          20,  // end_x
-          5    // end_y
+          33,  // start_x
+          14,  // start_y
+          33,  // end_x
+          18   // end_y
       });
       Obstacles_LS.push_back({
-          20,  // start_x
-          5,   // start_y
-          20,  // end_x
-          0    // end_y
+          33,  // start_x
+          18,  // start_y
+          29,  // end_x
+          18   // end_y
       });
       Obstacles_LS.push_back({
-          20,  // start_x
-          0,   // start_y
-          23,  // end_x
-          0    // end_y
+          29,  // start_x
+          18,  // start_y
+          29,  // end_x
+          20   // end_y
       });
       Obstacles_LS.push_back({
-          23,  // start_x
-          0,   // start_y
-          23,  // end_x
-          5    // end_y
+          29,  // start_x
+          20,  // start_y
+          36,  // end_x
+          20   // end_y
       });
       Obstacles_LS.push_back({
-          23,  // start_x
-          5,   // start_y
-          40,  // end_x
-          5    // end_y
+          18,  // start_x
+          20,  // start_y
+          21,  // end_x
+          20   // end_y
       });
-
+      Obstacles_LS.push_back({
+          21,  // start_x
+          12,  // start_y
+          21,  // end_x
+          20   // end_y
+      });
+      Obstacles_LS.push_back({
+          21,  // start_x
+          12,  // start_y
+          18,  // end_x
+          12   // end_y
+      });
       Obstacles_Box.push_back({
           11,         // center_x
           2,          // center_y
@@ -757,23 +773,177 @@ void generate_obstacle_map(
           0.0 * M_PI  // heading
       });
       Obstacles_Box.push_back({
-          30,         // center_x
+          31,         // center_x
           4.1,        // center_y
           3.5,        // length
           2,          // width
           0.0 * M_PI  // heading
       });
       Obstacles_Box.push_back({
-          30,         // center_x
-          10,         // center_y
+          31,         // center_x
+          6.0,        // center_y
+          3.0,        // length
+          1.1,        // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          31,         // center_x
+          10.5,       // center_y
           3.2,        // length
           2,          // width
           0.0 * M_PI  // heading
       });
+      Obstacles_Box.push_back({
+          31,         // center_x
+          13,         // center_y
+          4,          // length
+          2,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          31,         // center_x
+          30,         // center_y
+          6,          // length
+          6,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          17,         // center_x
+          18,         // center_y
+          4,          // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          13,         // center_x
+          18,         // center_y
+          3.7,        // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          13,         // center_x
+          13,         // center_y
+          3.6,        // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          10.5,       // center_x
+          13,         // center_y
+          3,          // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          7,          // center_x
+          18,         // center_y
+          3.7,        // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          3.5,        // center_x
+          13,         // center_y
+          3.6,        // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          3.5,        // center_x
+          13,         // center_y
+          3,          // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          2,          // center_x
+          18,         // center_y
+          3,          // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          13,         // center_x
+          30,         // center_y
+          3,          // length
+          2,          // width
+          0.5 * M_PI  // heading
+      });
       // start point
-      start_point = {30, 7, 0.0 * M_PI};
+      end_point = {29, 8, 0.0 * M_PI};
+      // end_point = {23.5, 10, -0.5 * M_PI};
+
       // end point
-      end_point = {21.5, 3.5, -0.5 * M_PI};
+      start_point = {4.5, 20, -0.5 * M_PI};
+
+      break;
+
+    case 8:
+      // linesegment
+      Obstacles_LS.push_back({
+          9,   // start_x
+          5,   // start_y
+          22,  // end_x
+          5    // end_y
+      });
+      Obstacles_LS.push_back({
+          9,  // start_x
+          5,  // start_y
+          6,  // end_x
+          3   // end_y
+      });
+      Obstacles_LS.push_back({
+          22,  // start_x
+          5,   // start_y
+          23,  // end_x
+          3    // end_y
+      });
+      Obstacles_LS.push_back({
+          10,   // start_x
+          7.5,  // start_y
+          20,   // end_x
+          7.5   // end_y
+      });
+      Obstacles_LS.push_back({
+          10,   // start_x
+          7.5,  // start_y
+          6.5,  // end_x
+          9     // end_y
+      });
+      Obstacles_LS.push_back({
+          20,   // start_x
+          7.5,  // start_y
+          40,   // end_x
+          20    // end_y
+      });
+      Obstacles_LS.push_back({
+          40,  // start_x
+          20,  // start_y
+          40,  // end_x
+          3    // end_y
+      });
+      Obstacles_LS.push_back({
+          40,  // start_x
+          3,   // start_y
+          23,  // end_x
+          3    // end_y
+      });
+      Obstacles_Box.push_back({
+          8,          // center_x
+          14,         // center_y
+          4,          // length
+          5,          // width
+          0.5 * M_PI  // heading
+      });
+
+      // start point
+      end_point = {29.2, 7, 0.0 * M_PI};
+      // end_point = {23.5, 10, -0.5 * M_PI};
+
+      // end point
+      start_point = {1, 10, -0.5 * M_PI};
+
       break;
 
     default:

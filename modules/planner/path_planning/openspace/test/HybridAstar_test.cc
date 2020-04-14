@@ -88,21 +88,21 @@ void rtplotting_2dbestpath(
 // Main
 int main() {
   HybridAStarConfig _HybridAStarConfig{
-      1,    // move_length
-      1.5,  // penalty_turning
-      2,    // penalty_reverse
-      2     // penalty_switch
+      1.0,  // move_length
+      1.2,  // penalty_turning
+      1.2,  // penalty_reverse
+      1.5   // penalty_switch
             // 5,    // num_interpolate
   };
 
-  int test_scenario = 7;
+  int test_scenario = -1;
 
   // obstacles
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
   std::vector<Obstacle_Box2d_Config> Obstacles_Box;
-  std::array<float, 3> start_point;
-  std::array<float, 3> end_point;
+  std::array<double, 3> start_point;
+  std::array<double, 3> end_point;
   generate_obstacle_map(Obstacles_Vertex, Obstacles_LS, Obstacles_Box,
                         start_point, end_point, test_scenario);
 
@@ -127,32 +127,36 @@ int main() {
   auto hr2d = Hybrid_AStar.hybridastar_2dtrajecotry();
 
   std::vector<std::array<double, 3>> hr_plot;
-  for (const auto &value : hr)
+  std::cout << "coarse\n";
+  for (const auto &value : hr) {
+    std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
+              << std::get<2>(value) << ", " << std::get<3>(value) << std::endl;
     hr_plot.push_back(
         {std::get<0>(value), std::get<1>(value), std::get<2>(value)});
-
-  // std::vector<std::array<double, 3>> hr = {{1, 20, 0}};
-  // plotting
-  Gnuplot gp;
-  gp << "set terminal x11 size 1100, 1100 0\n";
-  gp << "set title 'A star search (4d)'\n";
-  gp << "set xrange [0:40]\n";
-  gp << "set yrange [0:40]\n";
-  gp << "set size ratio -1\n";
-
-  for (std::size_t i = 0; i != hr_plot.size(); ++i) {
-    rtplotting_4dbestpath(
-        gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr_plot[i],
-        hr_plot, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
+
+  // // plotting
+  // Gnuplot gp;
+  // gp << "set terminal x11 size 1100, 1100 0\n";
+  // gp << "set title 'A star search (4d)'\n";
+  // gp << "set xrange [-10:40]\n";
+  // gp << "set yrange [-10:40]\n";
+
+  // // hr_plot = {{1, 20, 0}};
+
+  // for (std::size_t i = 0; i != hr_plot.size(); ++i) {
+  //   rtplotting_4dbestpath(
+  //       gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+  //       {end_point.at(0), end_point.at(1), end_point.at(2)}, hr_plot[i],
+  //       hr_plot, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+  //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  // }
 
   // Gnuplot gp1;
   // gp1 << "set terminal x11 size 1100, 1100 1\n";
   // gp1 << "set title 'A star search (2d)'\n";
-  // gp1 << "set xrange [0:100]\n";
-  // gp1 << "set yrange [0:100]\n";
+  // gp1 << "set xrange [0:40]\n";
+  // gp1 << "set yrange [0:40]\n";
   // gp1 << "set size ratio -1\n";
 
   // for (std::size_t i = 0; i != hr2d.size(); ++i) {

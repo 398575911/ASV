@@ -40,8 +40,8 @@ void rtplotting(Gnuplot &_gp, const double *state,
 }  // rtplotting
 
 int main() {
-  std::array<double, 3> q0 = {2, 2, 0.0 * M_PI};
-  std::array<double, 3> q1 = {-6, 8, 1 * M_PI};
+  std::array<double, 3> q0 = {-2, 2, 0.0 * M_PI};
+  std::array<double, 3> q1 = {6, -8, 0.5 * M_PI};
 
   ASV::common::math::ReedsSheppStateSpace r(3);
 
@@ -57,7 +57,7 @@ int main() {
 
   //
   auto switch_test = r.rs_trajectory(q0, q1, 0.1);
-
+  std::cout << "rs segment with direction\n";
   for (const auto &value : switch_test) {
     std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
               << std::get<2>(value) << ", " << std::get<3>(value) << std::endl;
@@ -74,7 +74,7 @@ int main() {
   for (unsigned int i = 0; i < finalpath.size(); i++) {
     double state[3] = {finalpath[i][0], finalpath[i][1], finalpath[i][2]};
     rtplotting(gp, state, finalpath);
-    std::cout << finalpath[i][0] << " " << finalpath[i][1] << " "
-              << finalpath[i][2] << std::endl;
+    // std::cout << finalpath[i][0] << " " << finalpath[i][1] << " "
+    //           << finalpath[i][2] << std::endl;
   }
 }

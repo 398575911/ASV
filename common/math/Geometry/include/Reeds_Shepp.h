@@ -19,8 +19,6 @@
 #include <tuple>
 #include <vector>
 
-#include <iostream>
-
 namespace ASV::common::math {
 
 enum ReedsSheppPathSegmentType {
@@ -102,22 +100,31 @@ class ReedsSheppStateSpace {
       double step_size) const {
     ReedsSheppPath path = reedsShepp(q0, q1);
 
-    // separate each segment of rs curve
-    std::vector<std::array<double, 2>> segment_arclengths;
-    std::vector<bool> segment_IsForward;
-
-    double current_seg = 0.0;
-    segment_arclengths.push_back({current_seg, path.length()});
-    segment_IsForward.push_back((path.length_[0] > 0));
-    for (std::size_t i = 0; i != 4; i++) {
-      current_seg += std::abs(path.length_[i]);
-      // if there exists a switch point
-      if (path.length_[i] * path.length_[i + 1] < 0) {
-        segment_arclengths.back().at(1) = current_seg;
-        segment_arclengths.push_back({current_seg, path.length()});
-        segment_IsForward.push_back((path.length_[i + 1] > 0));
-      }
+    // remove the zero
+    std::vector<double> nonzero_segment;
+    for (std::size_t i = 0; i != 5; i++) {
+      if (std::abs(path.length_[i]) > 0)
+        nonzero_segment.push_back(path.length_[i]);
     }
+
+    // separate each segment of rs curve
+    std::vector<std::array<double, 2>> segment_arclengths = {
+        {0.0, path.length()}};
+    std::vector<bool> segment_IsForward = {(nonzero_segment[0] > 0)};
+
+    std::size_t num_nonzero = nonzero_segment.size();
+    if (num_nonzero > 1) {
+      double current_seg = 0.0;
+      for (std::size_t i = 0; i < (num_nonzero - 1); i++) {
+        current_seg += std::abs(nonzero_segment[i]);
+        // if there exists a switch point
+        if (nonzero_segment[i] * nonzero_segment[i + 1] < 0) {
+          segment_arclengths.back().at(1) = current_seg;
+          segment_arclengths.push_back({current_seg, path.length()});
+          segment_IsForward.push_back((nonzero_segment[i + 1] > 0));
+        }
+      }  // end for loop
+    }    // end if
 
     // interploate
     std::size_t num_segment = segment_arclengths.size();

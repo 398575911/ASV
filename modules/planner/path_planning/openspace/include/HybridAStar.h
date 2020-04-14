@@ -40,6 +40,8 @@ class HybridState2DNode {
   float GoalDistanceEstimate(const HybridState2DNode &nodeGoal,
                              std::nullptr_t) {
     return std::abs(x_ - nodeGoal.x()) + std::abs(y_ - nodeGoal.y());
+    // return std::hypot(x_ - nodeGoal.x(), y_ - nodeGoal.y());
+
   }  // GoalDistanceEstimate
 
   bool IsGoal(const HybridState2DNode &nodeGoal) {
@@ -95,8 +97,8 @@ class HybridState2DNode {
                 const SearchConfig &search_config) {
     (void)search_config;
     return std::abs(successor.x() - x_) + std::abs(successor.y() - y_) +
-           std::abs(ASV::common::math::fNormalizeheadingangle(
-               successor.theta() - theta_));
+           10 * std::abs(ASV::common::math::fNormalizeheadingangle(
+                    successor.theta() - theta_));
   }  // GetCost
 
   bool IsSameState(const HybridState2DNode &rhs) {
@@ -160,11 +162,10 @@ class HybridState4DNode {
 
     float rsdistance =
         static_cast<float>(RSCurve.rs_distance(_rsstart, _rsend));
-    // float rsdistance =
-    //     (std::abs(this->x_ - nodeGoal.x()) + std::abs(this->y_ -
-    //     nodeGoal.y()));
+    float l1distance = (std::fabs(this->x_ - nodeGoal.x()) +
+                        std::fabs(this->y_ - nodeGoal.y()));
 
-    return rsdistance;
+    return std::fmax(rsdistance, l1distance);
 
   }  // GoalDistanceEstimate
 
@@ -297,6 +298,8 @@ class HybridAStar {
       HybridAStarSearch<HybridState2DNode, SearchConfig,
                         CollisionChecking_Astar>;
 
+  using vecpath = std::vector<std::tuple<double, double, double, bool>>;
+
  public:
   HybridAStar(const CollisionData &collisiondata,
               const HybridAStarConfig &hybridastarconfig)
@@ -364,30 +367,30 @@ class HybridAStar {
 
         // check the collision for the generated RS curve
         if (!collision_checker.InCollision(rscurve_generated)) {
-          std::vector<std::tuple<double, double, double, bool>>
-              closedlist_trajecotry;
+          vecpath closedlist_trajecotry = {
+              {static_cast<double>(current_p->x()),
+               static_cast<double>(current_p->y()),
+               static_cast<double>(current_p->theta()),
+               current_p->IsForward()}};
           while (current_p) {
-            double current_node_x = static_cast<double>(current_p->x());
-            double current_node_y = static_cast<double>(current_p->y());
-            double current_node_theta = static_cast<double>(current_p->theta());
-            bool current_move_type = current_p->IsForward();
-            closedlist_trajecotry.push_back({current_node_x, current_node_y,
-                                             current_node_theta,
-                                             current_move_type});
+            HybridState4DNode *current_p_copy = current_p;
             current_p = astar_4d_search_.GetCurrentNodePrev();
-            // check the forward/reverse switch
             if (current_p) {
-              bool pre_move_type = current_p->IsForward();
-              if (pre_move_type != current_move_type)
-                closedlist_trajecotry.push_back({current_node_x, current_node_y,
-                                                 current_node_theta,
-                                                 pre_move_type});
+              bool move_dir =
+                  IsForward(current_p->x(), current_p->y(), current_p->theta(),
+                            current_p_copy->x(), current_p_copy->y(),
+                            current_p_copy->theta());
+              closedlist_trajecotry.push_back(
+                  {static_cast<double>(current_p->x()),
+                   static_cast<double>(current_p->y()),
+                   static_cast<double>(current_p->theta()), move_dir});
             }
           }  // end while
           // reverse the trajectory
           std::reverse(closedlist_trajecotry.begin(),
                        closedlist_trajecotry.end());
-
+          // check the forward/reverse switch
+          closedlist_trajecotry = FindSwitch(closedlist_trajecotry);
           // combine two kinds of trajectory
           auto rscurve_trajectory = rscurve_.rs_trajectory(
               closedlist_end, rscurve_end, 0.5 * searchconfig_.move_length);
@@ -491,8 +494,7 @@ class HybridAStar {
   HybridAStar_2dNode_Search astar_2d_search_;
 
   // search results
-  std::vector<std::tuple<double, double, double, bool>> hybridastar_trajecotry_;
-
+  vecpath hybridastar_trajecotry_;
   std::vector<std::array<double, 3>> hybridastar_2d_trajecotry_;
 
   // generate the config for search
@@ -564,6 +566,41 @@ class HybridAStar {
     return path_length;
 
   }  // twodnode_search
+
+  //
+  bool IsForward(const float pre_x, const float pre_y, const float pre_theta,
+                 const float cur_x, const float cur_y,
+                 const float cur_theta) const {
+    float movement_theta = std::atan2(cur_y - pre_y, cur_x - pre_x);
+    float mean_theta = 0.5 * (pre_theta + cur_theta);
+    return std::fabs(ASV::common::math::fNormalizeheadingangle(
+               movement_theta - mean_theta)) < 0.5 * M_PI;
+
+  }  // IsForward
+
+  vecpath FindSwitch(const vecpath &trajectory) {
+    std::size_t num_trajectory = trajectory.size();
+
+    // modify the direction based on the movement and heading
+    if (num_trajectory >= 2) {
+      vecpath new_trajectory = {trajectory[0]};
+      for (std::size_t index = 1; index < num_trajectory; ++index) {
+        bool move_dir = std::get<3>(new_trajectory.back());
+        if (move_dir != std::get<3>(trajectory[index])) {
+          new_trajectory.push_back({std::get<0>(trajectory[index]),
+                                    std::get<1>(trajectory[index]),
+                                    std::get<2>(trajectory[index]), move_dir});
+          new_trajectory.push_back(trajectory[index]);
+
+        } else {
+          new_trajectory.push_back(trajectory[index]);
+        }
+      }
+
+      return new_trajectory;
+    }
+    return trajectory;
+  }  // FindSwitch
 
 };  // end class HybridAStar
 
