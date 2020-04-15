@@ -946,6 +946,23 @@ void generate_obstacle_map(
 
       break;
 
+    case 9:
+
+      Obstacles_Box.push_back({
+          10,         // center_x
+          10,         // center_y
+          4,          // length
+          4,          // width
+          0.5 * M_PI  // heading
+      });
+      // end point
+      end_point = {10, 20, 0.5 * M_PI};
+
+      // start point
+      start_point = {10, -4, 0.5 * M_PI};
+
+      break;
+
     default:
       break;
   };

@@ -95,7 +95,7 @@ int main() {
             // 5,    // num_interpolate
   };
 
-  int test_scenario = -1;
+  int test_scenario = 7;
 
   // obstacles
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
@@ -135,22 +135,22 @@ int main() {
         {std::get<0>(value), std::get<1>(value), std::get<2>(value)});
   }
 
-  // // plotting
-  // Gnuplot gp;
-  // gp << "set terminal x11 size 1100, 1100 0\n";
-  // gp << "set title 'A star search (4d)'\n";
-  // gp << "set xrange [-10:40]\n";
-  // gp << "set yrange [-10:40]\n";
+  // plotting
+  Gnuplot gp;
+  gp << "set terminal x11 size 1100, 1100 0\n";
+  gp << "set title 'A star search (4d)'\n";
+  gp << "set xrange [-10:40]\n";
+  gp << "set yrange [-10:40]\n";
 
-  // // hr_plot = {{1, 20, 0}};
+  // hr_plot = {{1, 20, 0}};
 
-  // for (std::size_t i = 0; i != hr_plot.size(); ++i) {
-  //   rtplotting_4dbestpath(
-  //       gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-  //       {end_point.at(0), end_point.at(1), end_point.at(2)}, hr_plot[i],
-  //       hr_plot, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
-  //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  // }
+  for (std::size_t i = 0; i != hr_plot.size(); ++i) {
+    rtplotting_4dbestpath(
+        gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr_plot[i],
+        hr_plot, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
 
   // Gnuplot gp1;
   // gp1 << "set terminal x11 size 1100, 1100 1\n";

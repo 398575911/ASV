@@ -43,16 +43,9 @@ class CollisionChecking {
   // check collision, return true if collision occurs.
   bool InCollision(const double ego_x, const double ego_y,
                    const double ego_theta) const {
-    // correct CoG trajectory to center
-    auto [ego_center_global_x, ego_center_global_y] = local2global(
-        this->ego_center_local_x_, this->ego_center_local_y_, ego_theta);
-    ego_center_global_x += ego_x;
-    ego_center_global_y += ego_y;
-
     // update the 2dbox for ego vessel
-    ASV::common::math::Box2d ego_box_(
-        ASV::common::math::Vec2d(ego_center_global_x, ego_center_global_y),
-        ego_theta, this->ego_length_, this->ego_width_);
+    ASV::common::math::Box2d ego_box_({ego_x, ego_y}, ego_theta,
+                                      this->ego_length_, this->ego_width_);
     // check vertex
     for (std::size_t i = 0; i != max_vertex; ++i) {
       if (Obstacles_Vertex_.status[i] &&
@@ -150,10 +143,7 @@ class CollisionChecking {
     return {nearest_obstacle[0], nearest_obstacle[1]};
   }  // FindNearstObstacle
 
-  auto Obstacles_Vertex() const noexcept { return Obstacles_Vertex_; }
-  auto Obstacles_LineSegment() const noexcept { return Obstacles_LineSegment_; }
-  auto Obstacles_Box2d() const noexcept { return Obstacles_Box2d_; }
-
+  // update obstacles
   CollisionChecking &set_all_obstacls(
       const std::vector<Obstacle_Vertex_Config> &Obstacles_Vertex,
       const std::vector<Obstacle_LineSegment_Config> &Obstacles_LineSegment,
@@ -164,6 +154,26 @@ class CollisionChecking {
     updateAllCenters();
     return *this;
   }  // set_all_obstacls
+
+  // transform the coordinate of CoG to the center
+  std::vector<std::array<double, 3>> Transform2CoG(
+      const std::vector<std::array<double, 3>> &center_path) {
+    auto cog_path = center_path;
+    for (std::size_t index = 0; index != center_path.size(); ++index) {
+      auto center_state = center_path[index];
+      auto [ego_center_global_x, ego_center_global_y] =
+          local2global(this->ego_center_local_x_, this->ego_center_local_y_,
+                       center_state.at(2));
+      cog_path[index].at(0) = center_state.at(0) - ego_center_global_x;
+      cog_path[index].at(1) = center_state.at(1) - ego_center_global_y;
+    }
+
+    return cog_path;
+  }  // Transform2CoG
+
+  auto Obstacles_Vertex() const noexcept { return Obstacles_Vertex_; }
+  auto Obstacles_LineSegment() const noexcept { return Obstacles_LineSegment_; }
+  auto Obstacles_Box2d() const noexcept { return Obstacles_Box2d_; }
 
  private:
   const double ego_length_;

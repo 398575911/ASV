@@ -104,13 +104,13 @@ int main() {
 
   HybridAStarConfig _HybridAStarConfig{
       1.0,  // move_length
-      1.2,  // penalty_turning
-      1.2,  // penalty_reverse
-      1.5   // penalty_switch
+      1.5,  // penalty_turning
+      1.5,  // penalty_reverse
+      2     // penalty_switch
             // 5,    // num_interpolate
   };
   SmootherConfig smoothconfig{
-      5,  // d_max
+      4,  // d_max
   };
 
   OpenSpacePlanner openspace(_collisiondata, _HybridAStarConfig, smoothconfig);
