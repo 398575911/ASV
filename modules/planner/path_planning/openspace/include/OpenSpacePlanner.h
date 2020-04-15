@@ -38,8 +38,15 @@ class OpenSpacePlanner {
     return *this;
   }  // update_obstacles
 
-  OpenSpacePlanner &update_start_end(const std::array<double, 3> start_point,
-                                     const std::array<double, 3> end_point) {
+  // setup the start and end points of the center of vessel box, uses the
+  // coordinate of CoG of vessel as input
+  OpenSpacePlanner &update_start_end(
+      const std::array<double, 3> start_point_cog,
+      const std::array<double, 3> end_point_cog) {
+    // transformation
+    auto start_point = collision_checker_.Transform2Center(start_point_cog);
+    auto end_point = collision_checker_.Transform2Center(end_point_cog);
+
     Hybrid_AStar_.setup_start_end(static_cast<float>(start_point.at(0)),
                                   static_cast<float>(start_point.at(1)),
                                   static_cast<float>(start_point.at(2)),
@@ -59,40 +66,31 @@ class OpenSpacePlanner {
                 << std::get<2>(segment) << ", " << std::get<3>(segment)
                 << std::endl;
     }
-    coarse_path_.clear();
+    center_coarse_path_.clear();
     for (const auto &value : coarse_path_direction)
-      coarse_path_.push_back(
+      center_coarse_path_.push_back(
           {std::get<0>(value), std::get<1>(value), std::get<2>(value)});
 
     path_smoother_.SetupCoarsePath(coarse_path_direction);
-    auto p_smooth_path =
-        path_smoother_.PerformSmoothing(collision_checker_).smooth_path();
+    auto center_fine_path =
+        path_smoother_.PerformSmoothing(collision_checker_).fine_path();
 
-    fine_path_.clear();
-    for (const auto &segment : p_smooth_path) {
-      std::cout << "one segment\n";
-      for (const auto &state : segment) {
-        std::cout << state.x() << ", " << state.y() << std::endl;
+    cog_fine_path_ = collision_checker_.Transform2CoG(center_fine_path);
 
-        fine_path_.push_back({state.x(), state.y(), 0});
-      }
-    }
     return *this;
 
   }  // GenerateTrajectory
 
-  std::vector<std::array<double, 3>> coarse_path() const {
-    return coarse_path_;
-  }
-  std::vector<std::array<double, 3>> fine_path() const { return fine_path_; }
+  auto coarse_path() const { return center_coarse_path_; }
+  auto cog_path() const { return cog_fine_path_; }
 
  private:
   CollisionChecking_Astar collision_checker_;
   HybridAStar Hybrid_AStar_;
   PathSmoothing path_smoother_;
 
-  std::vector<std::array<double, 3>> coarse_path_;
-  std::vector<std::array<double, 3>> fine_path_;
+  std::vector<std::array<double, 3>> center_coarse_path_;
+  std::vector<std::array<double, 3>> cog_fine_path_;
 
 };  // end class OpenSpacePlanner
 

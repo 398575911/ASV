@@ -118,20 +118,32 @@ int main() {
   openspace.update_start_end(start_point, end_point);
   openspace.GenerateTrajectory();
 
-  auto hr_plot = openspace.coarse_path();
-  auto hr_plot_fine = openspace.fine_path();
+  auto center_path = openspace.coarse_path();
+  auto cog_path = openspace.cog_path();
 
-  Gnuplot gp;
-  gp << "set terminal x11 size 1100, 1100 0\n";
-  gp << "set title 'A star search (4d)'\n";
-  gp << "set xrange [0:40]\n";
-  gp << "set yrange [0:40]\n";
+  // Gnuplot gp;
+  // gp << "set terminal x11 size 1100, 1100 0\n";
+  // gp << "set title 'A star search (4d)'\n";
+  // gp << "set xrange [0:40]\n";
+  // gp << "set yrange [0:40]\n";
 
-  // hr_plot = {{1, 20, 0}};
+  // compare_bestpath(
+  //     gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+  //     {end_point.at(0), end_point.at(1), end_point.at(2)}, center_path,
+  //     cog_path, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
 
-  compare_bestpath(gp,
-                   {start_point.at(0), start_point.at(1), start_point.at(2)},
-                   {end_point.at(0), end_point.at(1), end_point.at(2)}, hr_plot,
-                   hr_plot_fine, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  Gnuplot gp1;
+  gp1 << "set terminal x11 size 1100, 1100 1\n";
+  gp1 << "set title 'OpenSpace Planning'\n";
+  gp1 << "set xrange [0:40]\n";
+  gp1 << "set yrange [0:40]\n";
+  gp1 << "set size ratio -1\n";
+
+  for (std::size_t i = 0; i != cog_path.size(); ++i) {
+    rtplotting_4dbestpath(
+        gp1, {start_point.at(0), start_point.at(1), start_point.at(2)},
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, cog_path[i],
+        cog_path, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
 }

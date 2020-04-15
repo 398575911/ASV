@@ -155,7 +155,36 @@ class CollisionChecking {
     return *this;
   }  // set_all_obstacls
 
+  // transform the coordinate of the center to CoG
+  std::array<double, 3> Transform2CoG(
+      const std::array<double, 3> &center_state) {
+    auto cog_state = center_state;
+
+    auto [ego_center_global_x, ego_center_global_y] =
+        local2global(this->ego_center_local_x_, this->ego_center_local_y_,
+                     center_state.at(2));
+    cog_state.at(0) = center_state.at(0) - ego_center_global_x;
+    cog_state.at(1) = center_state.at(1) - ego_center_global_y;
+
+    return cog_state;
+  }  // Transform2CoG
+
   // transform the coordinate of CoG to the center
+  std::array<double, 3> Transform2Center(
+      const std::array<double, 3> &cog_state) {
+    auto center_state = cog_state;
+
+    auto [ego_center_global_x, ego_center_global_y] =
+        local2global(this->ego_center_local_x_, this->ego_center_local_y_,
+                     center_state.at(2));
+    center_state.at(0) = cog_state.at(0) + ego_center_global_x;
+    center_state.at(1) = cog_state.at(1) + ego_center_global_y;
+
+    return center_state;
+
+  }  // Transform2Center
+
+  // transform the trajectory of the center to CoG
   std::vector<std::array<double, 3>> Transform2CoG(
       const std::vector<std::array<double, 3>> &center_path) {
     auto cog_path = center_path;

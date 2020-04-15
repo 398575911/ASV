@@ -27,7 +27,7 @@ class PathSmoothing {
         y_resolution_(0.01),
         theta_resolution_(0.01),
         omega_o_(0.05),
-        omega_s_(1) {}
+        omega_s_(2) {}
   virtual ~PathSmoothing() = default;
 
   PathSmoothing &SetupCoarsePath(const vec4t &path) {
@@ -41,6 +41,7 @@ class PathSmoothing {
     return *this;
   }  // SetupCoarsePath
 
+  // Smoothing for the trajectory of center of vessel box
   PathSmoothing &PerformSmoothing(
       const CollisionChecking_Astar &collision_checker) {
     smooth_path_ = coarse_vec2d_;
