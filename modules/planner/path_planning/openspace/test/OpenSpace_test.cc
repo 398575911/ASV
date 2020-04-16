@@ -92,7 +92,7 @@ void compare_bestpath(
 
 int main() {
   // obstacles
-  int test_scenario = 3;
+  int test_scenario = 8;
 
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
@@ -103,7 +103,7 @@ int main() {
                         start_point, end_point, test_scenario);
 
   HybridAStarConfig _HybridAStarConfig{
-      0.5,  // move_length
+      0.4,  // move_length
       1.5,  // penalty_turning
       1.5,  // penalty_reverse
       2     // penalty_switch

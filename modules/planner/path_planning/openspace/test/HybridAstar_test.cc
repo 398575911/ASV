@@ -88,14 +88,14 @@ void rtplotting_2dbestpath(
 // Main
 int main() {
   HybridAStarConfig _HybridAStarConfig{
-      0.5,   // move_length
-      1.0,   // penalty_turning
-      1.01,  // penalty_reverse
-      1.02   // penalty_switch
+      1.05,  // move_length
+      1.3,   // penalty_turning
+      1.5,   // penalty_reverse
+      2      // penalty_switch
              // 5,    // num_interpolate
   };
 
-  int test_scenario = 10;
+  int test_scenario = 3;
 
   // obstacles
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;

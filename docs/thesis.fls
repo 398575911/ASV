@@ -493,9 +493,11 @@ INPUT tex/chapter03.tex
 INPUT figure/chapter03/Basic_concept_of_Kalman_filtering.png
 INPUT tex/chapter04.tex
 INPUT tex/chapter04.tex
+INPUT figure/chapter04/motionplanning.jpg
 INPUT figure/chapter04/trajectoryfrenet.jpg
 INPUT figure/chapter04/frenetlattice.JPG
 INPUT figure/chapter04/Algorithm.jpg
+INPUT figure/chapter04/RScurve.jpg
 INPUT tex/chapter05.tex
 INPUT tex/chapter05.tex
 INPUT figure/chapter05/Radar_spoke_projection.jpg

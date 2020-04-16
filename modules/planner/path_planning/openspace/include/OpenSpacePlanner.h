@@ -59,29 +59,23 @@ class OpenSpacePlanner {
   OpenSpacePlanner &GenerateTrajectory() {
     Hybrid_AStar_.perform_4dnode_search(collision_checker_);
     auto coarse_path_direction = Hybrid_AStar_.hybridastar_trajecotry();
-
-    std::cout << "coarse path direction\n";
-    for (const auto &segment : coarse_path_direction) {
-      std::cout << std::get<0>(segment) << ", " << std::get<1>(segment) << ", "
-                << std::get<2>(segment) << ", " << std::get<3>(segment)
-                << std::endl;
-    }
-    center_coarse_path_.clear();
-    for (const auto &value : coarse_path_direction)
-      center_coarse_path_.push_back(
-          {std::get<0>(value), std::get<1>(value), std::get<2>(value)});
-
     path_smoother_.SetupCoarsePath(coarse_path_direction);
     auto center_fine_path =
         path_smoother_.PerformSmoothing(collision_checker_).fine_path();
 
+    std::vector<std::array<double, 3>> center_coarse_path;
+    for (const auto &value : coarse_path_direction)
+      center_coarse_path.push_back(
+          {std::get<0>(value), std::get<1>(value), std::get<2>(value)});
+    // cog_coarse_path_ = collision_checker_.Transform2CoG(center_coarse_path);
+    cog_coarse_path_ = center_coarse_path;
     cog_fine_path_ = collision_checker_.Transform2CoG(center_fine_path);
 
     return *this;
 
   }  // GenerateTrajectory
 
-  auto coarse_path() const { return center_coarse_path_; }
+  auto coarse_path() const { return cog_coarse_path_; }
   auto cog_path() const { return cog_fine_path_; }
 
  private:
@@ -89,7 +83,7 @@ class OpenSpacePlanner {
   HybridAStar Hybrid_AStar_;
   PathSmoothing path_smoother_;
 
-  std::vector<std::array<double, 3>> center_coarse_path_;
+  std::vector<std::array<double, 3>> cog_coarse_path_;
   std::vector<std::array<double, 3>> cog_fine_path_;
 
 };  // end class OpenSpacePlanner
