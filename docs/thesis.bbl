@@ -282,6 +282,55 @@
       \endverb
       \keyw{Path planning;Motion control;Cost function;Guidelines;Wire;Cables;Acceleration;Remotely operated vehicles;Mobile robots;Workstations}
     \endentry
+    \entry{reeds1990}{article}{}
+      \name{author}{2}{}{%
+        {{hash=4351489d21206b4865b31748bb6c574d}{%
+           family={Reeds},
+           familyi={R\bibinitperiod},
+           given={J.\bibnamedelimi A.},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=5e7990bac27b0f8fd715badec8e9acf3}{%
+           family={Shepp},
+           familyi={S\bibinitperiod},
+           given={L.\bibnamedelimi A.},
+           giveni={L\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {english}%
+      }
+      \list{publisher}{1}{%
+        {Pacific Journal of Mathematics, A Non-profit Corporation}%
+      }
+      \strng{namehash}{bb9202a6483da98041e3768fc36be4de}
+      \strng{fullhash}{e83e03b9abd792bc1fa029394efcef53}
+      \strng{bibnamehash}{e83e03b9abd792bc1fa029394efcef53}
+      \strng{authorbibnamehash}{e83e03b9abd792bc1fa029394efcef53}
+      \strng{authornamehash}{bb9202a6483da98041e3768fc36be4de}
+      \strng{authorfullhash}{e83e03b9abd792bc1fa029394efcef53}
+      \field{sortinit}{7}
+      \field{sortinithash}{c818dd9105a2852444fc9f5e145c294e}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Pacific J. Math.}
+      \field{langid}{english}
+      \field{number}{2}
+      \field{title}{Optimal paths for a car that goes both forwards and backwards.}
+      \field{usera}{J}
+      \field{userd}{english}
+      \field{userf}{english}
+      \field{volume}{145}
+      \field{year}{1990}
+      \field{dateera}{ce}
+      \field{pages}{367\bibrangedash 393}
+      \range{pages}{27}
+      \verb{urlraw}
+      \verb https://projecteuclid.org:443/euclid.pjm/1102645450
+      \endverb
+      \verb{url}
+      \verb https://projecteuclid.org:443/euclid.pjm/1102645450
+      \endverb
+      \keyw{reeds1990}
+    \endentry
     \entry{hager1989universal}{report}{}
       \name{author}{3}{}{%
         {{hash=0c16a2b3fb7e94744c24ac1746e119ee}{%
@@ -315,8 +364,8 @@
       \strng{authorbibnamehash}{52e4e210fe766ff0e14d5db118207e3f}
       \strng{authornamehash}{3550f377db38d9d72edf3d4c51217c1f}
       \strng{authorfullhash}{52e4e210fe766ff0e14d5db118207e3f}
-      \field{sortinit}{7}
-      \field{sortinithash}{c818dd9105a2852444fc9f5e145c294e}
+      \field{sortinit}{8}
+      \field{sortinithash}{07edf88d4ea82509b9c4b4d13f41c452}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{langid}{english}
@@ -343,8 +392,8 @@
       \strng{authorbibnamehash}{9d3c75909268a1158d6ca10f8f846b24}
       \strng{authornamehash}{9d3c75909268a1158d6ca10f8f846b24}
       \strng{authorfullhash}{9d3c75909268a1158d6ca10f8f846b24}
-      \field{sortinit}{8}
-      \field{sortinithash}{07edf88d4ea82509b9c4b4d13f41c452}
+      \field{sortinit}{9}
+      \field{sortinithash}{1dd72ab054147731c9d824b49aba0534}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{机电工程}
@@ -359,49 +408,6 @@
       \field{pages}{47\bibrangedash 49}
       \range{pages}{3}
       \keyw{he1999}
-    \endentry
-    \entry{Meta_CN}{book}{}
-      \name{author}{4}{}{%
-        {{hash=9ab9c3c09bd5878aad760c86df0c1249}{%
-           family={崔万照},
-           familyi={崔\bibinitperiod}}}%
-        {{hash=7411d149be89d05686ef42f238c8b89a}{%
-           family={马伟},
-           familyi={马\bibinitperiod}}}%
-        {{hash=493c452f58d9a599470959a9fe10e5c2}{%
-           family={邱乐德},
-           familyi={邱\bibinitperiod}}}%
-        {{hash=275c8273f40125901f852dc551ed8c92}{%
-           family={张洪太},
-           familyi={张\bibinitperiod}}}%
-      }
-      \list{language}{1}{%
-        {chinese}%
-      }
-      \list{location}{1}{%
-        {北京}%
-      }
-      \list{publisher}{1}{%
-        {国防工业出版社}%
-      }
-      \strng{namehash}{df1b29f42838a017a0726fe34d1e4796}
-      \strng{fullhash}{b2d984c076be9c31c280aaf5d097deac}
-      \strng{bibnamehash}{dbd1093849ff2969c9008232afef2307}
-      \strng{authorbibnamehash}{dbd1093849ff2969c9008232afef2307}
-      \strng{authornamehash}{df1b29f42838a017a0726fe34d1e4796}
-      \strng{authorfullhash}{b2d984c076be9c31c280aaf5d097deac}
-      \field{sortinit}{1}
-      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{langid}{english}
-      \field{title}{电磁超介质及其应用}
-      \field{usera}{M}
-      \field{userd}{chinese}
-      \field{userf}{chinese}
-      \field{year}{2008}
-      \field{dateera}{ce}
-      \keyw{Meta_CN}
     \endentry
     \entry{chen2007act}{article}{}
       \name{author}{2}{}{%
@@ -1002,8 +1008,8 @@
       \strng{authorbibnamehash}{cc33f4f9702ebe9e9ae90ce8b26e8109}
       \strng{authornamehash}{cc33f4f9702ebe9e9ae90ce8b26e8109}
       \strng{authorfullhash}{cc33f4f9702ebe9e9ae90ce8b26e8109}
-      \field{sortinit}{1}
-      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
+      \field{sortinit}{2}
+      \field{sortinithash}{cbff857e587bcb4635511624d773949e}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{day}{19}
@@ -1044,8 +1050,8 @@
       \strng{authorbibnamehash}{494bf82c50994ec2bd31db64927f56a5}
       \strng{authornamehash}{494bf82c50994ec2bd31db64927f56a5}
       \strng{authorfullhash}{494bf82c50994ec2bd31db64927f56a5}
-      \field{sortinit}{1}
-      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
+      \field{sortinit}{2}
+      \field{sortinithash}{cbff857e587bcb4635511624d773949e}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Science}
@@ -1113,6 +1119,7 @@
       \keyw{RManual,{ISBN} 3-900051-07-0}
     \endentry
   \enddatalist
+  \missing{Meta_CN}
 \endrefsection
 \endinput
 

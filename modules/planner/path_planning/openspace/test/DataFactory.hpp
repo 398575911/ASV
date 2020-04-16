@@ -181,39 +181,39 @@ void generate_obstacle_map(
       break;
     case 1:
       // vertex
-      Obstacles_Vertex.push_back({10, 4});
+      Obstacles_Vertex.push_back({30, 24});
       // linesegment
       Obstacles_LS.push_back({
-          1.5,  // start_x
-          0,    // start_y
-          1.5,  // end_x
-          5     // end_y
+          21.5,  // start_x
+          20,    // start_y
+          21.5,  // end_x
+          25     // end_y
       });
       Obstacles_LS.push_back({
-          1.5,   // start_x
-          5,     // start_y
-          -1.5,  // end_x
-          5      // end_y
+          21.5,  // start_x
+          25,    // start_y
+          18.5,  // end_x
+          25     // end_y
       });
       Obstacles_LS.push_back({
-          -1.5,  // start_x
-          5,     // start_y
-          -1.5,  // end_x
-          0      // end_y
+          18.5,  // start_x
+          25,    // start_y
+          18.5,  // end_x
+          20     // end_y
       });
       // box
       Obstacles_Box.push_back({
-          10,  // center_x
-          10,  // center_y
+          30,  // center_x
+          30,  // center_y
           4,   // length
           1,   // width
           0    // heading
       });
 
       // start point
-      start_point = {-20, -20, 0.0 * M_PI};
+      start_point = {0, 0, 0.0 * M_PI};
       // end point
-      end_point = {0, 1.5, 0.5 * M_PI};
+      end_point = {20, 21.5, 0.5 * M_PI};
       break;
     case 2:
       // vertex
@@ -963,6 +963,64 @@ void generate_obstacle_map(
 
       break;
 
+    case 10:
+
+      Obstacles_Box.push_back({
+          8,          // center_x
+          3,          // center_y
+          16,         // length
+          6,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          19,         // center_x
+          1,          // center_y
+          6,          // length
+          2,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          24,         // center_x
+          3,          // center_y
+          4,          // length
+          6,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          2,          // center_x
+          22,         // center_y
+          4,          // length
+          6,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          7,          // center_x
+          24,         // center_y
+          6,          // length
+          2,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          18,         // center_x
+          22,         // center_y
+          16,         // length
+          6,          // width
+          0.0 * M_PI  // heading
+      });
+      Obstacles_Box.push_back({
+          13,         // center_x
+          13,         // center_y
+          2,          // length
+          6,          // width
+          0.0 * M_PI  // heading
+      });
+      // start point
+      start_point = {6, 20, 0.0 * M_PI};
+
+      // end point
+      end_point = {18, 5, 0.0 * M_PI};
+
+      break;
     default:
       break;
   };

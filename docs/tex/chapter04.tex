@@ -342,8 +342,32 @@ $1-\kappa_r d >0$。
 
 
 \subsection{低速泊船}
-Hybrid A Star algorithm
+Hybrid A* algorithm
+自动停车是一种自动驾驶汽车的系统，它将车辆从行车道移入停车位，以执行平行，垂直或角度停车。
 
+
+
+\subsubsection{Reeds-Shepp曲线}
+对于欠驱动的机器人(nonholonomic system),其运动模型为
+
+\begin{equation}
+  \begin{aligned}
+    & x(t)=x(0)+\int_0^t \varepsilon( \tau ) \cos \phi (\tau) d \tau   \\
+    & y(t)=y(0)+\int_0^t \varepsilon( \tau ) \sin \phi (\tau) d \tau   \\
+    & \phi (t)= \phi (0) + \int_0^t \eta (\tau) d \tau
+  \end{aligned}
+\end{equation}
+
+其中，$\gamma(t)=(x(t, y(t), \phi(t)))$为机器人的可行轨迹。
+
+如何找到一条最短的路径把船从一个地方开到另外一个地方。答案就是Reeds-Shepp曲线\cite{reeds1990} 。
+假设车辆能以固定的半径转向，且车辆能够前进和后退，
+那么Reeds-Shepp曲线就是车辆在上述条件下从起点到终点的最短路径。
+该曲线不仅能保证车辆能够到达终点，而且能保证车辆的角度能在终点到达预期角度。
+
+
+\subsubsection{碰撞检测}
+我们用矩形包络船体，且用点、线段和最小边框(bounding box)表示周围的物体。
 
 \section{航线规划}
 \label{sec:routeplanning}

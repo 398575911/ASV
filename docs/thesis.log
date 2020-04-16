@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  16 MAR 2020 13:29
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  16 APR 2020 17:42
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -2557,7 +2557,15 @@ Package biblatex Info: Automatic encoding selection.
 
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'thesis.bbl' found.
-(./thesis.bbl)
+(./thesis.bbl
+
+Package biblatex Warning: The following entry could not be found
+(biblatex)                in the database:
+(biblatex)                Meta_CN
+(biblatex)                Please verify the spelling and rerun
+(biblatex)                LaTeX afterwards.
+
+)
 Package biblatex Info: Reference section=0 on input line 34.
 Package biblatex Info: Reference segment=0 on input line 34.
 \AtBeginShipoutBox=\box96
@@ -2908,27 +2916,27 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 [29] [30]
 File: figure/chapter04/Algorithm.jpg Graphic file (type bmp)
 <figure/chapter04/Algorithm.jpg>
-) (./tex/chapter05.tex [31] [32]
+[31] [32]) (./tex/chapter05.tex [33] [34
+
+]
 第五章
 File: figure/chapter05/Radar_spoke_projection.jpg Graphic file (type bmp)
 <figure/chapter05/Radar_spoke_projection.jpg>
-[33
-
-] [34]) (./tex/chap_sensor.tex [35] [36
+[35] [36]) (./tex/chap_sensor.tex [37] [38
 
 ]
 第六章
-[37]
+[39]
 File: figure/chapter_sensor/utmoverlap.jpg Graphic file (type bmp)
 <figure/chapter_sensor/utmoverlap.jpg>
 
 Underfull \vbox (badness 2735) has occurred while \output is active []
 
-[38]) (./tex/chap_software.tex [39] [40
+[40]) (./tex/chap_software.tex [41] [42
 
 ]
 第七章
-) (./tex/floats.tex [41] [42
+) (./tex/floats.tex [43] [44
 
 ]
 第八章
@@ -2958,7 +2966,7 @@ Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 
 File: figure/cn_100t.png Graphic file (type bmp)
 <figure/cn_100t.png>
-[43]
+[45]
 File: ./pdf/sjtu-badge.pdf Graphic file (type pdf)
 <use ./pdf/sjtu-badge.pdf>
 File: ./pdf/sjtu-badge.pdf Graphic file (type pdf)
@@ -2967,7 +2975,7 @@ File: ./pdf/sjtu-name.pdf Graphic file (type pdf)
 <use ./pdf/sjtu-name.pdf>
 File: ./pdf/sjtu-name.pdf Graphic file (type pdf)
 <use ./pdf/sjtu-name.pdf>
-[44]
+[46]
 File: figure/pressure15.jpg Graphic file (type bmp)
 <figure/pressure15.jpg>
 File: figure//pressure25.jpg Graphic file (type bmp)
@@ -2992,10 +3000,10 @@ LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
 (Font)              scaled to size 8.1303pt on input line 140.
 LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
 (Font)              scaled to size 5.39996pt on input line 140.
-[45]
+[47]
 LaTeX Font Info:    Font shape `TU/SourceSansPro(0)/m/n' will be
 (Font)              scaled to size 8.1303pt on input line 161.
-[46] [47] (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstlang1.sty
+[48] [49] (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2019/02/27 1.8b listings language file
 ) (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2019/02/27 1.8b (Carsten Heinz)
@@ -3004,35 +3012,35 @@ LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/n' will be
 (Font)              scaled to size 8.1303pt on input line 291.
 LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/bx/n' will be
 (Font)              scaled to size 8.1303pt on input line 292.
-[48]
+[50]
 LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/sl' in size <9.03374> not
  available
 (Font)              Font shape `TU/SourceCodePro(0)/m/it' tried instead on inpu
 t line 305.
 LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/it' will be
 (Font)              scaled to size 8.1303pt on input line 305.
-) (./tex/math_and_citations.tex [49] [50
+) (./tex/math_and_citations.tex [51] [52
 
 ]
 第九章
-[51] [52]
+[53] [54]
 Package hyperref Info: bookmark level for unknown proof defaults to 0 on input 
 line 105.
-) (./tex/summary.tex [53] [54
+) (./tex/summary.tex [55] [56
 
-]) (./tex/app_maxwell_equations.tex [55
+]) (./tex/app_maxwell_equations.tex [57
 
-] [56
+] [58
 
 ]
 附录 A
-) (./tex/app_flow_chart.tex [57] [58
+) (./tex/app_flow_chart.tex [59] [60
 
 ]
 附录 B
-(./figure/flow_chart.tex)) [59] [60
+(./figure/flow_chart.tex)) [61] [62
 
-] [61
+] [63
 
 ]
 Underfull \hbox (badness 1194) in paragraph at lines 83--83
@@ -3040,11 +3048,11 @@ Underfull \hbox (badness 1194) in paragraph at lines 83--83
 chmarks
  []
 
-[62] (./tex/acknowledgements.tex [63] [64
+[64] (./tex/acknowledgements.tex [65] [66
 
 ]) (./tex/end_english_abstract.tex) 
 AED: pageslts setting LastPage 
-[65
+[67
 
 ]
 \tf@thm=\write10
@@ -3075,12 +3083,12 @@ Package logreq Info: Writing requests to 'thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 58585 strings out of 492922
- 1206983 string characters out of 6133407
- 1795359 words of memory out of 5000000
- 61536 multiletter control sequences out of 15000+600000
- 543445 words of font info for 261 fonts, out of 8000000 for 9000
+ 58588 strings out of 492922
+ 1207084 string characters out of 6133407
+ 1795379 words of memory out of 5000000
+ 61538 multiletter control sequences out of 15000+600000
+ 543453 words of font info for 262 fonts, out of 8000000 for 9000
  1349 hyphenation exceptions out of 8191
  75i,18n,111p,817b,6859s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on thesis.xdv (89 pages, 792760 bytes).
+Output written on thesis.xdv (91 pages, 801960 bytes).

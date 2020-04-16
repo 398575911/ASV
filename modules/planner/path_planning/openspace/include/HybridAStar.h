@@ -4,7 +4,7 @@
 * Hybrid A star algorithm, to generate the coarse collision-free trajectory
 * This header file can be read by C++ compilers
 *
-* by Hu.ZH, Bin Li(CrossOcean.ai)
+* by Hu.ZH, Bin Lin(CrossOcean.ai)
 *******************************************************************************
 */
 
@@ -408,13 +408,34 @@ class HybridAStar {
     } while (SearchState == HybridAStar_4dNode_Search::SEARCH_STATE_SEARCHING);
 
     if (SearchState == HybridAStar_4dNode_Search::SEARCH_STATE_SUCCEEDED) {
+      std::cout << "4d Hybrid A star search!\n";
+
       HybridState4DNode *node = astar_4d_search_.GetSolutionStart();
-      hybridastar_trajecotry_.clear();
-      while (node) {
-        hybridastar_trajecotry_.push_back(
-            {node->x(), node->y(), node->theta(), true});
-        node = astar_4d_search_.GetSolutionNext();
+
+      if (node) {
+        vecpath closedlist_trajecotry;
+        while (node) {
+          HybridState4DNode *node_copy = node;
+          node = astar_4d_search_.GetSolutionNext();
+          if (node) {
+            bool move_dir =
+                IsForward(node_copy->x(), node_copy->y(), node_copy->theta(),
+                          node->x(), node->y(), node->theta());
+            closedlist_trajecotry.push_back(
+                {static_cast<double>(node_copy->x()),
+                 static_cast<double>(node_copy->y()),
+                 static_cast<double>(node_copy->theta()), move_dir});
+          }
+        }
+        node = astar_4d_search_.GetSolutionEnd();
+        closedlist_trajecotry.push_back(
+            {static_cast<double>(node->x()), static_cast<double>(node->y()),
+             static_cast<double>(node->theta()), node->IsForward()});
+
+        // check the forward/reverse switch
+        hybridastar_trajecotry_ = FindSwitch(closedlist_trajecotry);
       }
+
       // Once you're done with the solution you can free the nodes up
       astar_4d_search_.FreeSolutionNodes();
     }

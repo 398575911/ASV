@@ -1,17 +1,18 @@
 [0] Config.pm:304> INFO - This is Biber 2.12
 [0] Config.pm:307> INFO - Logfile is 'thesis.blg'
-[26] biber:315> INFO - === 一 3月 16, 2020, 13:23:50
-[48] Biber.pm:371> INFO - Reading 'thesis.bcf'
-[142] Biber.pm:889> INFO - Found 25 citekeys in bib section 0
-[154] Biber.pm:4093> INFO - Processing section 0
-[164] Biber.pm:4254> INFO - Looking for bibtex format file 'bib/thesis.bib' for section 0
-[166] bibtex.pm:1523> INFO - LaTeX decoding ...
-[212] bibtex.pm:1340> INFO - Found BibTeX data source 'bib/thesis.bib'
-[272] Utils.pm:193> WARN - month field 'Sep.' in entry 'IROS637936' is not an integer - this will probably not sort properly.
-[454] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[455] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[455] Biber.pm:3921> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
-[455] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
-[473] bbl.pm:636> INFO - Writing 'thesis.bbl' with encoding 'UTF-8'
-[483] bbl.pm:739> INFO - Output to thesis.bbl
-[483] Biber.pm:110> INFO - WARNINGS: 1
+[24] biber:315> INFO - === 三 4月 15, 2020, 21:44:56
+[46] Biber.pm:371> INFO - Reading 'thesis.bcf'
+[138] Biber.pm:889> INFO - Found 26 citekeys in bib section 0
+[151] Biber.pm:4093> INFO - Processing section 0
+[166] Biber.pm:4254> INFO - Looking for bibtex format file 'bib/thesis.bib' for section 0
+[169] bibtex.pm:1523> INFO - LaTeX decoding ...
+[224] bibtex.pm:1340> INFO - Found BibTeX data source 'bib/thesis.bib'
+[281] Utils.pm:193> WARN - month field 'Sep.' in entry 'IROS637936' is not an integer - this will probably not sort properly.
+[484] Utils.pm:193> WARN - I didn't find a database entry for 'Meta_CN' (section 0)
+[506] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[506] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[506] Biber.pm:3921> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
+[506] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
+[525] bbl.pm:636> INFO - Writing 'thesis.bbl' with encoding 'UTF-8'
+[535] bbl.pm:739> INFO - Output to thesis.bbl
+[535] Biber.pm:110> INFO - WARNINGS: 2

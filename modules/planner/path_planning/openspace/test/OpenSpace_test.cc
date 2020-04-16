@@ -92,7 +92,7 @@ void compare_bestpath(
 
 int main() {
   // obstacles
-  int test_scenario = 7;
+  int test_scenario = 3;
 
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
@@ -103,7 +103,7 @@ int main() {
                         start_point, end_point, test_scenario);
 
   HybridAStarConfig _HybridAStarConfig{
-      1.0,  // move_length
+      0.5,  // move_length
       1.5,  // penalty_turning
       1.5,  // penalty_reverse
       2     // penalty_switch
@@ -135,15 +135,15 @@ int main() {
   Gnuplot gp1;
   gp1 << "set terminal x11 size 1100, 1100 1\n";
   gp1 << "set title 'OpenSpace Planning'\n";
-  gp1 << "set xrange [0:40]\n";
-  gp1 << "set yrange [0:40]\n";
+  gp1 << "set xrange [-10:40]\n";
+  gp1 << "set yrange [-10:40]\n";
   gp1 << "set size ratio -1\n";
 
-  for (std::size_t i = 0; i != cog_path.size(); ++i) {
+  for (std::size_t i = 0; i != center_path.size(); ++i) {
     rtplotting_4dbestpath(
         gp1, {start_point.at(0), start_point.at(1), start_point.at(2)},
-        {end_point.at(0), end_point.at(1), end_point.at(2)}, cog_path[i],
-        cog_path, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, center_path[i],
+        center_path, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 }
