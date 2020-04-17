@@ -377,38 +377,6 @@
       \field{dateera}{ce}
       \keyw{hager1989universal}
     \endentry
-    \entry{he1999}{article}{}
-      \name{author}{1}{}{%
-        {{hash=9d3c75909268a1158d6ca10f8f846b24}{%
-           family={何闻},
-           familyi={何\bibinitperiod}}}%
-      }
-      \list{language}{1}{%
-        {chinese}%
-      }
-      \strng{namehash}{9d3c75909268a1158d6ca10f8f846b24}
-      \strng{fullhash}{9d3c75909268a1158d6ca10f8f846b24}
-      \strng{bibnamehash}{9d3c75909268a1158d6ca10f8f846b24}
-      \strng{authorbibnamehash}{9d3c75909268a1158d6ca10f8f846b24}
-      \strng{authornamehash}{9d3c75909268a1158d6ca10f8f846b24}
-      \strng{authorfullhash}{9d3c75909268a1158d6ca10f8f846b24}
-      \field{sortinit}{9}
-      \field{sortinithash}{1dd72ab054147731c9d824b49aba0534}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{机电工程}
-      \field{langid}{english}
-      \field{number}{2}
-      \field{title}{标准动态力发生装置国内外研究现状}
-      \field{usera}{J}
-      \field{userd}{chinese}
-      \field{userf}{chinese}
-      \field{year}{1999}
-      \field{dateera}{ce}
-      \field{pages}{47\bibrangedash 49}
-      \range{pages}{3}
-      \keyw{he1999}
-    \endentry
     \entry{chen2007act}{article}{}
       \name{author}{2}{}{%
         {{hash=83702ad2b0cc9ef7ee381daa5f80b7f0}{%
@@ -435,8 +403,8 @@
       \strng{authornamehash}{ba3828225ac4f92ab41909539471846d}
       \strng{authorfullhash}{c64ed1f9795730800df61c2ef66ae19e}
       \field{extraname}{1}
-      \field{sortinit}{1}
-      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
+      \field{sortinit}{9}
+      \field{sortinithash}{1dd72ab054147731c9d824b49aba0534}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Applied Physics Letters}
@@ -492,8 +460,8 @@
       \strng{authorbibnamehash}{27505b416009b3898f3c70642b8d0850}
       \strng{authornamehash}{99ec6caddeb86ff527b682f7db943368}
       \strng{authorfullhash}{0a1f94b97b4e99712c377530e91fa8fc}
-      \field{sortinit}{1}
-      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
+      \field{sortinit}{9}
+      \field{sortinithash}{1dd72ab054147731c9d824b49aba0534}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{the 10th European PVM/MPI Users' Group Conference}
@@ -1008,8 +976,8 @@
       \strng{authorbibnamehash}{cc33f4f9702ebe9e9ae90ce8b26e8109}
       \strng{authornamehash}{cc33f4f9702ebe9e9ae90ce8b26e8109}
       \strng{authorfullhash}{cc33f4f9702ebe9e9ae90ce8b26e8109}
-      \field{sortinit}{2}
-      \field{sortinithash}{cbff857e587bcb4635511624d773949e}
+      \field{sortinit}{1}
+      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{day}{19}
@@ -1050,8 +1018,8 @@
       \strng{authorbibnamehash}{494bf82c50994ec2bd31db64927f56a5}
       \strng{authornamehash}{494bf82c50994ec2bd31db64927f56a5}
       \strng{authorfullhash}{494bf82c50994ec2bd31db64927f56a5}
-      \field{sortinit}{2}
-      \field{sortinithash}{cbff857e587bcb4635511624d773949e}
+      \field{sortinit}{1}
+      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Science}
@@ -1098,8 +1066,8 @@
       \strng{authorbibnamehash}{dcdebb6b35bff7c0568bf8c50ef8626d}
       \strng{authornamehash}{dcdebb6b35bff7c0568bf8c50ef8626d}
       \strng{authorfullhash}{dcdebb6b35bff7c0568bf8c50ef8626d}
-      \field{sortinit}{2}
-      \field{sortinithash}{cbff857e587bcb4635511624d773949e}
+      \field{sortinit}{1}
+      \field{sortinithash}{2174f786c6195e7fe2ee1c229b416e29}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{langid}{english}

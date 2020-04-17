@@ -17,19 +17,15 @@
 \contentsline {figure}{\numberline {4--3}{\ignorespaces Frenet坐标系下的最优轨迹线束}}{30}{figure.caption.27}% 
 \contentsline {figure}{\numberline {4--4}{\ignorespaces Frenet坐标系下的最优轨迹生成算法逻辑图}}{32}{figure.caption.28}% 
 \contentsline {figure}{\numberline {4--5}{\ignorespaces Reeds-Shepp曲线}}{33}{figure.caption.29}% 
+\contentsline {figure}{\numberline {4--6}{\ignorespaces 混合A*搜索算法中的可行操作模式}}{35}{figure.caption.30}% 
+\contentsline {figure}{\numberline {4--7}{\ignorespaces 混合A*搜索算法}}{35}{figure.caption.31}% 
+\contentsline {figure}{\numberline {4--8}{\ignorespaces 轨迹平滑处理}}{36}{figure.caption.32}% 
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {5--1}{\ignorespaces 雷达线束的坐标投影}}{36}{figure.caption.30}% 
+\contentsline {figure}{\numberline {5--1}{\ignorespaces 雷达线束的坐标投影}}{40}{figure.caption.33}% 
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {6--1}{\ignorespaces UTM区域的重叠}}{41}{figure.caption.33}% 
-\addvspace {10.0pt}
-\addvspace {10.0pt}
-\contentsline {figure}{\numberline {8--1}{\ignorespaces 出现在插图索引中}}{45}{figure.caption.34}% 
-\contentsline {figure}{\numberline {8--2}{\ignorespaces 中文题图\relax }}{46}{figure.caption.35}% 
-\contentsline {figure}{\numberline {8--3}{\ignorespaces 并排第一个图\relax }}{46}{figure.caption.36}% 
-\contentsline {figure}{\numberline {8--4}{\ignorespaces 并排第二个图\relax }}{46}{figure.caption.36}% 
-\contentsline {figure}{\numberline {8--5}{\ignorespaces 包含子图题的范例（使用 subcaptionbox）\relax }}{47}{figure.caption.37}% 
-\contentsline {figure}{\numberline {8--6}{\ignorespaces 包含子图题的范例（使用 subfigure）\relax }}{47}{figure.caption.38}% 
+\contentsline {figure}{\numberline {6--1}{\ignorespaces UTM区域的重叠}}{45}{figure.caption.36}% 
 \addvspace {10.0pt}
 \addvspace {10.0pt}
 \addvspace {10.0pt}
-\contentsline {figure}{\numberline {B--1}{\ignorespaces 绘制流程图效果\relax }}{61}{figure.caption.44}% 
+\addvspace {10.0pt}
+\contentsline {figure}{\numberline {B--1}{\ignorespaces 绘制流程图效果\relax }}{57}{figure.caption.38}% 

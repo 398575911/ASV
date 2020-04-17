@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  16 APR 2020 22:56
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2020.2.28)  17 APR 2020 15:19
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -2468,6 +2468,9 @@ Package: xeCJK-listings 2019/04/07 v3.7.2 xeCJK patch file for listings
 \c@pagesLTS.Alph.1.local.cnt=\count549
 \c@pagesLTS.Roman.1.local.cnt=\count550
 
+LaTeX Warning: Label `fig:rscurve' multiply defined.
+
+
 LaTeX Warning: Label `sec:marineradar' multiply defined.
 
 \c@pagesLTS.arabic.1.local.cnt=\count551
@@ -2923,34 +2926,42 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 File: figure/chapter04/Algorithm.jpg Graphic file (type bmp)
 <figure/chapter04/Algorithm.jpg>
 
-Overfull \hbox (2.84544pt too wide) in paragraph at lines 350--353
+Overfull \hbox (2.84544pt too wide) in paragraph at lines 349--352
  [][] 
  []
 
 [32]
 File: figure/chapter04/RScurve.jpg Graphic file (type bmp)
 <figure/chapter04/RScurve.jpg>
-[33]) (./tex/chapter05.tex [34]
+[33]
+File: figure/chapter04/manuverset.jpg Graphic file (type bmp)
+<figure/chapter04/manuverset.jpg>
+File: figure/chapter04/HybridAstar.jpg Graphic file (type bmp)
+<figure/chapter04/HybridAstar.jpg>
+[34] [35]
+File: figure/chapter04/pathsmoothing.jpg Graphic file (type bmp)
+<figure/chapter04/pathsmoothing.jpg>
+[36] [37]) (./tex/chapter05.tex [38]
 第五章
 File: figure/chapter05/Radar_spoke_projection.jpg Graphic file (type bmp)
 <figure/chapter05/Radar_spoke_projection.jpg>
-[35
+[39
 
-] [36]) (./tex/chap_sensor.tex [37] [38
+] [40]) (./tex/chap_sensor.tex [41] [42
 
 ]
 第六章
-[39]
+[43]
 File: figure/chapter_sensor/utmoverlap.jpg Graphic file (type bmp)
 <figure/chapter_sensor/utmoverlap.jpg>
 
 Underfull \vbox (badness 2735) has occurred while \output is active []
 
-[40]) (./tex/chap_software.tex [41] [42
+[44]) (./tex/chap_software.tex [45] [46
 
 ]
 第七章
-) (./tex/floats.tex [43] [44
+) (./tex/math_and_citations.tex [47] [48
 
 ]
 第八章
@@ -2959,13 +2970,13 @@ Package fontspec Warning: Font "FandolHei-Regular" does not contain requested
 (fontspec)                Script "CJK".
 
 LaTeX Font Info:    Font shape `TU/SourceSansPro(0)/m/n' will be
-(Font)              scaled to size 10.84042pt on input line 13.
+(Font)              scaled to size 10.84042pt on input line 9.
 
 Package fontspec Warning: Font "FandolFang-Regular" does not contain requested
 (fontspec)                Script "CJK".
 
 LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/n' will be
-(Font)              scaled to size 10.84042pt on input line 13.
+(Font)              scaled to size 10.84042pt on input line 27.
 
 Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 (fontspec)             'FandolFang-Regular' with options
@@ -2978,102 +2989,59 @@ Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 (fontspec)             <->"[FandolFang-Regular.otf]/OT"
 (fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
 
-File: figure/cn_100t.png Graphic file (type bmp)
-<figure/cn_100t.png>
-[45]
-File: ./pdf/sjtu-badge.pdf Graphic file (type pdf)
-<use ./pdf/sjtu-badge.pdf>
-File: ./pdf/sjtu-badge.pdf Graphic file (type pdf)
-<use ./pdf/sjtu-badge.pdf>
-File: ./pdf/sjtu-name.pdf Graphic file (type pdf)
-<use ./pdf/sjtu-name.pdf>
-File: ./pdf/sjtu-name.pdf Graphic file (type pdf)
-<use ./pdf/sjtu-name.pdf>
-[46]
-File: figure/pressure15.jpg Graphic file (type bmp)
-<figure/pressure15.jpg>
-File: figure//pressure25.jpg Graphic file (type bmp)
-<figure//pressure25.jpg>
-File: ./pdf/sjtu-badge.pdf Graphic file (type pdf)
-<use ./pdf/sjtu-badge.pdf>
-File: ./pdf/sjtu-name.pdf Graphic file (type pdf)
-<use ./pdf/sjtu-name.pdf>
-LaTeX Font Info:    Font shape `TU/XITSMath-Regular(2)/m/n' will be
-(Font)              scaled to size 9.0347pt on input line 140.
-LaTeX Font Info:    Font shape `TU/XITSMath-Regular(2)/m/n' will be
-(Font)              scaled to size 6.00064pt on input line 140.
-LaTeX Font Info:    Font shape `TU/XITSMath-Regular(3)/m/n' will be
-(Font)              scaled to size 9.03276pt on input line 140.
-LaTeX Font Info:    Font shape `TU/XITSMath-Regular(3)/m/n' will be
-(Font)              scaled to size 5.99936pt on input line 140.
-LaTeX Font Info:    Font shape `TU/SourceSansPro(1)/m/n' will be
-(Font)              scaled to size 8.1303pt on input line 140.
-LaTeX Font Info:    Font shape `TU/SourceSansPro(1)/m/n' will be
-(Font)              scaled to size 5.39996pt on input line 140.
-LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
-(Font)              scaled to size 8.1303pt on input line 140.
-LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
-(Font)              scaled to size 5.39996pt on input line 140.
-[47]
-LaTeX Font Info:    Font shape `TU/SourceSansPro(0)/m/n' will be
-(Font)              scaled to size 8.1303pt on input line 161.
-[48] [49] (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2019/02/27 1.8b listings language file
-) (/usr/local/texlive/2019/texmf-dist/tex/latex/listings/lstmisc.sty
-File: lstmisc.sty 2019/02/27 1.8b (Carsten Heinz)
-)
-LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/n' will be
-(Font)              scaled to size 8.1303pt on input line 291.
-LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/bx/n' will be
-(Font)              scaled to size 8.1303pt on input line 292.
-[50]
-LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/sl' in size <9.03374> not
- available
-(Font)              Font shape `TU/SourceCodePro(0)/m/it' tried instead on inpu
-t line 305.
-LaTeX Font Info:    Font shape `TU/SourceCodePro(0)/m/it' will be
-(Font)              scaled to size 8.1303pt on input line 305.
-) (./tex/math_and_citations.tex [51] [52
-
-]
-第九章
-[53] [54]
+[49] [50]
 Package hyperref Info: bookmark level for unknown proof defaults to 0 on input 
 line 105.
-) (./tex/summary.tex [55] [56
+LaTeX Font Info:    Font shape `TU/XITSMath-Regular(2)/m/n' will be
+(Font)              scaled to size 9.0347pt on input line 117.
+LaTeX Font Info:    Font shape `TU/XITSMath-Regular(2)/m/n' will be
+(Font)              scaled to size 6.00064pt on input line 117.
+LaTeX Font Info:    Font shape `TU/XITSMath-Regular(3)/m/n' will be
+(Font)              scaled to size 9.03276pt on input line 117.
+LaTeX Font Info:    Font shape `TU/XITSMath-Regular(3)/m/n' will be
+(Font)              scaled to size 5.99936pt on input line 117.
+LaTeX Font Info:    Font shape `TU/SourceSansPro(1)/m/n' will be
+(Font)              scaled to size 8.1303pt on input line 117.
+LaTeX Font Info:    Font shape `TU/SourceSansPro(1)/m/n' will be
+(Font)              scaled to size 5.39996pt on input line 117.
+LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
+(Font)              scaled to size 8.1303pt on input line 117.
+LaTeX Font Info:    Font shape `TU/SourceCodePro(1)/m/n' will be
+(Font)              scaled to size 5.39996pt on input line 117.
+) (./tex/summary.tex [51] [52
 
-]) (./tex/app_maxwell_equations.tex [57
+]) (./tex/app_maxwell_equations.tex [53
 
-] [58
+] [54
 
 ]
 附录 A
-) (./tex/app_flow_chart.tex [59] [60
+) (./tex/app_flow_chart.tex [55] [56
 
 ]
 附录 B
-(./figure/flow_chart.tex)) [61] [62
+(./figure/flow_chart.tex)) [57] [58
 
-] [63
+] [59
 
 ]
-Underfull \hbox (badness 1194) in paragraph at lines 83--83
+Underfull \hbox (badness 1194) in paragraph at lines 82--82
 []\TU/XITS(0)/m/n/12.045 WOO A, BAILEY D, YARROW M, et al. The NAS Parallel Ben
 chmarks
  []
 
-[64] (./tex/acknowledgements.tex [65] [66
+[60] (./tex/acknowledgements.tex [61] [62
 
 ]) (./tex/end_english_abstract.tex) 
 AED: pageslts setting LastPage 
-[67
+[63
 
 ]
 \tf@thm=\write10
 \openout10 = `thesis.thm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 100.
-Package atveryend Info: Executing hook `AfterLastShipout' on input line 100.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 99.
+Package atveryend Info: Executing hook `AfterLastShipout' on input line 99.
 \c@pagesLTS.arabic.1.local.count=\count565
 
 AED: pageslts setting VeryLastPage via AfterLastShipout 
@@ -3085,10 +3053,10 @@ Package pageslts Info: Total number of pages is odd.
 
 
 (./thesis.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 100.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 100.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 99.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 99.
 Package rerunfilecheck Info: File `thesis.out' has not changed.
-(rerunfilecheck)             Checksum: E922E05FDDF12BD5C72A5A400B7D835B.
+(rerunfilecheck)             Checksum: 967EA727315798882E71A5A297A4899F.
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -3097,12 +3065,12 @@ Package logreq Info: Writing requests to 'thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 58617 strings out of 492922
- 1208835 string characters out of 6133407
- 1795471 words of memory out of 5000000
- 61565 multiletter control sequences out of 15000+600000
- 543453 words of font info for 262 fonts, out of 8000000 for 9000
+ 58309 strings out of 492922
+ 1196888 string characters out of 6133407
+ 1767950 words of memory out of 5000000
+ 61280 multiletter control sequences out of 15000+600000
+ 543405 words of font info for 256 fonts, out of 8000000 for 9000
  1349 hyphenation exceptions out of 8191
  75i,18n,111p,817b,6859s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on thesis.xdv (91 pages, 818400 bytes).
+Output written on thesis.xdv (87 pages, 737776 bytes).

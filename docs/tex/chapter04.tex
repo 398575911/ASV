@@ -355,17 +355,16 @@ $1-\kappa_r d >0$。
 
 
 \subsection{低速泊船}
-Hybrid A* algorithm
-自动停车是一种自动驾驶汽车的系统，它将车辆从行车道移入停车位，以执行平行，垂直或角度停车。
+自动停车是一种自动驾驶汽车的系统，它将车辆从行车道移入停车位，以执行平行，垂直或角度停车。适用于低速。
 
 \subsubsection{Reeds-Shepp曲线}
 对于欠驱动的机器人(nonholonomic system),其运动模型为
 
 \begin{equation}
   \begin{aligned}
-    & x(t)=x(0)+\int_0^t \varepsilon( \tau ) \cos \phi (\tau) d \tau   \\
-    & y(t)=y(0)+\int_0^t \varepsilon( \tau ) \sin \phi (\tau) d \tau   \\
-    & \phi (t)= \phi (0) + \int_0^t \eta (\tau) d \tau
+    & x(t)=x(0)+\int_0^t \varepsilon( \tau ) \cos \phi (\tau) \mathrm{d} \tau   \\
+    & y(t)=y(0)+\int_0^t \varepsilon( \tau ) \sin \phi (\tau) \mathrm{d} \tau   \\
+    & \phi (t)= \phi (0) + \int_0^t \eta (\tau) \mathrm{d} \tau
   \end{aligned}
 \end{equation}
 
@@ -418,20 +417,171 @@ $h(n)$表示任意顶点$n$到目标顶点的估算距离（根据所采用的�
 \end{itemize}
 
 
-\subsubsection{轨迹平滑}
+\subsubsection{混合A*搜索}
+混合A*搜索算法(Hybrid A* search algorithm)， 如图\ref{fig:manuverset}所示，
 
+
+如图\ref{fig:HybridAstar}所示，
+
+
+
+$\Delta \theta_{max}= \kappa_{max} L$
+
+
+\begin{equation}
+  \begin{aligned}
+    & \Delta x = \frac{L}{\Delta \theta_{max}} 
+    \left( \sin \Delta \theta_{max} \cos \theta - (1-\cos \Delta \theta_{max}) \sin \theta \right) \\
+    & \Delta y = \frac{L}{\Delta \theta_{max}} 
+    \left( \sin \Delta \theta_{max} \sin \theta + (1-\cos \Delta \theta_{max}) \cos \theta \right) 
+  \end{aligned}
+\end{equation}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=9cm]{chapter04/manuverset.jpg}
+  \bicaption[混合A*搜索算法中的可行操作模式]
+    {混合A*搜索算法中的可行操作模式}
+    {Manuver set of hybrid A* search algorithm}
+  \label{fig:manuverset}
+\end{figure}
 
 
 \begin{figure}[!htp]
   \centering
-  \includegraphics[width=9cm]{chapter04/pathsmoothing.jpg}
-  \bicaption[Reeds-Shepp曲线]
-    {Reeds-Shepp曲线}
-    {An example of Reeds-Shepp curve}
+  \includegraphics[width=14cm]{chapter04/HybridAstar.jpg}
+  \bicaption[混合A*搜索算法]
+    {混合A*搜索算法}
+    {Hybrid A* search algorithm}
+  \label{fig:HybridAstar}
+\end{figure}
+
+\subsubsection{轨迹平滑}
+由A*算法生成的轨迹比较粗糙，需要通过平滑处理获得更好的轨迹。我们假定轨迹点为$\bm{x}_i=[x_i,y_i]$，如图\ref{fig:rscurve}
+所示, 其中起点、终点和方向转换点保持不变$\Delta \bm{x}_{s}=0, \Delta \bm{x}_{sw}=0, \Delta \bm{x}_{e}=0$, 
+剩下的轨迹点采用以下惩罚函数
+
+\begin{equation} 
+  \begin{aligned}
+    F(\bm{x})
+    &= \omega_s \sum_{i=1}^{e-1} ||\Delta \bm{x}_{i+1} - \Delta \bm{x}_{i}||_2^2 + \\
+    &\omega_o \sum_{i=1}^{e-1} \sum_{j=1}^{N_i} \left( || \bm{x}_{i} - \bm{o}_{ij}||_2 - d_{max} \right)^2
+     +\omega_k \sum_{i=1}^{e-1} 
+     \left(\frac{\Delta \Phi_i }{|| \Delta \bm{x}_i ||_2} - \kappa_{max} \right)^2
+  \end{aligned}
+\end{equation}
+
+其中，$\bm{o}_{ij}$为轨迹点$\bm{x}_i$在半径$d_{max}$之内的障碍物位置, 两点之间的位移
+$\Delta \bm{x}_{i} = \bm{x}_i - \bm{x}_{i-1}$和夹角
+\begin{equation} 
+  \begin{aligned}
+    \Delta \Phi_i
+    &= | \arctan \frac{\Delta y_{i+1}}{\Delta x_{i+1}} - \arctan \frac{\Delta y_{i}}{\Delta x_{i}}| \\
+    &= \arccos \frac{\Delta \bm{x}_i^T \Delta \bm{x}_{i+1} }
+    {||\Delta \bm{x}_i||_2 ||\Delta \bm{x}_{i+1}||_2}
+  \end{aligned}
+\end{equation}
+
+ $F_o$用于远离障碍物
+
+\begin{equation} 
+  \frac{\partial F_o}{\partial \bm{x}_i} = 2 \omega_o \sum_{j=1}^{N_i} 
+  \left( || \bm{x}_{i} - \bm{o}_{ij}||_2 - d_{max} \right) \frac{\bm{x}_{i} - \bm{o}_{ij}}
+  {|| \bm{x}_{i} - \bm{o}_{ij}||_2}
+\end{equation}
+
+\begin{figure}[!htp]
+  \centering
+  \includegraphics[width=14cm]{chapter04/pathsmoothing.jpg}
+  \bicaption[轨迹平滑处理]
+    {轨迹平滑处理}
+    {Trajectory Smoothing}
   \label{fig:rscurve}
 \end{figure}
 
+对于$F_s$，表示轨迹的光滑性;
+\begin{equation} 
+  \begin{aligned}
+    &\hat{\bm{x}}_i = \Delta \bm{x}_{i-1} -2 \Delta \bm{x}_i + \Delta \bm{x}_{i+1} \\
+    &\frac{\partial F_s}{\partial \bm{x}_i} = 2 \omega_s 
+    \left( \hat{\bm{x}}_{i-1} -2 \hat{\bm{x}}_{i} + \hat{\bm{x}}_{i+1}  \right) 
+  \end{aligned}
+\end{equation}
+其中，起点$\hat{\bm{x}}_{i=s}=0$和终点$\hat{\bm{x}}_{i=e}=0$
 
+$F_{\kappa}$用于惩罚过大的曲率，我们用$\kappa_i = \frac{\Delta \Phi_i }{|| \Delta \bm{x}_i ||_2} $表示轨迹点的曲率
+
+
+\begin{equation} 
+  \begin{aligned}
+    \frac{\partial \kappa_i}{\partial \bm{x}_i} 
+    &= \frac{1}{|| \Delta \bm{x}_i ||_2} \frac{\partial \Delta \Phi_i}{ \partial \cos(\Delta \Phi_i)}
+    \frac{\partial \cos(\Delta \Phi_i)}{\partial \bm{x}_i} - 
+    \frac{\Delta\Phi_i}{|| \Delta \bm{x}_i ||_2^2} \frac{\Delta \bm{x}_i}{|| \Delta \bm{x}_i ||_2}
+    \\
+    \frac{\partial \kappa_i}{\partial \bm{x}_{i-1}} 
+    &=\frac{1}{|| \Delta \bm{x}_i ||_2} \frac{\partial \Delta \Phi_i}{ \partial \cos(\Delta \Phi_i)}
+    \frac{\partial \cos(\Delta \Phi_i)}{\partial \bm{x}_{i-1}} +  
+    \frac{\Delta\Phi_i}{|| \Delta \bm{x}_i ||_2^2} \frac{\Delta \bm{x}_i}{|| \Delta \bm{x}_i ||_2} 
+    \\
+    \frac{\partial \kappa_i}{\partial \bm{x}_{i+1}} 
+    &=\frac{1}{|| \Delta \bm{x}_i ||_2} \frac{\partial \Delta \Phi_i}{ \partial \cos(\Delta \Phi_i)}
+        \frac{\partial \cos(\Delta \Phi_i)}{\partial \bm{x}_{i+1}} \\
+  \end{aligned}
+\end{equation}
+其中
+\begin{equation} 
+  \frac{\partial \Delta \Phi_i}{ \partial \cos(\Delta \Phi_i)} = 
+  \frac{-1}{\left( 1-\cos^2(\Delta \Phi_i) \right)^{1/2}}
+\end{equation}
+我们引入正交补(orthogonal complements)
+\begin{equation} 
+   \bm{a} \perp \bm{b}= \bm{a} - \frac{ \bm{a}^T \bm{b}}{|\bm{b}|} \frac{\bm{b}}{|\bm{b}|}
+\end{equation}
+
+用于表示
+\begin{equation} 
+   \bm{P}_1 = \frac{ \Delta \bm{x}_i \perp (-\Delta \bm{x}_{i+1})}
+   {||\Delta \bm{x}_i||_2 ||\Delta \bm{x}_{i+1}||_2} ; \quad 
+   \bm{P}_2 = \frac{ (-\Delta \bm{x}_{i+1}) \perp \Delta \bm{x}_i }
+   {||\Delta \bm{x}_i||_2 ||\Delta \bm{x}_{i+1}||_2} 
+\end{equation}
+
+从而
+\begin{equation} 
+   \frac{\partial \cos(\Delta \Phi_i)}{\partial \bm{x}_i} = -\bm{P}_1 - \bm{P}_2; \quad
+   \frac{\partial \cos(\Delta \Phi_i)}{\partial \bm{x}_{i-1}} = \bm{P}_2; \quad
+   \frac{\partial \cos(\Delta \Phi_i)}{\partial \bm{x}_{i+1}} = \bm{P}_1. 
+\end{equation}
+
+
+\begin{equation} 
+  \Delta \hat{\Phi}_i= \frac{\Delta \Phi_i}{|| \bm{x}_i - \bm{x}_{i-1}||_2}; \;
+  \hat{P}_1^i= \frac{\bm{P}_1^i}{|| \bm{x}_i - \bm{x}_{i-1}||_2 \sin \Delta \Phi_i}; \; 
+  \hat{P}_2^i= \frac{\bm{P}_2^i}{|| \bm{x}_i - \bm{x}_{i-1}||_2 \sin \Delta \Phi_i}.
+\end{equation}
+对于起点($i=s$)和终点($i=e$)，$\Delta \hat{\Phi}_i=0, \hat{P}_1^i=\hat{P}_2^i=0$。
+
+\begin{equation} 
+  \begin{aligned}
+    \frac{\partial F_k}{\partial \bm{x}_i }
+    = 2 \omega_k \Bigg[
+    &(\Delta \hat{\Phi}_{i-1}-\kappa_{max}) \left(-\hat{\bm{P}}_1^{i-1} \right) +  \\
+    &(\Delta \hat{\Phi}_{i}-\kappa_{max}) \left( \hat{\bm{P}}_1^{i}+\hat{\bm{P}}_2^{i}
+    -\Delta \hat{\Phi}_i \frac{\bm{x}_i-\bm{x}_{i-1}}{||\bm{x}_i-\bm{x}_{i-1}||_2^2} \right) + \\
+    &(\Delta \hat{\Phi}_{i+1}-\kappa_{max}) \left( -\hat{\bm{P}}_1^{i+1} + 
+    \Delta \hat{\Phi}_{i+1} \frac{\bm{x}_{i+1}-\bm{x}_i}{||\bm{x}_{i+1}-\bm{x}_i||_2^2} \right)
+    \Bigg]
+  \end{aligned}
+\end{equation}
+
+当我们得到了当前轨迹的梯度$\nabla F(\bm{x})$, 使得下降方向$\Delta \bm{x}=-\nabla F(\bm{x})$, 需要选择一个
+$t$, 使得$F( \bm{x} + t \Delta \bm{x})< F(\bm{x})$, 这时可采用回溯线搜索(backtracking line search)计算得到该$t$。
+给定$\alpha \in (0,1/2), \beta \in (0,1)$, 初始$t=1$, 重复$t:=\beta t$， 直到
+
+\begin{equation} 
+  F(\bm(x)+t \Delta \bm{x}) < F(\bm{x}) + \alpha t \nabla F(\bm{x})^T \Delta \bm{x}
+\end{equation}
 
 
 
