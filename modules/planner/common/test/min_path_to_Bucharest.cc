@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 // This example code illustrate how to use STL A* Search implementation to find
 // the minimum path between two cities given a map. The example is taken from
 // the book AI: A Modern Approach, 3rd Ed., by Russel, where a map of Romania is
@@ -21,7 +21,7 @@
 // this example, in the book you will see Norvig mention that the algorithm does
 // some backtracking because the heuristic is not accurate (yet still
 // admissable).
-////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -69,7 +69,7 @@ class PathSearchNode {
 
   float GoalDistanceEstimate(PathSearchNode &nodeGoal);
   bool IsGoal(PathSearchNode &nodeGoal);
-  bool GetSuccessors(AStarSearch<PathSearchNode> *astarsearch,
+  bool GetSuccessors(ASV::planning::AStarSearch<PathSearchNode> *astarsearch,
                      PathSearchNode *parent_node);
   float GetCost(PathSearchNode &successor);
   bool IsSameState(PathSearchNode &rhs);
@@ -160,8 +160,9 @@ bool PathSearchNode::IsGoal(PathSearchNode &nodeGoal) {
 }
 
 // generates the successor nodes of "this" node
-bool PathSearchNode::GetSuccessors(AStarSearch<PathSearchNode> *astarsearch,
-                                   PathSearchNode *parent_node) {
+bool PathSearchNode::GetSuccessors(
+    ASV::planning::AStarSearch<PathSearchNode> *astarsearch,
+    PathSearchNode *parent_node) {
   PathSearchNode NewNode;
   for (int c = 0; c < MAX_CITIES; c++) {
     if (RomaniaMap[city][c] < 0) continue;
@@ -269,7 +270,7 @@ int main(int argc, char *argv[]) {
   }
 
   // An instance of A* search class
-  AStarSearch<PathSearchNode> astarsearch;
+  ASV::planning::AStarSearch<PathSearchNode> astarsearch;
 
   unsigned int SearchCount = 0;
   const unsigned int NumSearches = 1;
@@ -325,10 +326,12 @@ int main(int argc, char *argv[]) {
       cout << "Closed list has " << len << " nodes\n";
 #endif
 
-    } while (SearchState ==
-             AStarSearch<PathSearchNode>::SEARCH_STATE_SEARCHING);
+    } while (
+        SearchState ==
+        ASV::planning::AStarSearch<PathSearchNode>::SEARCH_STATE_SEARCHING);
 
-    if (SearchState == AStarSearch<PathSearchNode>::SEARCH_STATE_SUCCEEDED) {
+    if (SearchState ==
+        ASV::planning::AStarSearch<PathSearchNode>::SEARCH_STATE_SUCCEEDED) {
       cout << "Search found the goal state\n";
       PathSearchNode *node = astarsearch.GetSolutionStart();
       cout << "Displaying solution\n";
@@ -343,8 +346,8 @@ int main(int argc, char *argv[]) {
       cout << "Solution steps " << steps << endl;
       // Once you're done with the solution you can free the nodes up
       astarsearch.FreeSolutionNodes();
-    } else if (SearchState ==
-               AStarSearch<PathSearchNode>::SEARCH_STATE_FAILED) {
+    } else if (SearchState == ASV::planning::AStarSearch<
+                                  PathSearchNode>::SEARCH_STATE_FAILED) {
       cout << "Search terminated. Did not find goal state\n";
     }
     // Display the number of loops the search went through

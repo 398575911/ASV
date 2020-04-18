@@ -15,12 +15,9 @@
 #ifndef _GPS_H_
 #define _GPS_H_
 
-#include <string.h>
 #include <GeographicLib/TransverseMercator.hpp>
 #include <GeographicLib/UTMUPS.hpp>
-#include <cstdio>
 #include <exception>
-#include <iostream>
 #include <tuple>
 #include "common/logging/include/easylogging++.h"
 #include "modules/messages/sensors/gpsimu/include/gpsdata.h"

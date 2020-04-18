@@ -127,6 +127,9 @@ $u=U$,忽略海流的作用，
           \end{pmatrix}
 \end{equation}
 相对于随体坐标系原点$o_b$的附加质量$\bm{M}_{A}$可以通过势流计算软件得到；
+{\color{red} 在无人船程序中，我们采用原点位于重心的随体坐标系
+$\left\{ \bm{b}_{CoG} \right\}$，可使得质量矩阵为对角矩阵。同时推力、定位系统获得的位置、规控模块均相对于
+$\left\{ \bm{b}_{CoG} \right\}$}。
 势流阻尼$\bm{C}_{A}(\bm{v})$可通过势流计算软件得到，有时可以忽略，
 \begin{equation}
   \label{eq:potentialdampingmatrix}

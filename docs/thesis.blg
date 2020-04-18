@@ -1,18 +1,18 @@
 [0] Config.pm:304> INFO - This is Biber 2.12
 [0] Config.pm:307> INFO - Logfile is 'thesis.blg'
-[24] biber:315> INFO - === 五 4月 17, 2020, 13:37:06
+[25] biber:315> INFO - === 六 4月 18, 2020, 15:01:18
 [47] Biber.pm:371> INFO - Reading 'thesis.bcf'
 [139] Biber.pm:889> INFO - Found 25 citekeys in bib section 0
-[155] Biber.pm:4093> INFO - Processing section 0
-[165] Biber.pm:4254> INFO - Looking for bibtex format file 'bib/thesis.bib' for section 0
-[166] bibtex.pm:1523> INFO - LaTeX decoding ...
-[211] bibtex.pm:1340> INFO - Found BibTeX data source 'bib/thesis.bib'
-[270] Utils.pm:193> WARN - month field 'Sep.' in entry 'IROS637936' is not an integer - this will probably not sort properly.
-[448] Utils.pm:193> WARN - I didn't find a database entry for 'Meta_CN' (section 0)
-[471] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[471] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[471] Biber.pm:3921> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
-[471] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
-[491] bbl.pm:636> INFO - Writing 'thesis.bbl' with encoding 'UTF-8'
-[501] bbl.pm:739> INFO - Output to thesis.bbl
-[501] Biber.pm:110> INFO - WARNINGS: 2
+[152] Biber.pm:4093> INFO - Processing section 0
+[161] Biber.pm:4254> INFO - Looking for bibtex format file 'bib/thesis.bib' for section 0
+[164] bibtex.pm:1523> INFO - LaTeX decoding ...
+[207] bibtex.pm:1340> INFO - Found BibTeX data source 'bib/thesis.bib'
+[263] Utils.pm:193> WARN - month field 'Sep.' in entry 'IROS637936' is not an integer - this will probably not sort properly.
+[414] Utils.pm:193> WARN - I didn't find a database entry for 'Meta_CN' (section 0)
+[434] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[435] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[435] Biber.pm:3921> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
+[435] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
+[453] bbl.pm:636> INFO - Writing 'thesis.bbl' with encoding 'UTF-8'
+[462] bbl.pm:739> INFO - Output to thesis.bbl
+[462] Biber.pm:110> INFO - WARNINGS: 2

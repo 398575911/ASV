@@ -98,7 +98,7 @@ class MapSearchNode {
   // called AddSuccessor to give the successors to the AStar class. The A*
   // specific initialisation is done for each node internally, so here you just
   // set the state information that is specific to the application
-  bool GetSuccessors(AStarSearch<MapSearchNode> *astarsearch,
+  bool GetSuccessors(ASV::planning::AStarSearch<MapSearchNode> *astarsearch,
                      MapSearchNode *parent_node) {
     int parent_x = -1;
     int parent_y = -1;
@@ -171,7 +171,7 @@ int main() {
   // most difficult. 9 indicates that we cannot pass.
 
   // Create an instance of the search class...
-  AStarSearch<MapSearchNode> astarsearch;
+  ASV::planning::AStarSearch<MapSearchNode> astarsearch;
 
   // Create a start state
   MapSearchNode nodeStart;
@@ -224,9 +224,11 @@ int main() {
       std::cout << "Closed list has " << len << " nodes\n";
     }
 
-  } while (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_SEARCHING);
+  } while (SearchState ==
+           ASV::planning::AStarSearch<MapSearchNode>::SEARCH_STATE_SEARCHING);
 
-  if (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_SUCCEEDED) {
+  if (SearchState ==
+      ASV::planning::AStarSearch<MapSearchNode>::SEARCH_STATE_SUCCEEDED) {
     std::cout << "Search found goal state\n";
 
     MapSearchNode *node = astarsearch.GetSolutionStart();
@@ -267,7 +269,8 @@ int main() {
        << gp.file1d(x_y_startend) << " with points pointtype 7 notitle,"
        << gp.file1d(x_y_ps) << " with points lc rgb 'black' title 'path'\n";
 
-  } else if (SearchState == AStarSearch<MapSearchNode>::SEARCH_STATE_FAILED) {
+  } else if (SearchState ==
+             ASV::planning::AStarSearch<MapSearchNode>::SEARCH_STATE_FAILED) {
     std::cout << "Search terminated. Did not find goal state\n";
   }
 

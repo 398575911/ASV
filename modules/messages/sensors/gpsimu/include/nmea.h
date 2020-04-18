@@ -13,6 +13,7 @@
 
 #include <iomanip>
 #include <string>
+
 // Global Positioning System Fix Data
 struct GPGGA {
   double UTC;        // hhmmss.ss = UTC of position

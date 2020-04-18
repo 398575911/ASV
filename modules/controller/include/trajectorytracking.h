@@ -12,13 +12,9 @@
 #ifndef _TRAJECTORYTRACKING_H_
 #define _TRAJECTORYTRACKING_H_
 
-#include <iostream>
 #include <stdexcept>
+
 #include <vector>
-
-#include <common/math/eigen/Eigen/Core>
-#include <common/math/eigen/Eigen/Dense>
-
 #include "common/logging/include/easylogging++.h"
 #include "common/math/miscellaneous/include/math_utils.h"
 #include "controllerdata.h"

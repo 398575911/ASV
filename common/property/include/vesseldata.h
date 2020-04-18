@@ -19,7 +19,7 @@ namespace ASV::common {
 
 // 船体的参数
 struct vessel {
-  // mass property
+  // mass property (these matrices are computed relative to CoG)
   Eigen::Matrix3d Mass;
   Eigen::Matrix3d AddedMass;
   Eigen::Matrix3d LinearDamping;

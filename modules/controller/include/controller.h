@@ -12,8 +12,6 @@
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
 
-#include <cstdlib>
-#include <iostream>
 #include <vector>
 #include "common/property/include/vesseldata.h"
 #include "controllerdata.h"
