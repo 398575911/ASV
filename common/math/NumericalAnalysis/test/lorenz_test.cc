@@ -12,12 +12,11 @@
 #include "../include/odesolver.h"
 #include "common/plotting/include/gnuplot-iostream.h"
 
-struct mylorenz {
-  std::array<double, 3> x;
+struct lorenz {
+  using state_type = std::array<double, 3>;
 
-  std::array<double, 3> GetSuccessors(const double t,
-                                      const std::array<double, 3>& u) const {
-    std::array<double, 3> uprime;
+  state_type FirstDerivative(const double t, const state_type& u) const {
+    state_type uprime;
     const double sigma = 10.0;
     const double R = 28.0;
     const double b = 8.0 / 3.0;
@@ -26,12 +25,15 @@ struct mylorenz {
     uprime[2] = -b * u[2] + u[0] * u[1];
     return uprime;
   }
+
+  state_type x;
+  // std::array<double, 3> x;
 };
 
 int main() {
   std::array<double, 3> u0 = {10, 10, 10};
-  ASV::common::math::OdeSolver<mylorenz> test;
-  mylorenz mylorenz_;
+  ASV::common::math::OdeSolver<lorenz> test;
+  lorenz mylorenz_;
   auto x = u0;
 
   std::vector<boost::tuple<double, double, double>> pts;

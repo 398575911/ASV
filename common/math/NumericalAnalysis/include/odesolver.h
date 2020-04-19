@@ -28,27 +28,27 @@ class OdeSolver {
     auto dimension = u0.size();
 
     //  Get four sample values of the derivative.
-    auto f0 = user_state.GetSuccessors(t0, u0);
+    auto f0 = user_state.FirstDerivative(t0, u0);
     auto t1 = t0 + 0.5 * dt;
     user_state_type u1;
     for (decltype(dimension) i = 0; i < dimension; i++) {
       u1[i] = u0[i] + 0.5 * dt * f0[i];
     }
-    auto f1 = user_state.GetSuccessors(t1, u1);
+    auto f1 = user_state.FirstDerivative(t1, u1);
 
     auto t2 = t0 + 0.5 * dt;
     user_state_type u2;
     for (decltype(dimension) i = 0; i < dimension; i++) {
       u2[i] = u0[i] + 0.5 * dt * f1[i];
     }
-    auto f2 = user_state.GetSuccessors(t2, u2);
+    auto f2 = user_state.FirstDerivative(t2, u2);
 
     auto t3 = t0 + dt;
     user_state_type u3;
     for (decltype(dimension) i = 0; i < dimension; i++) {
       u3[i] = u0[i] + dt * f2[i];
     }
-    auto f3 = user_state.GetSuccessors(t3, u3);
+    auto f3 = user_state.FirstDerivative(t3, u3);
 
     //  Combine them to estimate the solution.
     user_state_type u;

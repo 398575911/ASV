@@ -50,6 +50,6 @@ target_link_libraries(lorenz_test ${RARE_LIBRARIES})
 
 add_executable (rk4_test rk4_test.cc )
 target_include_directories(rk4_test PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(rk4_test ${RARE_LIBRARIES})
+
 
 
