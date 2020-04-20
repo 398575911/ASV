@@ -376,6 +376,7 @@ BOOST_AUTO_TEST_CASE(vessel) {
       1.0,                            // MAX_CURVATURE
       vessel_correct.L,               // HULL_LENGTH
       vessel_correct.B,               // HULL_WIDTH
+      6.1111,                         // HULL_BACK2COG
       2.5                             // ROBOT_RADIUS
   };
 

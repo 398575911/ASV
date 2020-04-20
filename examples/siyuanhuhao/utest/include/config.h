@@ -11,6 +11,7 @@
 
 #include <pthread.h>
 
+#include <experimental/filesystem>
 #include "StateMonitor.h"
 #include "common/communication/include/tcpserver.h"
 #include "common/fileIO/include/jsonparse.h"
@@ -41,14 +42,14 @@ constexpr control::ACTUATION indicator_actuation =
 constexpr int max_num_targets = 20;
 
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_DP;
-// constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_LOS;
+constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_LOS;
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_FRENET;
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_AVOIDANCE;
 
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_DP;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_LOS;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_FRENET;
-constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_AVOIDANCE;
+// constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_AVOIDANCE;
 
 }  // namespace ASV
 

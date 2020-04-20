@@ -171,6 +171,7 @@ class jsonparse {
       1.0,         // MAX_CURVATURE
       3,           // HULL_LENGTH
       1,           // HULL_WIDTH
+      0,           // HULL_BACK2COG
       2.5          // ROBOT_RADIUS
   };
 
@@ -536,6 +537,7 @@ class jsonparse {
     utctime.pop_back();
     dbpath = file["project_directory"].get<std::string>() +
              file["dbpath"].get<std::string>() + utctime + "/";
+
     db_config_path = file["project_directory"].get<std::string>() +
                      file["dbconfig"].get<std::string>();
   }  // parsesqlitedata
@@ -596,8 +598,10 @@ class jsonparse {
 
     collisiondata_input.HULL_LENGTH = vesseldata_input.L;
     collisiondata_input.HULL_WIDTH = vesseldata_input.B;
+    collisiondata_input.HULL_BACK2COG =
+        file["planner"]["Collision"]["stern2CoG"].get<double>();
     collisiondata_input.ROBOT_RADIUS =
-        file["planner"]["FrenetCollision"]["robot_radius"].get<double>();
+        file["planner"]["Collision"]["robot_radius"].get<double>();
   }  // parsefrenetdata
 
   void parseSpokedata() {
@@ -805,6 +809,7 @@ std::ostream& operator<<(std::ostream& os, const jsonparse<_m, _n>& _jp) {
   os << _jp.collisiondata_input.MAX_CURVATURE << std::endl;
   os << _jp.collisiondata_input.HULL_LENGTH << std::endl;
   os << _jp.collisiondata_input.HULL_WIDTH << std::endl;
+  os << _jp.collisiondata_input.HULL_BACK2COG << std::endl;
   os << _jp.collisiondata_input.ROBOT_RADIUS << std::endl;
   return os;
 }  // friend operator<<

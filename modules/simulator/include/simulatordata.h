@@ -19,7 +19,7 @@ struct simulatorRTdata {
   // state toggle
   common::STATETOGGLE state_toggle;
 
-  //
+  // state
   Eigen::Matrix<double, 6, 1> X;
 };
 

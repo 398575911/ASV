@@ -18,7 +18,7 @@ namespace ASV {
 
 class threadloop : public StateMonitor {
  public:
-  threadloop() : StateMonitor(), _jsonparse(parameter_json_path) {
+  threadloop() : StateMonitor(), config_parse(parameter_json_path) {
     // // write prettified JSON to another file
     // std::ofstream o("pretty.json");
     // o << std::setw(4) << j << std::endl;
@@ -220,13 +220,13 @@ class threadloop : public StateMonitor {
 
   /********************* Modules  *********************/
   // json
-  common::jsonparse<num_thruster, dim_controlspace> _jsonparse;
+  common::jsonparse<num_thruster, dim_controlspace> config_parse;
 
   //##################### target tracking ########################//
   void target_tracking_loop() {
     perception::TargetTracking<> Target_Tracking(
-        _jsonparse.getalarmzonedata(), _jsonparse.getSpokeProcessdata(),
-        _jsonparse.getTargetTrackingdata(), _jsonparse.getClusteringdata());
+        config_parse.getalarmzonedata(), config_parse.getSpokeProcessdata(),
+        config_parse.getTargetTrackingdata(), config_parse.getClusteringdata());
 
     common::timecounter timer_targettracking;
     long int outerloop_elapsed_time = 0;
@@ -285,7 +285,7 @@ class threadloop : public StateMonitor {
   //##################### route planning ########################//
   void route_planner_loop() {
     planning::RoutePlanning Route_Planner(RoutePlanner_RTdata,
-                                          _jsonparse.getvessel());
+                                          config_parse.getvessel());
 
     while (1) {
       if (RoutePlanner_RTdata.state_toggle == common::STATETOGGLE::IDLE) {
@@ -316,7 +316,7 @@ class threadloop : public StateMonitor {
   //##################### local path planner ########################//
   void path_planner_loop() {
     planning::LatticePlanner _trajectorygenerator(
-        _jsonparse.getlatticedata(), _jsonparse.getcollisiondata());
+        config_parse.getlatticedata(), config_parse.getcollisiondata());
 
     common::timecounter timer_planner;
     long int outerloop_elapsed_time = 0;
@@ -465,15 +465,15 @@ class threadloop : public StateMonitor {
   //################### path following, controller, TA ####################//
   void controllerloop() {
     control::controller<10, num_thruster, indicator_actuation, dim_controlspace>
-        _controller(controller_RTdata, _jsonparse.getcontrollerdata(),
-                    _jsonparse.getvessel(), _jsonparse.getpiddata(),
-                    _jsonparse.getthrustallocationdata(),
-                    _jsonparse.gettunneldata(), _jsonparse.getazimuthdata(),
-                    _jsonparse.getmainrudderdata(),
-                    _jsonparse.gettwinfixeddata());
+        _controller(controller_RTdata, config_parse.getcontrollerdata(),
+                    config_parse.getvessel(), config_parse.getpiddata(),
+                    config_parse.getthrustallocationdata(),
+                    config_parse.gettunneldata(), config_parse.getazimuthdata(),
+                    config_parse.getmainrudderdata(),
+                    config_parse.gettwinfixeddata());
 
     control::trajectorytracking _trajectorytracking(
-        _jsonparse.getcontrollerdata(), tracker_RTdata);
+        config_parse.getcontrollerdata(), tracker_RTdata);
 
     common::timecounter timer_controler;
     long int outerloop_elapsed_time = 0;
@@ -489,6 +489,7 @@ class threadloop : public StateMonitor {
     _trajectorytracking.set_grid_points(
         RoutePlanner_RTdata.Waypoint_X, RoutePlanner_RTdata.Waypoint_Y,
         RoutePlanner_RTdata.speed, RoutePlanner_RTdata.los_capture_radius);
+    std::cout << RoutePlanner_RTdata.Waypoint_X << std::endl;
 
     while (1) {
       outerloop_elapsed_time = timer_controler.timeelapsed();
@@ -637,11 +638,11 @@ class threadloop : public StateMonitor {
                                 1,                 // nlp_v
                                 1                  // nlp_roti
                                 >
-            _estimator(estimator_RTdata, _jsonparse.getvessel(),
-                       _jsonparse.getestimatordata());
+            _estimator(estimator_RTdata, config_parse.getvessel(),
+                       config_parse.getestimatordata());
 
-        simulation::simulator _simulator(_jsonparse.getsimulatordata(),
-                                         _jsonparse.getvessel());
+        simulation::simulator _simulator(config_parse.getsimulatordata(),
+                                         config_parse.getvessel());
 
         common::timecounter timer_estimator;
         long int outerloop_elapsed_time = 0;
@@ -652,9 +653,18 @@ class threadloop : public StateMonitor {
         // State monitor toggle
         StateMonitor::check_estimator();
 
-        estimator_RTdata =
-            _estimator.setvalue(350938.7, 3433823.54, 0, 0, 0, 90, 0, 0, 0)
-                .getEstimatorRTData();
+        estimator_RTdata = _estimator
+                               .setvalue(350891,      // gps_x
+                                         3433823.54,  // gps_y
+                                         0,           // gps_z
+                                         0,           // gps_roll
+                                         0,           // gps_pitch
+                                         90,          // gps_heading
+                                         0,           // gps_Ve
+                                         0,           // gps_Vn
+                                         0            // gps_roti
+                                         )
+                               .getEstimatorRTData();
         _simulator.setX(estimator_RTdata.State);
 
         // real time calculation in estimator
@@ -662,9 +672,9 @@ class threadloop : public StateMonitor {
           outerloop_elapsed_time = timer_estimator.timeelapsed();
 
           auto x = _simulator
-                       .simulator_onestep(tracker_RTdata.setpoint(2),
-                                          controller_RTdata.BalphaU)
-                       .getX();
+                       .do_step(tracker_RTdata.setpoint(2),
+                                controller_RTdata.BalphaU)
+                       .X();
           _estimator
               .updateestimatedforce(controller_RTdata.BalphaU,
                                     Eigen::Vector3d::Zero())
@@ -703,8 +713,8 @@ class threadloop : public StateMonitor {
                                 5,                 // nlp_v
                                 1                  // nlp_roti
                                 >
-            _estimator(estimator_RTdata, _jsonparse.getvessel(),
-                       _jsonparse.getestimatordata());
+            _estimator(estimator_RTdata, config_parse.getvessel(),
+                       config_parse.getestimatordata());
 
         common::timecounter timer_estimator;
         long int outerloop_elapsed_time = 0;
@@ -769,8 +779,9 @@ class threadloop : public StateMonitor {
 
   // loop to save real time data using sqlite3 and modern_sqlite3_cpp_wrapper
   void sqlloop() {
-    std::string sqlpath = _jsonparse.getsqlitepath();
-    std::string db_config_path = _jsonparse.getdbconfigpath();
+    std::string sqlpath = config_parse.getsqlitepath();
+    std::string db_config_path = config_parse.getdbconfigpath();
+    std::experimental::filesystem::create_directory(sqlpath);
 
     common::gps_db _gps_db(sqlpath, db_config_path);
     common::stm32_db _stm32_db(sqlpath, db_config_path);
@@ -850,6 +861,33 @@ class threadloop : public StateMonitor {
                                controller_RTdata.command_rotation.data() +
                                    num_thruster)  // rpm
           });
+
+          auto num_wp = RoutePlanner_RTdata.Waypoint_X.size();
+          _planner_db.update_routeplanner_table(common::plan_route_db_data{
+              -1,                                       // local_time
+              RoutePlanner_RTdata.setpoints_X,          // setpoints_X
+              RoutePlanner_RTdata.setpoints_Y,          // setpoints_Y
+              RoutePlanner_RTdata.setpoints_heading,    // setpoints_heading
+              RoutePlanner_RTdata.setpoints_longitude,  // setpoints_longitude
+              RoutePlanner_RTdata.setpoints_latitude,   // setpoints_latitude
+              RoutePlanner_RTdata.speed,                // speed
+              RoutePlanner_RTdata.los_capture_radius,   // captureradius
+              RoutePlanner_RTdata.utm_zone,             // utm_zone
+              std::vector<double>(
+                  RoutePlanner_RTdata.Waypoint_X.data(),
+                  RoutePlanner_RTdata.Waypoint_X.data() + num_wp),  // WPX
+              std::vector<double>(
+                  RoutePlanner_RTdata.Waypoint_Y.data(),
+                  RoutePlanner_RTdata.Waypoint_Y.data() + num_wp),  // WPY
+              std::vector<double>(
+                  RoutePlanner_RTdata.Waypoint_longitude.data(),
+                  RoutePlanner_RTdata.Waypoint_longitude.data() +
+                      num_wp),  // WPLONG
+              std::vector<double>(RoutePlanner_RTdata.Waypoint_latitude.data(),
+                                  RoutePlanner_RTdata.Waypoint_latitude.data() +
+                                      num_wp)  // WPLAT
+          });
+
           break;
         }
         case common::TESTMODE::SIMULATION_AVOIDANCE: {
@@ -1279,8 +1317,8 @@ class threadloop : public StateMonitor {
       case common::TESTMODE::EXPERIMENT_AVOIDANCE: {
         // experiment
         messages::stm32_link _stm32_link(stm32_data,
-                                         _jsonparse.getstm32baudrate(),
-                                         _jsonparse.getstm32port());
+                                         config_parse.getstm32baudrate(),
+                                         config_parse.getstm32port());
         while (1) {
           messages::STM32STATUS _command_stm32 =
               static_cast<messages::STM32STATUS>(
@@ -1314,8 +1352,8 @@ class threadloop : public StateMonitor {
       case common::TESTMODE::EXPERIMENT_LOS:
       case common::TESTMODE::EXPERIMENT_FRENET:
       case common::TESTMODE::EXPERIMENT_AVOIDANCE: {
-        messages::GPS _gpsimu(_jsonparse.getgpsbaudrate(),
-                              _jsonparse.getgpsport());
+        messages::GPS _gpsimu(config_parse.getgpsbaudrate(),
+                              config_parse.getgpsport());
 
         // experiment
         while (1) {
@@ -1375,8 +1413,8 @@ class threadloop : public StateMonitor {
       case common::TESTMODE::EXPERIMENT_FRENET:
       case common::TESTMODE::EXPERIMENT_AVOIDANCE: {
         messages::guilink_serial<num_thruster, 3, dim_controlspace> _gui_link(
-            guilink_RTdata, _jsonparse.getguibaudrate(),
-            _jsonparse.getguiport());
+            guilink_RTdata, config_parse.getguibaudrate(),
+            config_parse.getguiport());
 
         // experiment
         while (1) {
@@ -1434,7 +1472,10 @@ class threadloop : public StateMonitor {
             StateMonitor::indicator_routeplanner = common::STATETOGGLE::READY;
             CLOG(INFO, "route-planner") << "initialation successful!";
           }
-          if (StateMonitor::indicator_estimator == common::STATETOGGLE::IDLE) {
+          if ((StateMonitor::indicator_routeplanner ==
+               common::STATETOGGLE::READY) &&
+              (StateMonitor::indicator_estimator ==
+               common::STATETOGGLE::IDLE)) {
             StateMonitor::indicator_estimator = common::STATETOGGLE::READY;
             CLOG(INFO, "estimator") << "initialation successful!";
           }

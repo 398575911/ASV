@@ -142,7 +142,8 @@
       "max_speed_deviation":1.2,
       "target_speed_step":0.3
     },
-    "FrenetCollision":{
+    "Collision":{
+      "stern2CoG":6.1111,
       "robot_radius":2.5
     }
   },
