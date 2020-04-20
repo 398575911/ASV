@@ -1,7 +1,6 @@
 #!/bin/bash
-
 sudo apt update
-sudo apt install build-essential cmake sqlite3 libsqlite3-dev rsync \
+sudo apt install build-essential cmake sqlite3 libsqlite3-dev libboost-all-dev rsync \
 	catkin python3 python3-pip vim sshfs cutecom
 
 # install GeographicLib
@@ -23,13 +22,6 @@ cd ../serial
 make
 sudo make install	
 
-# install boost 1.71
-cd ../
-tar xvf boost_1_71_0.tar.gz 
-cd boost_1_71_0
-./bootstrap.sh --prefix=/usr
-sudo ./b2 install
-
 #### install mosek9   ###
 cd ../mosek
 tar xvf mosektoolslinux64x86.tar.bz2
@@ -43,3 +35,7 @@ sudo source ~/.bashrc
 sudo mkdir -m 777 ~/mosek
 sudo mv mosek.lic ~/mosek/
 
+#### install osqp   ###
+
+
+#### install pyclustering   ###

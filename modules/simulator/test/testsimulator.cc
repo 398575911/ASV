@@ -39,14 +39,14 @@ int main() {
       (Eigen::Matrix3d() << 10, 0, 0, 0, 10, 0, 0, 0, 100).finished();
   Eigen::Vector3d u = Eigen::Vector3d::Zero();
 
-  int total_step = 5000;
+  int total_step = 1000;
   Eigen::MatrixXd save_x(6, total_step);
 
   simulation::simulator _simulator(0.1, _vessel, x);
 
   for (int i = 0; i != total_step; ++i) {
     u = -P * x.head(3);
-    x = _simulator.simulator_onestep(0, u).getX();
+    x = _simulator.do_step(0, u).X();
     save_x.col(i) = x;
   }
 
@@ -59,8 +59,7 @@ int main() {
     gp << "set xtics out\n";
     gp << "set ytics out\n";
     gp << "set ylabel '" << label_names[i] << "'\n";
-    gp << "plot"
-          " '-' with lines lt 1 lw 3 lc rgb 'violet' \n";
+    gp << "plot '-' with lines lt 1 lw 2 lc rgb 'black' \n";
     xy_pts_A.clear();
     for (int j = 0; j != total_step; ++j) {
       xy_pts_A.push_back(std::make_pair(j, save_x(i, j)));

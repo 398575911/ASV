@@ -26,11 +26,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # thread库
 find_package(Threads MODULE REQUIRED)
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-
 
 # 添加 include 子目录
-
 
 set(HEADER_DIRECTORY ${HEADER_DIRECTORY} 
 	"${PROJECT_SOURCE_DIR}/../../../"
