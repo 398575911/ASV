@@ -35,3 +35,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 近期:
 1. Hybrid A star, Auto-docking simulation (Paper)
 2. Marine radar visulization, target tracking
+3. trajectory tracking -> planner

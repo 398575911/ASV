@@ -12,10 +12,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -mavx")
 
 
 set(HEADER_DIRECTORY ${HEADER_DIRECTORY} 
-	"${PROJECT_SOURCE_DIR}/../include"
-	)
+	"${PROJECT_SOURCE_DIR}/../../../"
+)
 
+set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY} "/usr/lib")
 
+find_library(SQLITE3_LIBRARY sqlite3 HINTS ${LIBRARY_DIRECTORY})
 
 set(RARE_LIBRARIES ${RARE_LIBRARIES} 
 	"boost_system"
@@ -41,3 +43,10 @@ target_link_libraries(example-interactive ${RARE_LIBRARIES})
 add_executable(example-misc example-misc.cc)
 target_include_directories(example-misc PUBLIC ${HEADER_DIRECTORY})
 target_link_libraries(example-misc ${RARE_LIBRARIES})
+
+add_executable(db_illustrate 
+			"${PROJECT_SOURCE_DIR}/../../logging/src/easylogging++.cc"                            
+			"${CMAKE_CURRENT_SOURCE_DIR}/db_illustrate.cc")
+target_include_directories(db_illustrate PUBLIC ${HEADER_DIRECTORY})
+target_link_libraries(db_illustrate PUBLIC ${RARE_LIBRARIES})
+target_link_libraries(db_illustrate PUBLIC ${SQLITE3_LIBRARY})

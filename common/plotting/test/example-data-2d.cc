@@ -44,7 +44,7 @@ THE SOFTWARE.
 #include <blitz/array.h>
 #endif
 
-#include "gnuplot-iostream.h"
+#include "../include/gnuplot-iostream.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

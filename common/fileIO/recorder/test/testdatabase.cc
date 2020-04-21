@@ -102,7 +102,9 @@ BOOST_AUTO_TEST_CASE(wind) {
   };
   ASV::common::wind_db wind_db(folderp, config_path);
   wind_db.create_table();
-  wind_db.update_table(wind_db_data);
+  for (int i = 0; i != 10; ++i) {
+    wind_db.update_table(wind_db_data);
+  }
 
   // parse
   ASV::common::wind_parser wind_parser(folderp, config_path);

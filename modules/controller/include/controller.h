@@ -12,10 +12,18 @@
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
 
+#define TA_USE_OSQP
+
 #include <vector>
 #include "common/property/include/vesseldata.h"
 #include "controllerdata.h"
+
+// TODO: test the OSQP and prepare to remove mosek
+#ifdef TA_USE_OSQP
+#include "thrustallocation_osqp.h"
+#else
 #include "thrustallocation.h"
+#endif
 
 namespace ASV::control {
 // n: # of dimension of control space

@@ -37,21 +37,12 @@ find_library(SQLITE3_LIBRARY sqlite3 HINTS ${LIBRARY_DIRECTORY})
 
 # 指定生成目标
 
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
+
 set(SOURCE_FILES ${SOURCE_FILES} 
 	"${PROJECT_SOURCE_DIR}/../../../logging/src/easylogging++.cc"                            
-	"${CMAKE_CURRENT_SOURCE_DIR}/test.cc")
-add_executable (testtest ${SOURCE_FILES})
-target_include_directories(testtest PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(testtest PUBLIC ${SQLITE3_LIBRARY})
-
-
-
-# ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MODULE) 
-
-# set(SOURCE_FILES ${SOURCE_FILES} 
-# 	"${PROJECT_SOURCE_DIR}/../../../logging/src/easylogging++.cc"                            
-# 	"${CMAKE_CURRENT_SOURCE_DIR}/testdatabase.cc")
-# add_executable (testdatabase ${SOURCE_FILES})
-# target_include_directories(testdatabase PRIVATE ${HEADER_DIRECTORY})
-# target_link_libraries(testdatabase PUBLIC ${SQLITE3_LIBRARY})
+	"${CMAKE_CURRENT_SOURCE_DIR}/testdatabase.cc")
+add_executable (testdatabase ${SOURCE_FILES})
+target_include_directories(testdatabase PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(testdatabase PUBLIC ${SQLITE3_LIBRARY})
 
