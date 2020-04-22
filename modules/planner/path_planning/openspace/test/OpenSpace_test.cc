@@ -10,6 +10,7 @@
 #include <thread>
 #include "../include/OpenSpacePlanner.h"
 #include "DataFactory.hpp"
+#include "common/timer/include/timecounter.h"
 
 using namespace ASV::planning;
 
@@ -91,8 +92,14 @@ void compare_bestpath(
 }  // rtplotting_2dbestpath
 
 int main() {
+  el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
+  LOG(INFO) << "The program has started!";
+
+  // timer
+  ASV::common::timecounter _timer;
+
   // obstacles
-  int test_scenario = 8;
+  int test_scenario = 3;
 
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
@@ -103,11 +110,10 @@ int main() {
                         start_point, end_point, test_scenario);
 
   HybridAStarConfig _HybridAStarConfig{
-      0.4,  // move_length
+      1,    // move_length
       1.5,  // penalty_turning
       1.5,  // penalty_reverse
       2     // penalty_switch
-            // 5,    // num_interpolate
   };
   SmootherConfig smoothconfig{
       4,  // d_max
@@ -116,10 +122,18 @@ int main() {
   OpenSpacePlanner openspace(_collisiondata, _HybridAStarConfig, smoothconfig);
   openspace.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
   openspace.update_start_end(start_point, end_point);
+
   openspace.GenerateTrajectory();
 
   auto center_path = openspace.coarse_path();
   auto cog_path = openspace.cog_path();
+
+  for (const auto &state : center_path) {
+    _timer.timeelapsed();
+    openspace.GenerateTrajectory(state, end_point);
+    long int et = _timer.timeelapsed();
+    std::cout << "elapsed time of OpenSpace Planner: " << et << std::endl;
+  }
 
   // Gnuplot gp;
   // gp << "set terminal x11 size 1100, 1100 0\n";

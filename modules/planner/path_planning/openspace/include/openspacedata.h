@@ -31,13 +31,11 @@ struct SearchConfig {
   float cost_map[6][6];
 };
 
-// in the Cartesian Coordinates.
-struct OpenSpace_Trajectory {
-  Eigen::VectorXd t;      // time (s)
-  Eigen::VectorXd x;      // x (m)
-  Eigen::VectorXd y;      // y (m)
-  Eigen::VectorXd theta;  // heading (rad)
-  Eigen::VectorXd speed;  // speed (rad/s)
+// the next planning state in the Cartesian Coordinates.
+struct OpenSpace_Planning_State {
+  double theta;  // heading (rad)
+  double speed;  // velocity with direction (m/s)
+  double kappa;  // curvature (1/m)
 };
 
 struct SmootherConfig {

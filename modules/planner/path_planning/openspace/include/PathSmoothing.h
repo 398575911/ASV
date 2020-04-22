@@ -11,7 +11,6 @@
 #ifndef _PATHSMOOTHING_H_
 #define _PATHSMOOTHING_H_
 
-#include <iostream>
 #include "CollisionChecking.h"
 
 namespace ASV::planning {

@@ -1,7 +1,7 @@
 /*
 ***********************************************************************
-* testdatabase.cc:
-* uint test for database
+* db_illustrate.cc:
+* illustrate the a collection of ASV results, stored in the database
 * This header file can be read by C++ compilers
 *
 * by Hu.ZH(CrossOcean.ai)
@@ -11,13 +11,16 @@
 #include "common/fileIO/recorder/include/dataparser.h"
 #include "common/plotting/include/gnuplot-iostream.h"
 
+// setup the time interval
+const double starting_time = 0;
+const double end_time = 10;
+
 const std::string folderp = "../../data/";
 const std::string config_path =
     "/home/scar1et/Coding/ASV/common/fileIO/recorder/config/dbconfig.json";
-const double starting_time = 0;
-const double end_time = 10;
 int figure_id = 0;
 
+// plot the results stored in planner database
 void plot_planner() {
   // parse
   ASV::common::planner_parser planner_parser(folderp, config_path);
@@ -51,8 +54,12 @@ void plot_planner() {
     for (const auto &v : value.WPLAT) std::cout << v << " ";
     std::cout << std::endl;
   }
-}
+}  // plot_planner
 
+// plot the results stored in perception database
+void plot_perception() {}  // plot_perception
+
+// plot the results stored in GPS database
 void plot_GPS() {
   // parse
   ASV::common::GPS_parser GPS_parser(folderp, config_path);
@@ -169,7 +176,7 @@ void plot_GPS() {
 
 }  // plot_GPS
 
-// illustrate the time seires of wind
+// plot the results stored in wind database
 void plot_wind() {
   // parse
   ASV::common::wind_parser wind_parser(folderp, config_path);
@@ -208,6 +215,7 @@ void plot_wind() {
   gp << "unset multiplot\n";
 }  // plot_wind
 
+// plot the results stored in estimator database
 void plot_estimator() {
   // parse
   ASV::common::estimator_parser estimator_parser(folderp, config_path);
@@ -405,8 +413,10 @@ void plot_estimator() {
   gp << "unset multiplot\n";
 }  // plot_estimator
 
-void plot_stm32() {}
+// plot the results stored in stm32 database
+void plot_stm32() {}  // plot_stm32
 
+// plot the results stored in controller database
 void plot_controller() {
   // parse
   ASV::common::control_parser control_parser(folderp, config_path);
@@ -535,13 +545,86 @@ void plot_controller() {
 
   gp << "unset multiplot\n";
 
-  /******************** time series of propeller ********************/
-}
+  /******************** time series of propeller (alpha) ********************/
+  int m = read_TA[0].alpha.size();
+
+  ++figure_id;
+  gp << "set terminal x11 size 1000, 900 " + std::to_string(figure_id) + "\n";
+  gp << "set multiplot layout " + std::to_string(m) +
+            ", 1 title 'time series of propellers alpha' font ',14'\n";
+  std::vector<std::pair<double, double>> xy_pts_alpha;
+  for (int i = 0; i != m; ++i) {
+    gp << "set xtics out\n";
+    gp << "set ytics out\n";
+    gp << "set ylabel 'alpha " + std::to_string(i + 1) + "(deg)'\n";
+    xy_pts_alpha.clear();
+    for (std::size_t index = 0; index != read_TA.size(); index++) {
+      auto TA_i = read_TA[index];
+      xy_pts_alpha.push_back(std::make_pair(TA_i.local_time, TA_i.alpha[i]));
+    }
+    gp << "plot " << gp.file1d(xy_pts_alpha)
+       << " with lines lt 1 lw 2 lc rgb 'violet' notitle\n";
+  }
+  gp << "unset multiplot\n";
+
+  /******************** time series of propeller (rpm) ********************/
+  ++figure_id;
+  gp << "set terminal x11 size 1000, 900 " + std::to_string(figure_id) + "\n";
+  gp << "set multiplot layout " + std::to_string(m) +
+            ", 1 title 'time series of propellers rotation' font ',14'\n";
+  std::vector<std::pair<double, double>> xy_pts_rotation;
+  for (int i = 0; i != m; ++i) {
+    gp << "set xtics out\n";
+    gp << "set ytics out\n";
+    gp << "set ylabel 'rotation" + std::to_string(i + 1) + "(rpm)'\n";
+    xy_pts_rotation.clear();
+    for (std::size_t index = 0; index != read_TA.size(); index++) {
+      auto TA_i = read_TA[index];
+      xy_pts_rotation.push_back(std::make_pair(TA_i.local_time, TA_i.rpm[i]));
+    }
+    gp << "plot " << gp.file1d(xy_pts_rotation)
+       << " with lines lt 1 lw 2 lc rgb 'violet' notitle\n";
+  }
+  gp << "unset multiplot\n";
+}  // plot_controller
+
+// plot the 2d planar motion
+void plot_2dposition() {
+  // parse
+  ASV::common::estimator_parser estimator_parser(folderp, config_path);
+  auto read_measurement =
+      estimator_parser.parse_measurement_table(starting_time, end_time);
+  auto read_state = estimator_parser.parse_state_table(starting_time, end_time);
+
+  /******************** comparision of estimator position ********************/
+  std::vector<std::pair<double, double>> xy_pts_A;
+
+  for (std::size_t index = 0; index != read_state.size(); index++) {
+    auto state_i = read_state[index];
+    xy_pts_A.push_back(std::make_pair(state_i.state_y, state_i.state_x));
+  }
+
+  ++figure_id;
+  Gnuplot gp;
+  gp << "set terminal x11 size 800, 800 " + std::to_string(figure_id) + "\n";
+  gp << "set title 'comparision of estimator position'\n";
+  gp << "set xtics out\n";
+  gp << "set ytics out\n";
+  gp << "set ylabel 'X (m)'\n";
+  gp << "set xlabel 'Y (m)'\n";
+  gp << "set size ratio -1\n";
+
+  gp << "plot " << gp.file1d(xy_pts_A)
+     << " with lines lt 1 lw 2 lc rgb 'black' notitle\n";
+
+}  // plot_2dposition
 
 int main() {
   plot_wind();
   plot_GPS();
+  plot_planner();
   plot_estimator();
   plot_controller();
   plot_planner();
+  plot_2dposition();
 }

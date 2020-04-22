@@ -87,6 +87,9 @@ void rtplotting_2dbestpath(
 
 // Main
 int main() {
+  el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
+  LOG(INFO) << "The program has started!";
+
   HybridAStarConfig _HybridAStarConfig{
       1.05,  // move_length
       1.3,   // penalty_turning
