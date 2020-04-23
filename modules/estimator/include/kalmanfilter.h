@@ -49,135 +49,137 @@ class kalmanfilter {
  public:
   // disable the default constructor
   kalmanfilter() = delete;
-  explicit kalmanfilter(const matrixnnd &_A, const matrixnld &_B,
-                        const matrixmnd &_H, const matrixnnd &_Q,
-                        const matrixmmd &_R) noexcept
-      : A(_A),
-        B(_B),
-        H(_H),
-        Q(_Q),
-        R(_R),
-        P(matrixnnd::Identity()),
-        K(matrixnmd::Zero()),
-        X(vectornd::Zero()) {}
+  explicit kalmanfilter(const matrixnnd &A, const matrixnld &B,
+                        const matrixmnd &H, const matrixnnd &Q,
+                        const matrixmmd &R) noexcept
+      : A_(A),
+        B_(B),
+        H_(H),
+        Q_(Q),
+        R_(R),
+        P_(matrixnnd::Identity()),
+        K_(matrixnmd::Zero()),
+        X_(vectornd::Zero()) {}
 
   virtual ~kalmanfilter() = default;
   /* Set Initial Value */
-  void setInitial(const vectornd &_X0, const matrixnnd &_P0) {
-    X = _X0;
-    P = _P0;
-  }
+  void setInitial(const vectornd &X0, const matrixnnd &P0) {
+    this->X_ = X0;
+    this->P_ = P0;
+  }  // setInitial
 
   // perform kalman filter for one step
-  void linearkalman(const matrixnnd &_A, const matrixnld &_B,
-                    const vectorld &former_U, const vectormd &_Z) {
-    updatesystem(_A, _B);
+  void linearkalman(const matrixnnd &A, const matrixnld &B,
+                    const vectorld &former_U, const vectormd &Z) {
+    updatesystem(A, B);
     predict(former_U);
-    correct(_Z);
+    correct(Z);
   }  // linearkalman
 
-  void linearkalman(const matrixnnd &_A, const vectorld &former_U,
-                    const vectormd &_Z) {
-    updatesystem(_A);
+  void linearkalman(const matrixnnd &A, const vectorld &former_U,
+                    const vectormd &Z) {
+    updatesystem(A);
     predict(former_U);
-    correct(_Z);
+    correct(Z);
   }  // linearkalman
 
-  void linearkalman(const vectorld &former_U, const vectormd &_Z) {
+  void linearkalman(const vectorld &former_U, const vectormd &Z) {
     predict(former_U);
-    correct(_Z);
+    correct(Z);
   }  // linearkalman
 
   // calculate the max eigenvalue of P
   double getMaxEigenP() const {
-    Eigen::SelfAdjointEigenSolver<matrixnnd> eigensolver(P);
+    Eigen::SelfAdjointEigenSolver<matrixnnd> eigensolver(this->P_);
     if (eigensolver.info() != Eigen::Success)
       return 100;
     else
       return eigensolver.eigenvalues().maxCoeff();
   }  // getMaxEigenP
 
-  vectornd getState() const noexcept { return X; }
-  void setState(const vectornd &_state) { X = _state; }
+  vectornd getState() const noexcept { return X_; }
+  void setState(const vectornd &state) noexcept { X_ = state; }
   // After intialization of sensors, we can specify value to state
-  void setQ(const matrixnnd &_Q) { Q = _Q; }
-  void setR(const matrixmmd &_R) { R = _R; }
+  void setQ(const matrixnnd &Q) noexcept { Q_ = Q; }
+  void setR(const matrixmmd &R) noexcept { R_ = R; }
 
  protected:
   /* Fixed Matrix */
-  matrixnnd A;  // System dynamics matrix
-  matrixnld B;  // Control matrix
-  matrixmnd H;  // Mesaurement Adaptation matrix
-  matrixnnd Q;  // Process Noise Covariance matrix
-  matrixmmd R;  // Measurement Noise Covariance matrix
+  matrixnnd A_;  // System dynamics matrix
+  matrixnld B_;  // Control matrix
+  matrixmnd H_;  // Mesaurement Adaptation matrix
+  matrixnnd Q_;  // Process Noise Covariance matrix
+  matrixmmd R_;  // Measurement Noise Covariance matrix
 
   /* Variable Matrix */
-  matrixnnd P;  // State Covariance
-  matrixnmd K;  // Kalman Gain matrix
-  vectornd X;   //(Current) State vector
+  matrixnnd P_;  // State Covariance
+  matrixnmd K_;  // Kalman Gain matrix
+  vectornd X_;   //(Current) State vector
 
  private:
   /* Do prediction based of physical system (No external input) */
   void predict(void) {
-    X = A * X;
-    P = A * P * A.transpose() + Q;
+    this->X_ = this->A_ * this->X_;
+    this->P_ = this->A_ * this->P_ * this->A_.transpose() + this->Q_;
   }  // predict
 
   /* Do prediction based of physical system (with external input)
    * U: Control vector
    */
-  void predict(const vectorld &_U) {
-    X = A * X + B * _U;
-    P = A * P * A.transpose() + Q;
+  void predict(const vectorld &U) {
+    this->X_ = this->A_ * this->X_ + this->B_ * U;
+    this->P_ = this->A_ * this->P_ * this->A_.transpose() + this->Q_;
   }  // predict
 
   /* Correct the prediction, using mesaurement
    *  Z: mesaure vector */
-  void correct(const vectormd &_Z) {
-    K = (P * H.transpose()) * (H * P * H.transpose() + R).inverse();
+  void correct(const vectormd &Z) {
+    this->K_ =
+        (this->P_ * this->H_.transpose()) *
+        (this->H_ * this->P_ * this->H_.transpose() + this->R_).inverse();
     // K = (P * H.transpose()) * (H * P * H.transpose() + R).llt().solve(Im);
-    X = X + K * (_Z - H * X);
-    P = (matrixnnd::Identity() - K * H) * P;
+    this->X_ = this->X_ + this->K_ * (Z - this->H_ * this->X_);
+    this->P_ = (matrixnnd::Identity() - this->K_ * this->H_) * this->P_;
   }  // correct
 
   /*Set Fixed Matrix(NO INPUT) */
-  void updatesystem(const matrixnnd &_A, const matrixnld &_B) {
-    A = _A;
-    B = _B;
-  }
+  void updatesystem(const matrixnnd &A, const matrixnld &B) {
+    this->A_ = A;
+    this->B_ = B;
+  }  // updatesystem
 
   /*Set Fixed Matrix(NO INPUT) */
-  void updatesystem(const matrixnnd &_A) { A = _A; }
+  void updatesystem(const matrixnnd &A) { this->A_ = A; }
 };  //  // end class kalmanfilter
 
 // Kalman filtering for surface vessel
-class USV_kalmanfilter : public kalmanfilter<3, 6, 6> {
+class ASV_kalmanfilter : public kalmanfilter<3, 6, 6> {
  public:
-  explicit USV_kalmanfilter(const common::vessel &_vessel,
-                            const estimatordata &_estimatordata) noexcept
+  explicit ASV_kalmanfilter(const common::vessel &vesselconfig,
+                            const estimatordata &estimator_data) noexcept
       : kalmanfilter(matrixnnd::Zero(), matrixnld::Zero(),
-                     matrixmnd::Identity(), _estimatordata.Q, _estimatordata.R),
-        sample_time(_estimatordata.sample_time) {
-    initializekalman(_vessel);
+                     matrixmnd::Identity(), estimator_data.Q, estimator_data.R),
+        sample_time_(estimator_data.sample_time) {
+    initializekalman(vesselconfig);
   }
 
-  ~USV_kalmanfilter() noexcept {}
+  ~ASV_kalmanfilter() noexcept {}
 
   // perform kalman filter for one step
-  USV_kalmanfilter &linearkalman(const estimatorRTdata &_RTdata) {
-    updateKalmanA(_RTdata.CTB2G);
-    kalmanfilter::linearkalman(_RTdata.BalphaU, _RTdata.Measurement);
+  ASV_kalmanfilter &linearkalman(const estimatorRTdata &RTdata) {
+    updateKalmanA(RTdata.CTB2G);
+    kalmanfilter::linearkalman(RTdata.BalphaU, RTdata.Measurement);
     return *this;
   }
 
  private:
-  const double sample_time;
+  const double sample_time_;
 
   // initialize parameters in Kalman filter
-  void initializekalman(const common::vessel &_vessel) {
+  void initializekalman(const common::vessel &vesselconfig) {
     // copy the constant data
-    Eigen::Matrix3d Mass(_vessel.Mass + _vessel.AddedMass);
-    Eigen::Matrix3d Damping(_vessel.LinearDamping);
+    Eigen::Matrix3d Mass(vesselconfig.Mass + vesselconfig.AddedMass);
+    Eigen::Matrix3d Damping(vesselconfig.LinearDamping);
 
     // calcualte the A and B in continous equation
     matrixnld Bk = matrixnld::Zero();
@@ -188,16 +190,16 @@ class USV_kalmanfilter : public kalmanfilter<3, 6, 6> {
     Bk.bottomRows(3) = Inv_Mass;
 
     // calculate discrete time A, B, and H
-    kalmanfilter::A = matrixnnd::Identity() + sample_time * Ak;
-    kalmanfilter::B = sample_time * Bk;
+    kalmanfilter::A_ = matrixnnd::Identity() + sample_time_ * Ak;
+    kalmanfilter::B_ = sample_time_ * Bk;
   }
 
   // real time update the Kalman filter matrix using orientation
-  void updateKalmanA(const Eigen::Matrix3d &_CTB2G) {
-    kalmanfilter::A.topRightCorner(3, 3) = sample_time * _CTB2G;
+  void updateKalmanA(const Eigen::Matrix3d &CTB2G) {
+    kalmanfilter::A_.topRightCorner(3, 3) = sample_time_ * CTB2G;
   }  // updateKalmanA
 
-};  // end class USV_kalmanfilter
+};  // end class ASV_kalmanfilter
 
 }  // namespace ASV::localization
 

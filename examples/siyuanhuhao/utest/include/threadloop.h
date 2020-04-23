@@ -465,12 +465,12 @@ class threadloop : public StateMonitor {
   //################### path following, controller, TA ####################//
   void controllerloop() {
     control::controller<10, num_thruster, indicator_actuation, dim_controlspace>
-        _controller(controller_RTdata, config_parse.getcontrollerdata(),
-                    config_parse.getvessel(), config_parse.getpiddata(),
-                    config_parse.getthrustallocationdata(),
-                    config_parse.gettunneldata(), config_parse.getazimuthdata(),
-                    config_parse.getmainrudderdata(),
-                    config_parse.gettwinfixeddata());
+        ASV_Controller(
+            controller_RTdata, config_parse.getcontrollerdata(),
+            config_parse.getvessel(), config_parse.getpiddata(),
+            config_parse.getthrustallocationdata(),
+            config_parse.gettunneldata(), config_parse.getazimuthdata(),
+            config_parse.getmainrudderdata(), config_parse.gettwinfixeddata());
 
     control::trajectorytracking _trajectorytracking(
         config_parse.getcontrollerdata(), tracker_RTdata);
@@ -479,12 +479,12 @@ class threadloop : public StateMonitor {
     long int outerloop_elapsed_time = 0;
     long int innerloop_elapsed_time = 0;
     long int sample_time =
-        static_cast<long int>(1000 * _controller.getsampletime());
+        static_cast<long int>(1000 * ASV_Controller.sampletime());
 
     StateMonitor::check_controller();
 
     controller_RTdata =
-        _controller.initializecontroller().getcontrollerRTdata();
+        ASV_Controller.initializecontroller().getcontrollerRTdata();
 
     _trajectorytracking.set_grid_points(
         RoutePlanner_RTdata.Waypoint_X, RoutePlanner_RTdata.Waypoint_Y,
@@ -496,30 +496,42 @@ class threadloop : public StateMonitor {
 
       switch (testmode) {
         case common::TESTMODE::SIMULATION_DP: {
-          _controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
           tracker_RTdata.setpoint = Eigen::Vector3d::Zero();
           tracker_RTdata.v_setpoint = Eigen::Vector3d::Zero();
 
-          _controller.set_thruster_feedback(
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
 
           break;
         }
         case common::TESTMODE::SIMULATION_LOS: {
-          _controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
-          _controller.set_thruster_feedback(
+          static int count = 0;
+
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
           // trajectory tracking
-          _trajectorytracking.Grid_LOS(estimator_RTdata.State.head(2));
-          tracker_RTdata = _trajectorytracking.gettrackerRTdata();
+          // _trajectorytracking.Grid_LOS(estimator_RTdata.State.head(2));
+          // tracker_RTdata = _trajectorytracking.gettrackerRTdata();
+          static double t_u = -0.5;
+          static double t_omega = -0.5;
+
+          tracker_RTdata =
+              _trajectorytracking
+                  .FollowCircularArc(
+                      t_omega / t_u, t_u,
+                      t_omega * ASV_Controller.sampletime() * count)
+                  .gettrackerRTdata();
+          count++;
 
           break;
         }
         case common::TESTMODE::SIMULATION_FRENET: {
-          _controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
-          _controller.set_thruster_feedback(
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
           // trajectory tracking
@@ -531,8 +543,8 @@ class threadloop : public StateMonitor {
           break;
         }
         case common::TESTMODE::SIMULATION_AVOIDANCE: {
-          _controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
-          _controller.set_thruster_feedback(
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
           // trajectory tracking
@@ -545,20 +557,20 @@ class threadloop : public StateMonitor {
           break;
         }
         case common::TESTMODE::EXPERIMENT_DP: {
-          _controller.setcontrolmode(control::CONTROLMODE::DYNAMICPOSITION);
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::DYNAMICPOSITION);
           tracker_RTdata.setpoint = Eigen::Vector3d::Zero();
           tracker_RTdata.v_setpoint = Eigen::Vector3d::Zero();
 
-          _controller.set_thruster_feedback(
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
 
           break;
         }
         case common::TESTMODE::EXPERIMENT_LOS: {
-          _controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
 
-          _controller.set_thruster_feedback(
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
 
@@ -569,8 +581,8 @@ class threadloop : public StateMonitor {
           break;
         }
         case common::TESTMODE::EXPERIMENT_FRENET: {
-          _controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
-          _controller.set_thruster_feedback(
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
           // trajectory tracking
@@ -583,8 +595,8 @@ class threadloop : public StateMonitor {
           break;
         }
         case common::TESTMODE::EXPERIMENT_AVOIDANCE: {
-          _controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
-          _controller.set_thruster_feedback(
+          ASV_Controller.setcontrolmode(control::CONTROLMODE::MANEUVERING);
+          ASV_Controller.set_thruster_feedback(
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
           // trajectory tracking
@@ -601,7 +613,7 @@ class threadloop : public StateMonitor {
       }  // end switch
 
       // controller
-      controller_RTdata = _controller
+      controller_RTdata = ASV_Controller
                               .controlleronestep(Eigen::Vector3d::Zero(),
                                                  estimator_RTdata.p_error,
                                                  estimator_RTdata.v_error,
@@ -615,7 +627,8 @@ class threadloop : public StateMonitor {
 
       if (outerloop_elapsed_time > 1.1 * sample_time)
         CLOG(INFO, "controller") << "Too much time!";
-    }
+    }  // end while loop
+
   }  // controllerloop
 
   //##################### state estimation and simulator ####################//

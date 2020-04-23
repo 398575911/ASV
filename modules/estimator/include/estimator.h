@@ -174,7 +174,7 @@ class estimator {
   // variable for outlier removal
   outlierremove roll_outlierremove;
   // Kalman filtering
-  USV_kalmanfilter KalmanFilter;
+  ASV_kalmanfilter KalmanFilter;
 
   const double sample_time;
   const Eigen::Vector3d antenna2cog;  // Xcog - Xantenna

@@ -14,7 +14,6 @@
 
 #include <stdexcept>
 
-#include <vector>
 #include "common/logging/include/easylogging++.h"
 #include "common/math/miscellaneous/include/math_utils.h"
 #include "controllerdata.h"
@@ -24,14 +23,15 @@
 
 namespace ASV::control {
 
+// path following using line of sight method
 class lineofsight {
  public:
-  explicit lineofsight(double _los_radius, double _capture_radius = 0)
-      : los_radius(_los_radius),
-        capture_radius(_capture_radius),
-        desired_theta(0),
-        trackerror(Eigen::Vector2d::Zero()),
-        R(Eigen::Matrix2d::Zero()) {}
+  explicit lineofsight(double los_radius, double capture_radius = 0)
+      : los_radius_(los_radius),
+        capture_radius_(capture_radius),
+        desired_theta_(0),
+        trackerror_(Eigen::Vector2d::Zero()),
+        R_(Eigen::Matrix2d::Zero()) {}
   lineofsight() = delete;
   virtual ~lineofsight() = default;
 
@@ -40,7 +40,7 @@ class lineofsight {
                             const Eigen::Vector2d &_wp) {
     Eigen::Vector2d _error = _vesselposition - _wp;
     double distance_square = _error(0) * _error(0) + _error(1) * _error(1);
-    if (distance_square <= capture_radius * capture_radius) return true;
+    if (distance_square <= capture_radius_ * capture_radius_) return true;
     return false;
   }  // IsEnterCaptureRadius
 
@@ -53,43 +53,43 @@ class lineofsight {
     computeR(thetaK);
 
     // track error
-    trackerror = R.transpose() * (_vesselposition - _p0);
+    trackerror_ = R_.transpose() * (_vesselposition - _p0);
 
-    double e = trackerror(1);  // cross-track error
+    double e = trackerror_(1);  // cross-track error
     double thetar = 0;
-    if (e > los_radius)
+    if (e > los_radius_)
       thetar = -M_PI / 2;
-    else if (e < -los_radius)
+    else if (e < -los_radius_)
       thetar = M_PI / 2;
     else
-      thetar = std::asin(-e / los_radius);
+      thetar = std::asin(-e / los_radius_);
 
-    desired_theta = thetar + thetaK;
+    desired_theta_ = thetar + thetaK;
 
   }  // computelospoint
 
-  double getdesired_theta() const noexcept { return desired_theta; }
-  auto gettrackerror() const noexcept { return trackerror; }
+  double desired_theta() const noexcept { return desired_theta_; }
+  auto trackerror() const noexcept { return trackerror_; }
 
-  void setcaptureradius(double _captureradius) {
-    capture_radius = _captureradius;
+  void setcaptureradius(double captureradius) noexcept {
+    capture_radius_ = captureradius;
   }
-  void setlosradius(double _radius) { los_radius = _radius; }
+  void setlosradius(double radius) noexcept { los_radius_ = radius; }
 
  private:
-  double los_radius;
-  double capture_radius;
-  double desired_theta;
-  Eigen::Vector2d trackerror;
-  Eigen::Matrix2d R;
+  double los_radius_;
+  double capture_radius_;
+  double desired_theta_;
+  Eigen::Vector2d trackerror_;
+  Eigen::Matrix2d R_;
   // compute the rotation matrix
   void computeR(double theta) {
     double svalue = std::sin(theta);
     double cvalue = std::cos(theta);
-    R(0, 0) = cvalue;
-    R(0, 1) = -svalue;
-    R(1, 0) = svalue;
-    R(1, 1) = cvalue;
+    R_(0, 0) = cvalue;
+    R_(0, 1) = -svalue;
+    R_(1, 0) = svalue;
+    R_(1, 1) = cvalue;
   }  // computeR
 };   // end class lineofsight
 
@@ -157,16 +157,17 @@ class trajectorytracking final : public lineofsight {
   }  // Grid_LOS
 
   // follow a circular arc without LOS
-  trajectorytracking &FollowCircularArc(double _desired_curvature,
-                                        double _desired_speed,
-                                        double _desired_heading) {
+  trajectorytracking &FollowCircularArc(double desired_curvature,
+                                        double desired_speed,
+                                        double desired_heading) {
     // desired u and r
-    double _rot = _desired_curvature * _desired_speed;
-    TrackerRTdata.v_setpoint(0) = _desired_speed;
+    double _rot = desired_curvature * desired_speed;
+    TrackerRTdata.v_setpoint(0) = desired_speed;
     TrackerRTdata.v_setpoint(2) = _rot;
 
     // desired heading
-    TrackerRTdata.setpoint(2) = _desired_heading;
+    TrackerRTdata.setpoint(2) =
+        common::math::Normalizeheadingangle(desired_heading);
 
     return *this;
   }  // FollowCircularArc
@@ -218,7 +219,7 @@ class trajectorytracking final : public lineofsight {
 
     // desired heading
     lineofsight::computelospoint(_vesselposition, _rp0, _rp1);
-    TrackerRTdata.setpoint(2) = lineofsight::getdesired_theta();
+    TrackerRTdata.setpoint(2) = lineofsight::desired_theta();
 
   }  // CircularArcLOS
 

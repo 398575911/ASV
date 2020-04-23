@@ -13,7 +13,7 @@
 
 // setup the time interval
 const double starting_time = 0;
-const double end_time = 10;
+const double end_time = 60;
 
 const std::string folderp = "../../data/";
 const std::string config_path =
@@ -236,7 +236,7 @@ void plot_estimator() {
     xy_pts_A_meas.push_back(std::make_pair(meas_i.local_time, meas_i.meas_x));
     xy_pts_B_meas.push_back(std::make_pair(meas_i.local_time, meas_i.meas_y));
     xy_pts_C_meas.push_back(
-        std::make_pair(meas_i.local_time, meas_i.meas_theta));
+        std::make_pair(meas_i.local_time, meas_i.meas_theta * 180.0 / M_PI));
   }
   for (std::size_t index = 0; index != read_state.size(); index++) {
     auto state_i = read_state[index];
@@ -245,7 +245,7 @@ void plot_estimator() {
     xy_pts_B_state.push_back(
         std::make_pair(state_i.local_time, state_i.state_y));
     xy_pts_C_state.push_back(
-        std::make_pair(state_i.local_time, state_i.state_theta));
+        std::make_pair(state_i.local_time, state_i.state_theta * 180.0 / M_PI));
   }
 
   ++figure_id;

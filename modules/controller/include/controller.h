@@ -56,7 +56,7 @@ class controller {
         velocityerror_integralmatrix(matrixnld::Zero()),
         lineardamping(_vessel.LinearDamping),
         quadraticdamping(_vessel.QuadraticDamping),
-        sample_time(_controllerdata.sample_time),
+        sample_time_(_controllerdata.sample_time),
         controlmode(_controllerdata.controlmode),
         TA(_thrustallocationdata, _v_tunnelthrusterdata, _v_azimuththrusterdata,
            _v_ruddermaindata, _v_twinfixeddata) {
@@ -146,7 +146,7 @@ class controller {
     setcontrolmode(controlmode);
   }
 
-  double getsampletime() const noexcept { return sample_time; }
+  double sampletime() const noexcept { return sample_time_; }
   auto getcontrollerRTdata() const noexcept { return controlRTdata; }
 
  private:
@@ -167,7 +167,7 @@ class controller {
   Eigen::Matrix3d lineardamping;     // linear damping
   Eigen::Matrix3d quadraticdamping;  // quadratic damping
 
-  double sample_time;
+  const double sample_time_;
   CONTROLMODE controlmode;
 
   thrustallocation<m, index_actuation, n> TA;
@@ -258,7 +258,7 @@ class controller {
     int index = L - 1;
     t_integralmatrix.leftCols(index) =
         positionerror_integralmatrix.rightCols(index);
-    // t_integralmatrix.col(index) = sample_time * _error;
+    // t_integralmatrix.col(index) = sample_time_ * _error;
     t_integralmatrix.col(index) = _error;
     positionerror_integralmatrix = t_integralmatrix;
     return positionerror_integralmatrix.rowwise().mean();

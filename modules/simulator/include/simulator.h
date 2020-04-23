@@ -77,6 +77,7 @@ class simulator {
         RTdata_({common::STATETOGGLE::READY, x}) {}
   virtual ~simulator() = default;
 
+  // perform one step of ode solver
   simulator& do_step(const double desired_heading,
                      const Eigen::Vector3d& thrust,
                      const Eigen::Vector3d& seaload = Eigen::Vector3d::Zero()) {
@@ -93,6 +94,8 @@ class simulator {
     vesselsimulator_.updateA(_theta);  // update the transform matrix and A
     vesselsimulator_.updateu(thrust + seaload);  // update the input
     RTdata_.X = rk4.rk4vec(0.0, sample_time_, RTdata_.X, vesselsimulator_);
+    RTdata_.X(2) = common::math::Normalizeheadingangle(RTdata_.X(2));
+
     return *this;
   }  // do_step
 

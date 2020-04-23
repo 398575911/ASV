@@ -26,7 +26,7 @@ int main() {
   vp << 3433894.584, 351058.1;
 
   _lineofsight.computelospoint(vp, wp1, wp2);
-  std::cout << _lineofsight.getdesired_theta() << std::endl;
+  std::cout << _lineofsight.desired_theta() << std::endl;
   _lineofsight.computelospoint(vp, wp2, wp3);
-  std::cout << _lineofsight.getdesired_theta() << std::endl;
+  std::cout << _lineofsight.desired_theta() << std::endl;
 }
