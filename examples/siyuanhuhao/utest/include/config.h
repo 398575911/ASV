@@ -46,11 +46,13 @@ constexpr int max_num_targets = 20;
 constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_LOS;
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_FRENET;
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_AVOIDANCE;
+// constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_DOCKING;
 
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_DP;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_LOS;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_FRENET;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_AVOIDANCE;
+// constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_DOCKING;
 
 }  // namespace ASV
 

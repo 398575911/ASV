@@ -179,8 +179,8 @@ void OpenSpace_multiStep() {
 
   while (1) {
     _timer.timeelapsed();
-    openspace.GenerateTrajectory(start_point, end_point);
-    auto planning_state = openspace.Planning_State();
+    auto planning_state =
+        openspace.GenerateTrajectory(start_point, end_point).Planning_State();
     start_point = {planning_state.x, planning_state.y, planning_state.theta};
 
     if (openspace.status() == OpenSpacePlanner::SUCCESS) {

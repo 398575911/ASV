@@ -31,7 +31,8 @@ class OpenSpacePlanner {
   OpenSpacePlanner(const CollisionData &collisiondata,
                    const HybridAStarConfig &hybridastarconfig,
                    const SmootherConfig &smootherconfig)
-      : move_length_(hybridastarconfig.move_length),
+      : sample_time_(0.5),
+        move_length_(hybridastarconfig.move_length),
         status_(FAILURE),
         collision_checker_(collisiondata),
         Hybrid_AStar_(collisiondata, hybridastarconfig),
@@ -99,8 +100,9 @@ class OpenSpacePlanner {
 
   }  // GenerateTrajectory
 
-  void GenerateTrajectory(const std::array<double, 3> &start_point_cog,
-                          const std::array<double, 3> &end_point_cog) {
+  OpenSpacePlanner &GenerateTrajectory(
+      const std::array<double, 3> &start_point_cog,
+      const std::array<double, 3> &end_point_cog) {
     update_start_end(start_point_cog, end_point_cog);
 
     if (status_ != SUCCESS) {
@@ -141,14 +143,17 @@ class OpenSpacePlanner {
       }
     }  // end if(status)
 
+    return *this;
   }  // GenerateTrajectory
 
+  auto sampletime() const noexcept { return sample_time_; }
   auto status() const noexcept { return status_; }
   auto coarse_path() const noexcept { return cog_coarse_path_; }
   auto cog_path() const noexcept { return cog_fine_path_; }
   auto Planning_State() const noexcept { return Planning_State_; }
 
  private:
+  const double sample_time_;  // s
   const double move_length_;  // m
 
   HybridAStarStatus status_;
