@@ -8,7 +8,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 
-#include "../include/HybridAStar.h"
+#include "../include/HybridAStar2D.h"
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -90,23 +90,21 @@ int main() {
   el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
   LOG(INFO) << "The program has started!";
 
-  HybridAStarConfig _HybridAStarConfig{
-      1,    // move_length
-      1.5,  // penalty_turning
-      1.5,  // penalty_reverse
-      2     // penalty_switch
+  SearchConfig2D _SearchConfig2D{
+      1.05,  // move_length
+      4,     //
   };
 
-  int test_scenario = 7;
+  int test_scenario = 3;
 
   // obstacles
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
   std::vector<Obstacle_Box2d_Config> Obstacles_Box;
-  std::array<double, 3> start_point_cog;
-  std::array<double, 3> end_point_cog;
+  std::array<double, 3> start_point;
+  std::array<double, 3> end_point;
   generate_obstacle_map(Obstacles_Vertex, Obstacles_LS, Obstacles_Box,
-                        start_point_cog, end_point_cog, test_scenario);
+                        start_point, end_point, test_scenario);
 
   // Collision Checking
   CollisionChecking_Astar collision_checker_(_collisiondata);
@@ -114,40 +112,32 @@ int main() {
                                       Obstacles_Box);
 
   // Hybrid A* search
-  auto start_point = collision_checker_.Transform2Center(start_point_cog);
-  auto end_point = collision_checker_.Transform2Center(end_point_cog);
-  HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
-  Hybrid_AStar.setup_start_end(start_point.at(0), start_point.at(1),
-                               start_point.at(2), end_point.at(0),
-                               end_point.at(1), end_point.at(2));
+  HybridAStar2D Hybrid_AStar(_SearchConfig2D);
+  Hybrid_AStar.setup_2d_start_end(start_point.at(0), start_point.at(1),
+                                  start_point.at(2), end_point.at(0),
+                                  end_point.at(1), end_point.at(2));
 
-  Hybrid_AStar.perform_4dnode_search(collision_checker_);
+  Hybrid_AStar.perform_2dnode_search(collision_checker_);
 
-  auto hr = Hybrid_AStar.hybridastar_trajecotry();
+  auto hr2d = Hybrid_AStar.hybridastar_2dtrajecotry();
 
-  std::vector<std::array<double, 3>> hr_plot;
   std::cout << "coarse\n";
-  for (const auto &value : hr) {
-    std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
-              << std::get<2>(value) << ", " << std::get<3>(value) << std::endl;
-    hr_plot.push_back(
-        {std::get<0>(value), std::get<1>(value), std::get<2>(value)});
+  for (const auto &value : hr2d) {
+    std::cout << value[0] << ", " << value[1] << ", " << value[2] << std::endl;
   }
-  hr_plot = collision_checker_.Transform2CoG(hr_plot);
 
-  // plotting
-  Gnuplot gp;
-  gp << "set terminal x11 size 1100, 1100 0\n";
-  gp << "set title 'A star search (4d)'\n";
-  gp << "set xrange [-10:40]\n";
-  gp << "set yrange [-10:40]\n";
+  Gnuplot gp1;
+  gp1 << "set terminal x11 size 1100, 1100 1\n";
+  gp1 << "set title 'A star search (2d)'\n";
+  gp1 << "set xrange [0:40]\n";
+  gp1 << "set yrange [0:40]\n";
+  gp1 << "set size ratio -1\n";
 
-  // hr_plot = {{1, 20, 0}};
-
-  for (std::size_t i = 0; i != hr_plot.size(); ++i) {
-    rtplotting_4dbestpath(gp, start_point_cog, end_point_cog, hr_plot[i],
-                          hr_plot, Obstacles_Vertex, Obstacles_LS,
-                          Obstacles_Box);
+  for (std::size_t i = 0; i != hr2d.size(); ++i) {
+    rtplotting_2dbestpath(
+        gp1, {start_point.at(0), start_point.at(1), start_point.at(2)},
+        {end_point.at(0), end_point.at(1), end_point.at(2)}, hr2d[i], hr2d,
+        Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 

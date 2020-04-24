@@ -178,8 +178,8 @@ class Vec2d {
 
   //! Compares two Vec2d
   bool operator==(const Vec2d &other) const {
-    return (std::abs(x_ - other.x()) < kMathEpsilon &&
-            std::abs(y_ - other.y()) < kMathEpsilon);
+    return (std::fabs(x_ - other.x()) < kMathEpsilon &&
+            std::fabs(y_ - other.y()) < kMathEpsilon);
   }
 
  protected:

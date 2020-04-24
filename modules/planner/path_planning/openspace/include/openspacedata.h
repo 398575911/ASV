@@ -26,13 +26,26 @@ struct HybridAStarConfig {
 
 // parameters used in search algorithm (Hybrid A star)
 struct SearchConfig {
-  float move_length;    // length of each movement
-  float turning_angle;  // angle of max turning
+  float move_length;       // length of each movement
+  float turning_angle;     // angle of max turning
+  float x_resolution;      // m
+  float y_resolution;      // m
+  float theta_resolution;  // rad
   float cost_map[6][6];
+};
+
+struct SearchConfig2D {
+  float move_length;       // length of each movement
+  float turning_angle;     // angle of max turning
+  float x_resolution;      // m
+  float y_resolution;      // m
+  float theta_resolution;  // rad
 };
 
 // the next planning state in the Cartesian Coordinates.
 struct OpenSpace_Planning_State {
+  double x;      // x (m)
+  double y;      // y (m)
   double theta;  // heading (rad)
   double speed;  // velocity with direction (m/s)
   double kappa;  // curvature (1/m)

@@ -14,7 +14,7 @@ elseif(WIN32)
     message("This is a Windows System")
 endif()
 
-set(CMAKE_BUILD_TYPE "Release") # "Debug" or "Release" mode
+set(CMAKE_BUILD_TYPE "Debug") # "Debug" or "Release" mode
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -Wextra -g -ggdb -pedantic")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -mavx")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -51,6 +51,12 @@ add_executable (HybridAstar_test HybridAstar_test.cc ${SOURCE_FILES} )
 target_include_directories(HybridAstar_test PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(HybridAstar_test PUBLIC ${RARE_LIBRARIES})
 target_link_libraries(HybridAstar_test PUBLIC ${CLUSTER_LIBRARY})
+
+
+add_executable (HybridAstar2D_test HybridAstar2D_test.cc ${SOURCE_FILES} )
+target_include_directories(HybridAstar2D_test PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(HybridAstar2D_test PUBLIC ${RARE_LIBRARIES})
+target_link_libraries(HybridAstar2D_test PUBLIC ${CLUSTER_LIBRARY})
 
 
 add_executable (CollisionChecking_test CollisionChecking_test.cc ${SOURCE_FILES} )

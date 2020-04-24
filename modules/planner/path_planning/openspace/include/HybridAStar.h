@@ -20,108 +20,6 @@
 
 namespace ASV::planning {
 
-// 2d node for search a collison-free path
-class HybridState2DNode {
-  using HybridAStar_Search = HybridAStarSearch<HybridState2DNode, SearchConfig,
-                                               CollisionChecking_Astar>;
-
- public:
-  HybridState2DNode() : x_(0), y_(0), theta_(0) {}
-
-  HybridState2DNode(float px, float py, float ptheta)
-      : x_(px), y_(py), theta_(ptheta) {}
-
-  float x() const noexcept { return x_; }
-  float y() const noexcept { return y_; }
-  float theta() const noexcept { return theta_; }
-
-  // Here's the heuristic function that estimates the distance from a Node
-  // to the Goal.
-  float GoalDistanceEstimate(const HybridState2DNode &nodeGoal,
-                             std::nullptr_t) {
-    return std::abs(x_ - nodeGoal.x()) + std::abs(y_ - nodeGoal.y());
-    // return std::hypot(x_ - nodeGoal.x(), y_ - nodeGoal.y());
-
-  }  // GoalDistanceEstimate
-
-  bool IsGoal(const HybridState2DNode &nodeGoal) {
-    return ((std::abs(x_ - nodeGoal.x()) <= 0.5) &&
-            (std::abs(y_ - nodeGoal.y()) <= 0.5));
-  }  // IsGoal
-
-  // This generates the successors to the given Node.
-  bool GetSuccessors(HybridAStar_Search *astarsearch,
-                     HybridState2DNode *parent_node,
-                     const SearchConfig &search_config,
-                     const CollisionChecking_Astar &collisionchecker) {
-    constexpr static int _DIRECTION_NUM = 8;
-    constexpr static int _DIMENSION = 2;
-    constexpr static int move_direction[_DIRECTION_NUM][_DIMENSION] = {
-        {0, 1},    // move up
-        {1, 1},    // move up-right
-        {1, 0},    // move right
-        {1, -1},   // move right-down
-        {0, -1},   // move down
-        {-1, -1},  // move down-left
-        {-1, 0},   // move left
-        {-1, 1},   // move left-up
-    };
-
-    (void)parent_node;
-
-    float L = search_config.move_length;
-    float max_turn = search_config.turning_angle;
-
-    // push each possible move except allowing the search to go backwards
-    for (int i = 0; i != _DIRECTION_NUM; ++i) {
-      float new_x = this->x_ + L * move_direction[i][0];
-      float new_y = this->y_ + L * move_direction[i][1];
-
-      for (int j = -2; j != 3; j++) {
-        float new_theta = ASV::common::math::fNormalizeheadingangle(
-            this->theta_ + 0.5 * max_turn * j);
-
-        if (!collisionchecker.InCollision(new_x, new_y, new_theta)) {
-          HybridState2DNode NewNode =
-              HybridState2DNode(new_x, new_y, new_theta);
-          astarsearch->AddSuccessor(NewNode);
-        }
-      }
-    }
-
-    return true;
-  }  // GetSuccessors
-
-  // (g value) given this node, what does it cost to move to successor.
-  float GetCost(const HybridState2DNode &successor,
-                const SearchConfig &search_config) {
-    (void)search_config;
-    return std::abs(successor.x() - x_) + std::abs(successor.y() - y_) +
-           10 * std::abs(ASV::common::math::fNormalizeheadingangle(
-                    successor.theta() - theta_));
-  }  // GetCost
-
-  bool IsSameState(const HybridState2DNode &rhs) {
-    // same state in a maze search is simply when (x,y) are the same
-    return ((std::abs(x_ - rhs.x()) <= 0.05) &&
-            (std::abs(y_ - rhs.y()) <= 0.05));
-
-  }  // IsSameState
-
- private:
-  // the index (x_,y_,theta_) of the node
-  float x_;
-  float y_;
-  float theta_;
-
-  bool Issamestate(const HybridState2DNode &lhs, const HybridState2DNode &rhs) {
-    return ((std::abs(lhs.x() - rhs.x()) <= 0.05) &&
-            (std::abs(lhs.y() - rhs.y()) <= 0.05));
-
-  }  // Issamestate
-
-};  // end class HybridState2DNode
-
 class HybridState4DNode {
   using HybridAStar_Search =
       HybridAStarSearch<HybridState4DNode, SearchConfig,
@@ -169,14 +67,9 @@ class HybridState4DNode {
 
   }  // GoalDistanceEstimate
 
-  bool IsGoal(const HybridState4DNode &nodeGoal) {
-    if ((std::abs(x_ - nodeGoal.x()) <= 0.05) &&
-        (std::abs(y_ - nodeGoal.y()) <= 0.05) &&
-        (std::abs(ASV::common::math::fNormalizeheadingangle(
-             theta_ - nodeGoal.theta())) < 0.02)) {
-      return true;
-    }
-    return false;
+  bool IsGoal(const HybridState4DNode &nodeGoal,
+              const SearchConfig &search_config) {
+    return IsSameState(nodeGoal, search_config);
   }  // IsGoal
 
   // This generates the successors to the given Node.
@@ -225,12 +118,13 @@ class HybridState4DNode {
 
   }  // GetCost
 
-  bool IsSameState(const HybridState4DNode &rhs) {
+  bool IsSameState(const HybridState4DNode &rhs,
+                   const SearchConfig &search_config) {
     // same state in a maze search is simply when (x,y) are the same
-    return ((std::abs(x_ - rhs.x()) <= 0.05) &&
-            (std::abs(y_ - rhs.y()) < 0.05) &&
+    return ((std::abs(x_ - rhs.x()) <= search_config.x_resolution) &&
+            (std::abs(y_ - rhs.y()) <= search_config.y_resolution) &&
             (std::abs(ASV::common::math::fNormalizeheadingangle(
-                 theta_ - rhs.theta())) < 0.01));
+                 theta_ - rhs.theta())) <= search_config.theta_resolution));
 
   }  // IsSameState
 
@@ -294,9 +188,6 @@ class HybridAStar {
       HybridAStarSearch<HybridState4DNode, SearchConfig,
                         CollisionChecking_Astar,
                         ASV::common::math::ReedsSheppStateSpace>;
-  using HybridAStar_2dNode_Search =
-      HybridAStarSearch<HybridState2DNode, SearchConfig,
-                        CollisionChecking_Astar>;
 
   using vecpath = std::vector<std::tuple<double, double, double, bool>>;
 
@@ -316,10 +207,12 @@ class HybridAStar {
         searchconfig_({
             0,     // move_length
             0,     // turning_angle
+            0,     // x_resolution
+            0,     // y_resolution
+            0,     // theta_resolution
             {{0}}  // cost_map
         }),
-        astar_4d_search_(5000),
-        astar_2d_search_(3000) {
+        astar_4d_search_(5000) {
     searchconfig_ = GenerateSearchConfig(collisiondata, hybridastarconfig);
   }
   virtual ~HybridAStar() = default;
@@ -336,6 +229,9 @@ class HybridAStar {
       HybridState4DNode nodeStart(start_x, start_y, start_theta);
       HybridState4DNode nodeEnd(end_x, end_y, end_theta);
       astar_4d_search_.SetStartAndGoalStates(nodeStart, nodeEnd, rscurve_);
+
+      // search status
+      status_ = HybridAStar::FAILURE;
     } else {
       CLOG(INFO, "Hybrid_Astar") << "start and end points are too closed!";
       status_ = HybridAStar::START_END_CLOSED;
@@ -343,24 +239,10 @@ class HybridAStar {
     return *this;
   }  // setup_start_end
 
-  // update the start and ending points
-  HybridAStar &setup_2d_start_end(const float start_x, const float start_y,
-                                  const float start_theta, const float end_x,
-                                  const float end_y, const float end_theta) {
-    HybridState2DNode nodeStart(start_x, start_y, start_theta);
-    HybridState2DNode nodeEnd(end_x, end_y, end_theta);
-    astar_2d_search_.SetStartAndGoalStates(nodeStart, nodeEnd);
-
-    return *this;
-  }  // setup_2d_start_end
-
   void perform_4dnode_search(const CollisionChecking_Astar &collision_checker) {
     if (status_ != HybridAStar::START_END_CLOSED) {
       unsigned int SearchState;
       unsigned int SearchSteps = 0;
-
-      // search status
-      status_ = HybridAStar::FAILURE;
 
       do {
         // perform a hybrid A* search
@@ -408,7 +290,7 @@ class HybridAStar {
             std::reverse(closedlist_trajecotry.begin(),
                          closedlist_trajecotry.end());
             // check the forward/reverse switch
-            closedlist_trajecotry = FindSwitch(closedlist_trajecotry);
+            FindSwitch(closedlist_trajecotry);
             // combine two kinds of trajectory
             auto rscurve_trajectory = rscurve_.rs_trajectory(
                 closedlist_end, rscurve_end, 1.0 * searchconfig_.move_length);
@@ -416,6 +298,8 @@ class HybridAStar {
             closedlist_trajecotry.insert(closedlist_trajecotry.end(),
                                          rscurve_trajectory.begin(),
                                          rscurve_trajectory.end());
+
+            RemoveSameState(closedlist_trajecotry);
 
             hybridastar_trajecotry_ = closedlist_trajecotry;
             astar_4d_search_.CancelSearch();
@@ -453,8 +337,9 @@ class HybridAStar {
                static_cast<double>(node->theta()), node->IsForward()});
 
           // check the forward/reverse switch
-          hybridastar_trajecotry_ = FindSwitch(closedlist_trajecotry);
-
+          FindSwitch(closedlist_trajecotry);
+          RemoveSameState(closedlist_trajecotry);
+          hybridastar_trajecotry_ = closedlist_trajecotry;
           // search status
           status_ = HybridAStar::SUCCESS;
           CLOG(INFO, "Hybrid_Astar") << "find 4d hybrid A star solution!";
@@ -473,62 +358,9 @@ class HybridAStar {
 
   }  // perform_4dnode_search
 
-  void perform_2dnode_search(const CollisionChecking_Astar &collision_checker) {
-    unsigned int SearchState;
-    unsigned int SearchSteps = 0;
-
-    do {
-      // perform a hybrid A* search
-      SearchState =
-          astar_2d_search_.SearchStep(searchconfig_, collision_checker);
-      SearchSteps++;
-
-      // get the current node
-      std::vector<std::array<double, 3>> closedlist_trajecotry;
-      HybridState2DNode *current_p = astar_2d_search_.GetCurrentNode();
-      while (current_p) {
-        closedlist_trajecotry.push_back(
-            {current_p->x(), current_p->y(), current_p->theta()});
-        current_p = astar_2d_search_.GetCurrentNodePrev();
-      }
-      std::reverse(closedlist_trajecotry.begin(), closedlist_trajecotry.end());
-
-      // try a collision-free RS curve
-      if (!closedlist_trajecotry.empty()) {
-        hybridastar_2d_trajecotry_ = closedlist_trajecotry;
-      }
-
-    } while (SearchState == HybridAStar_2dNode_Search::SEARCH_STATE_SEARCHING);
-
-    if (SearchState == HybridAStar_2dNode_Search::SEARCH_STATE_SUCCEEDED) {
-      CLOG(INFO, "Hybrid_Astar") << "find 2d solution!";
-
-      HybridState2DNode *node = astar_2d_search_.GetSolutionStart();
-      hybridastar_2d_trajecotry_.clear();
-      while (node) {
-        hybridastar_2d_trajecotry_.push_back(
-            {node->x(), node->y(), node->theta()});
-        node = astar_2d_search_.GetSolutionNext();
-      }
-      // Once you're done with the solution you can free the nodes up
-      astar_2d_search_.FreeSolutionNodes();
-    }
-
-    // Display the number of loops the search went through
-    CLOG(INFO, "Hybrid_Astar") << "SearchSteps: " << SearchSteps;
-
-    // astarsearch_.FreeSolutionNodes();
-    astar_2d_search_.EnsureMemoryFreed();
-
-  }  // perform_2dnode_search
-
   auto hybridastar_trajecotry() const noexcept {
     return hybridastar_trajecotry_;
   }  // hybridastar_trajecotry
-
-  auto hybridastar_2dtrajecotry() const noexcept {
-    return hybridastar_2d_trajecotry_;
-  }  // hybridastar_2dtrajecotry
 
   HybridAStarStatus status() const noexcept { return status_; }
   std::array<float, 3> startpoint() const noexcept { return startpoint_; }
@@ -542,11 +374,9 @@ class HybridAStar {
   ASV::common::math::ReedsSheppStateSpace rscurve_;
   SearchConfig searchconfig_;
   HybridAStar_4dNode_Search astar_4d_search_;
-  HybridAStar_2dNode_Search astar_2d_search_;
 
   // search results
   vecpath hybridastar_trajecotry_;
-  std::vector<std::array<double, 3>> hybridastar_2d_trajecotry_;
 
   // generate the config for search
   SearchConfig GenerateSearchConfig(
@@ -561,6 +391,10 @@ class HybridAStar {
 
     searchconfig.move_length = L;
     searchconfig.turning_angle = L * collisiondata.MAX_CURVATURE;
+    searchconfig.x_resolution = 0.05;
+    searchconfig.y_resolution = 0.05;
+    searchconfig.theta_resolution = 0.02;
+
     //
     for (int i = 0; i != 3; ++i) {
       for (int j = 0; j != 3; ++j) {
@@ -585,39 +419,6 @@ class HybridAStar {
     return searchconfig;
   }  // GenerateSearchConfig
 
-  // tempo function
-  float twodnode_search(const CollisionChecking_Astar &collision_checker) {
-    unsigned int SearchState;
-    unsigned int SearchSteps = 0;
-    float path_length = 0;
-    do {
-      // perform a hybrid A* search
-      SearchState =
-          astar_2d_search_.SearchStep(searchconfig_, collision_checker);
-      SearchSteps++;
-
-    } while (SearchState == HybridAStar_2dNode_Search::SEARCH_STATE_SEARCHING);
-
-    if (SearchState == HybridAStar_2dNode_Search::SEARCH_STATE_SUCCEEDED) {
-      HybridState2DNode *node = astar_2d_search_.GetSolutionStart();
-      float previous_x = node->x();
-      float previous_y = node->y();
-
-      while (node) {
-        path_length +=
-            std::hypot(previous_x - node->x(), previous_y - node->y());
-        previous_x = node->x();
-        previous_y = node->y();
-
-        node = astar_2d_search_.GetSolutionNext();
-      }
-      // Once you're done with the solution you can free the nodes up
-      astar_2d_search_.FreeSolutionNodes();
-    }
-    return path_length;
-
-  }  // twodnode_search
-
   //
   bool IsForward(const float pre_x, const float pre_y, const float pre_theta,
                  const float cur_x, const float cur_y,
@@ -629,9 +430,8 @@ class HybridAStar {
 
   }  // IsForward
 
-  vecpath FindSwitch(const vecpath &trajectory) {
+  void FindSwitch(vecpath &trajectory) {
     std::size_t num_trajectory = trajectory.size();
-
     // modify the direction based on the movement and heading
     if (num_trajectory >= 2) {
       vecpath new_trajectory = {trajectory[0]};
@@ -647,11 +447,37 @@ class HybridAStar {
           new_trajectory.push_back(trajectory[index]);
         }
       }
-
-      return new_trajectory;
+      trajectory = new_trajectory;
     }
-    return trajectory;
   }  // FindSwitch
+
+  // remove the same node in the trajectory
+  void RemoveSameState(vecpath &trajectory) {
+    std::size_t num_trajectory = trajectory.size();
+    if (num_trajectory >= 2) {
+      vecpath new_trajectory = {trajectory[0]};
+      for (std::size_t index = 1; index < num_trajectory; ++index) {
+        auto Na = new_trajectory.back();
+        auto Nb = trajectory[index];
+
+        if (!IsSameNode(std::get<0>(Na), std::get<1>(Na), std::get<2>(Na),
+                        std::get<0>(Nb), std::get<1>(Nb), std::get<2>(Nb)) ||
+            (std::get<3>(Na) != std::get<3>(Nb)))
+          new_trajectory.push_back(Nb);
+      }
+      trajectory = new_trajectory;
+    }
+  }  // RemoveSameState
+
+  // check if two node is closed
+  bool IsSameNode(const double lhs_x, const double lhs_y,
+                  const double lhs_theta, const double rhs_x,
+                  const double rhs_y, const double rhs_theta) const {
+    return ((std::abs(lhs_x - rhs_x) <= searchconfig_.x_resolution) &&
+            (std::abs(lhs_y - rhs_y) <= searchconfig_.y_resolution) &&
+            (std::abs(ASV::common::math::Normalizeheadingangle(
+                 lhs_theta - rhs_theta)) <= searchconfig_.theta_resolution));
+  }  // IsSameNode
 
 };  // end class HybridAStar
 

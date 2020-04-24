@@ -43,7 +43,7 @@ int main() {
 
   // plotting
   Gnuplot gp;
-  gp << "set terminal x11 size 1000, 1000 0\n";
+  gp << "set terminal x11 size 900, 1000 0\n";
   gp << "set title 'normal distribution'\n";
   gp << "set size ratio -1\n";
   std::vector<std::pair<double, double>> xy_pts_A;

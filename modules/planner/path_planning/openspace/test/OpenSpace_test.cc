@@ -91,15 +91,9 @@ void compare_bestpath(
 
 }  // rtplotting_2dbestpath
 
-int main() {
-  el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
-  LOG(INFO) << "The program has started!";
-
-  // timer
-  ASV::common::timecounter _timer;
-
+void OpenSpace_oneStep() {
   // obstacles
-  int test_scenario = 3;
+  int test_scenario = 7;
 
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
@@ -128,23 +122,16 @@ int main() {
   auto center_path = openspace.coarse_path();
   auto cog_path = openspace.cog_path();
 
-  for (const auto &state : center_path) {
-    _timer.timeelapsed();
-    openspace.GenerateTrajectory(state, end_point);
-    long int et = _timer.timeelapsed();
-    std::cout << "elapsed time of OpenSpace Planner: " << et << std::endl;
-  }
+  Gnuplot gp;
+  gp << "set terminal x11 size 1100, 1100 0\n";
+  gp << "set title 'A star search (4d)'\n";
+  gp << "set xrange [0:40]\n";
+  gp << "set yrange [0:40]\n";
 
-  // Gnuplot gp;
-  // gp << "set terminal x11 size 1100, 1100 0\n";
-  // gp << "set title 'A star search (4d)'\n";
-  // gp << "set xrange [0:40]\n";
-  // gp << "set yrange [0:40]\n";
-
-  // compare_bestpath(
-  //     gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
-  //     {end_point.at(0), end_point.at(1), end_point.at(2)}, center_path,
-  //     cog_path, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+  compare_bestpath(
+      gp, {start_point.at(0), start_point.at(1), start_point.at(2)},
+      {end_point.at(0), end_point.at(1), end_point.at(2)}, center_path,
+      cog_path, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
 
   Gnuplot gp1;
   gp1 << "set terminal x11 size 1100, 1100 1\n";
@@ -160,4 +147,51 @@ int main() {
         center_path, Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
+}  // OpenSpace_oneStep
+
+void OpenSpace_multiStep() {
+  // timer
+  ASV::common::timecounter _timer;
+
+  // obstacles
+  int test_scenario = 7;
+
+  std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
+  std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
+  std::vector<Obstacle_Box2d_Config> Obstacles_Box;
+  std::array<double, 3> start_point;
+  std::array<double, 3> end_point;
+  generate_obstacle_map(Obstacles_Vertex, Obstacles_LS, Obstacles_Box,
+                        start_point, end_point, test_scenario);
+
+  HybridAStarConfig _HybridAStarConfig{
+      1,    // move_length
+      1.5,  // penalty_turning
+      1.5,  // penalty_reverse
+      2     // penalty_switch
+  };
+  SmootherConfig smoothconfig{
+      4,  // d_max
+  };
+
+  OpenSpacePlanner openspace(_collisiondata, _HybridAStarConfig, smoothconfig);
+  openspace.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
+
+  while (1) {
+    _timer.timeelapsed();
+    openspace.GenerateTrajectory(start_point, end_point);
+    auto planning_state = openspace.Planning_State();
+    start_point = {planning_state.x, planning_state.y, planning_state.theta};
+    long int et = _timer.timeelapsed();
+    std::cout << "elapsed time of OpenSpace Planner: " << et << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
+}  // OpenSpace_multiStep
+
+int main() {
+  el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
+  LOG(INFO) << "The program has started!";
+
+  // OpenSpace_oneStep();
+  OpenSpace_multiStep();
 }

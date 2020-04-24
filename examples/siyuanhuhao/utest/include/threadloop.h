@@ -516,13 +516,13 @@ class threadloop : public StateMonitor {
           // trajectory tracking
           // _trajectorytracking.Grid_LOS(estimator_RTdata.State.head(2));
           // tracker_RTdata = _trajectorytracking.gettrackerRTdata();
-          static double t_u = -0.5;
+          static double t_u = 0.5;
           static double t_omega = -0.5;
 
           tracker_RTdata =
               _trajectorytracking
                   .FollowCircularArc(
-                      t_omega / t_u, t_u,
+                      t_omega / std::abs(t_u), t_u,
                       t_omega * ASV_Controller.sampletime() * count)
                   .gettrackerRTdata();
           count++;
@@ -651,22 +651,22 @@ class threadloop : public StateMonitor {
                                 1,                 // nlp_v
                                 1                  // nlp_roti
                                 >
-            _estimator(estimator_RTdata, config_parse.getvessel(),
-                       config_parse.getestimatordata());
+            ASV_estimator(estimator_RTdata, config_parse.getvessel(),
+                          config_parse.getestimatordata());
 
-        simulation::simulator _simulator(config_parse.getsimulatordata(),
-                                         config_parse.getvessel());
+        simulation::simulator ASV_simulator(config_parse.getsimulatordata(),
+                                            config_parse.getvessel());
 
         common::timecounter timer_estimator;
         long int outerloop_elapsed_time = 0;
         long int innerloop_elapsed_time = 0;
         long int sample_time =
-            static_cast<long int>(1000 * _estimator.getsampletime());
+            static_cast<long int>(1000 * ASV_estimator.getsampletime());
 
         // State monitor toggle
         StateMonitor::check_estimator();
 
-        estimator_RTdata = _estimator
+        estimator_RTdata = ASV_estimator
                                .setvalue(350891,      // gps_x
                                          3433823.54,  // gps_y
                                          0,           // gps_z
@@ -678,22 +678,22 @@ class threadloop : public StateMonitor {
                                          0            // gps_roti
                                          )
                                .getEstimatorRTData();
-        _simulator.setX(estimator_RTdata.State);
+        ASV_simulator.setX(estimator_RTdata.State);
 
         // real time calculation in estimator
         while (1) {
           outerloop_elapsed_time = timer_estimator.timeelapsed();
 
-          auto x = _simulator
+          auto x = ASV_simulator
                        .do_step(tracker_RTdata.setpoint(2),
                                 controller_RTdata.BalphaU)
                        .X();
-          _estimator
+          ASV_estimator
               .updateestimatedforce(controller_RTdata.BalphaU,
                                     Eigen::Vector3d::Zero())
               .estimatestate(x, tracker_RTdata.setpoint(2));
 
-          estimator_RTdata = _estimator
+          estimator_RTdata = ASV_estimator
                                  .estimateerror(tracker_RTdata.setpoint,
                                                 tracker_RTdata.v_setpoint)
                                  .getEstimatorRTData();
@@ -726,18 +726,18 @@ class threadloop : public StateMonitor {
                                 5,                 // nlp_v
                                 1                  // nlp_roti
                                 >
-            _estimator(estimator_RTdata, config_parse.getvessel(),
-                       config_parse.getestimatordata());
+            ASV_estimator(estimator_RTdata, config_parse.getvessel(),
+                          config_parse.getestimatordata());
 
         common::timecounter timer_estimator;
         long int outerloop_elapsed_time = 0;
         long int innerloop_elapsed_time = 0;
         long int sample_time =
-            static_cast<long int>(1000 * _estimator.getsampletime());
+            static_cast<long int>(1000 * ASV_estimator.getsampletime());
 
         // State monitor toggle
         StateMonitor::check_estimator();
-        estimator_RTdata = _estimator
+        estimator_RTdata = ASV_estimator
                                .setvalue(gps_data.UTM_x,     // gps_x
                                          gps_data.UTM_y,     // gps_y
                                          gps_data.altitude,  // gps_z
@@ -754,7 +754,7 @@ class threadloop : public StateMonitor {
         while (1) {
           outerloop_elapsed_time = timer_estimator.timeelapsed();
 
-          _estimator
+          ASV_estimator
               .updateestimatedforce(controller_RTdata.BalphaU,
                                     Eigen::Vector3d::Zero())
               .estimatestate(gps_data.UTM_x,             // gps_x
@@ -769,7 +769,7 @@ class threadloop : public StateMonitor {
                              tracker_RTdata.setpoint(2)  //_dheading
               );
 
-          estimator_RTdata = _estimator
+          estimator_RTdata = ASV_estimator
                                  .estimateerror(tracker_RTdata.setpoint,
                                                 tracker_RTdata.v_setpoint)
                                  .getEstimatorRTData();
@@ -1245,7 +1245,7 @@ class threadloop : public StateMonitor {
           });
 
           if (TargetTracker_RTdata.spoke_state ==
-              ASV::perception::SPOKESTATE::LEAVE_ALARM_ZONE) {
+              perception::SPOKESTATE::LEAVE_ALARM_ZONE) {
             _perception_db.update_spoke_table(common::perception_spoke_db_data{
                 -1,  // local_time
                 SpokeProcess_RTdata

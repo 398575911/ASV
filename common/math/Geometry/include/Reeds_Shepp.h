@@ -103,7 +103,7 @@ class ReedsSheppStateSpace {
     // remove the zero
     std::vector<double> nonzero_segment;
     for (std::size_t i = 0; i != 5; i++) {
-      if (std::abs(path.length_[i]) > 0)
+      if (std::fabs(path.length_[i]) > 0)
         nonzero_segment.push_back(path.length_[i]);
     }
 
@@ -116,7 +116,7 @@ class ReedsSheppStateSpace {
     if (num_nonzero > 1) {
       double current_seg = 0.0;
       for (std::size_t i = 0; i < (num_nonzero - 1); i++) {
-        current_seg += std::abs(nonzero_segment[i]);
+        current_seg += std::fabs(nonzero_segment[i]);
         // if there exists a switch point
         if (nonzero_segment[i] * nonzero_segment[i + 1] < 0) {
           segment_arclengths.back().at(1) = current_seg;

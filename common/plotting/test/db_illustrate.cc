@@ -13,7 +13,7 @@
 
 // setup the time interval
 const double starting_time = 0;
-const double end_time = 60;
+const double end_time = 5;
 
 const std::string folderp = "../../data/";
 const std::string config_path =

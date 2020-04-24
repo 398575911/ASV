@@ -133,7 +133,7 @@ class trajectorytracking final : public lineofsight {
       if (lineofsight::IsEnterCaptureRadius(_vesselposition, current_wp0) &&
           (grid_points_index > 0)) {
         double reduced_desired_speed =
-            (1 - std::abs(turning_angles(grid_points_index - 1)) / M_PI) *
+            (1 - std::fabs(turning_angles(grid_points_index - 1)) / M_PI) *
             desired_speed;
         CircularArcLOS(0, reduced_desired_speed, _vesselposition, current_wp0,
                        current_wp1);
@@ -161,7 +161,7 @@ class trajectorytracking final : public lineofsight {
                                         double desired_speed,
                                         double desired_heading) {
     // desired u and r
-    double _rot = desired_curvature * desired_speed;
+    double _rot = desired_curvature * std::fabs(desired_speed);
     TrackerRTdata.v_setpoint(0) = desired_speed;
     TrackerRTdata.v_setpoint(2) = _rot;
 

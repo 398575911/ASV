@@ -155,7 +155,7 @@ class HybridAStarSearch {
     m_CurrentNode = n;
 
     // Check for the goal, once we pop that we're done
-    if (n->m_UserState.IsGoal(m_Goal->m_UserState)) {
+    if (n->m_UserState.IsGoal(m_Goal->m_UserState, _util_class_first)) {
       // The user is going to use the Goal Node he passed in
       // so copy the parent pointer of n
       m_Goal->parent = n->parent;
@@ -163,7 +163,8 @@ class HybridAStarSearch {
 
       // A special case is that the goal was passed in as the start state
       // so handle that here
-      if (false == n->m_UserState.IsSameState(m_Start->m_UserState)) {
+      if (false ==
+          n->m_UserState.IsSameState(m_Start->m_UserState, _util_class_first)) {
         FreeNode(n);
 
         // set the child pointers in each node (except Goal which has no child)
@@ -238,7 +239,8 @@ class HybridAStarSearch {
         for (openlist_result = m_OpenList.begin();
              openlist_result != m_OpenList.end(); openlist_result++) {
           if ((*openlist_result)
-                  ->m_UserState.IsSameState((*successor)->m_UserState)) {
+                  ->m_UserState.IsSameState((*successor)->m_UserState,
+                                            _util_class_first)) {
             break;
           }
         }
@@ -259,7 +261,8 @@ class HybridAStarSearch {
         for (closedlist_result = m_ClosedList.begin();
              closedlist_result != m_ClosedList.end(); closedlist_result++) {
           if ((*closedlist_result)
-                  ->m_UserState.IsSameState((*successor)->m_UserState)) {
+                  ->m_UserState.IsSameState((*successor)->m_UserState,
+                                            _util_class_first)) {
             break;
           }
         }
@@ -722,7 +725,8 @@ class HybridAStarState {
   virtual float GoalDistanceEstimate(const UserState &nodeGoal,
                                      const util_class_third &t3 = nullptr) = 0;
   // Returns true if this node is the goal node
-  virtual bool IsGoal(const UserState &nodeGoal) = 0;
+  virtual bool IsGoal(const UserState &nodeGoal,
+                      const util_class_first &t1) = 0;
 
   // Retrieves all successors to this node and adds them via
   // astarsearch.addSuccessor()
@@ -737,7 +741,8 @@ class HybridAStarState {
                         const util_class_first &t1) = 0;
 
   // Returns true if this node is the same as the rhs node
-  virtual bool IsSameState(const UserState &rhs) = 0;
+  virtual bool IsSameState(const UserState &rhs,
+                           const util_class_first &t1) = 0;
 };
 
 }  // namespace ASV::planning
