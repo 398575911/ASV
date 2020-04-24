@@ -21,11 +21,18 @@
 namespace ASV::planning {
 
 class OpenSpacePlanner {
+  enum HybridAStarStatus {
+    FAILURE = 0,
+    START_END_CLOSED,
+    SUCCESS,
+  };
+
  public:
   OpenSpacePlanner(const CollisionData &collisiondata,
                    const HybridAStarConfig &hybridastarconfig,
                    const SmootherConfig &smootherconfig)
       : move_length_(hybridastarconfig.move_length),
+        status_(HybridAStarStatus::FAILURE),
         collision_checker_(collisiondata),
         Hybrid_AStar_(collisiondata, hybridastarconfig),
         path_smoother_(smootherconfig),
@@ -53,22 +60,29 @@ class OpenSpacePlanner {
   OpenSpacePlanner &update_start_end(
       const std::array<double, 3> &start_point_cog,
       const std::array<double, 3> &end_point_cog) {
+    // status
+    status_ = HybridAStarStatus::FAILURE;
+
     // transformation
     auto start_point = collision_checker_.Transform2Center(start_point_cog);
     auto end_point = collision_checker_.Transform2Center(end_point_cog);
 
-    Hybrid_AStar_.setup_start_end(static_cast<float>(start_point.at(0)),
-                                  static_cast<float>(start_point.at(1)),
-                                  static_cast<float>(start_point.at(2)),
-                                  static_cast<float>(end_point.at(0)),
-                                  static_cast<float>(end_point.at(1)),
-                                  static_cast<float>(end_point.at(2)));
+    if (Hybrid_AStar_.setup_start_end(static_cast<float>(start_point.at(0)),
+                                      static_cast<float>(start_point.at(1)),
+                                      static_cast<float>(start_point.at(2)),
+                                      static_cast<float>(end_point.at(0)),
+                                      static_cast<float>(end_point.at(1)),
+                                      static_cast<float>(end_point.at(2)))) {
+      CLOG(INFO, "Hybrid_Astar") << "start and end points are too closed!";
+      status_ = HybridAStarStatus::SUCCESS;
+    };
+
     return *this;
   }  // update_start_end
 
   OpenSpacePlanner &GenerateTrajectory() {
-    Hybrid_AStar_.perform_4dnode_search(collision_checker_);
-    auto coarse_path_direction = Hybrid_AStar_.hybridastar_trajecotry();
+    auto coarse_path_direction =
+        Hybrid_AStar_.perform_4dnode_search(collision_checker_);
     path_smoother_.SetupCoarsePath(coarse_path_direction);
     auto center_fine_path =
         path_smoother_.PerformSmoothing(collision_checker_).fine_path();
@@ -88,58 +102,46 @@ class OpenSpacePlanner {
   void GenerateTrajectory(const std::array<double, 3> &start_point_cog,
                           const std::array<double, 3> &end_point_cog) {
     update_start_end(start_point_cog, end_point_cog);
-    Hybrid_AStar_.perform_4dnode_search(collision_checker_);
-    auto coarse_path_direction = Hybrid_AStar_.hybridastar_trajecotry();
 
-    if (Hybrid_AStar_.status() == HybridAStar::SUCCESS) {
-      std::cout << "search success\n";
-      for (const auto &value : coarse_path_direction)
-        std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
-                  << std::get<2>(value) << ", " << std::get<3>(value)
-                  << std::endl;
-
-      auto first_center_state = coarse_path_direction[0];
-      auto second_center_state = coarse_path_direction[1];
-
-      double t_speed = std::get<3>(first_center_state) ? 0.5 : -0.5;
-
-      auto second_cog_state = collision_checker_.Transform2CoG(
-          {std::get<0>(second_center_state), std::get<1>(second_center_state),
-           std::get<2>(second_center_state)});
-      Planning_State_ = {
-          second_cog_state.at(0),  // x
-          second_cog_state.at(1),  // y
-          second_cog_state.at(2),  // theta
-          t_speed,                 // speed
-          (std::get<2>(second_center_state) - std::get<2>(first_center_state)) /
-              move_length_,  // kappa
-      };
-
-    } else if (Hybrid_AStar_.status() == HybridAStar::FAILURE) {
-      std::cout << "failure\n";
-      for (const auto &value : coarse_path_direction)
-        std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
-                  << std::get<2>(value) << ", " << std::get<3>(value)
-                  << std::endl;
-
-      Planning_State_ = {
-          start_point_cog.at(0),  // x
-          start_point_cog.at(1),  // y
-          start_point_cog.at(2),  // theta
-          0,                      // speed
-          0,                      // kappa
-      };
-
+    if (status_ == HybridAStarStatus::SUCCESS) {
+      return;
     } else {
-      std::cout << "closed\n";
-      for (const auto &value : coarse_path_direction)
-        std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
-                  << std::get<2>(value) << ", " << std::get<3>(value)
-                  << std::endl;
-    }
+      auto coarse_path_direction =
+          Hybrid_AStar_.perform_4dnode_search(collision_checker_);
+      if (coarse_path_direction.size() < 2) {
+        Planning_State_ = {
+            start_point_cog.at(0),  // x
+            start_point_cog.at(1),  // y
+            start_point_cog.at(2),  // theta
+            0,                      // speed
+            0,                      // kappa
+        };
+      } else {
+        std::cout << "search success\n";
+        for (const auto &value : coarse_path_direction)
+          std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
+                    << std::get<2>(value) << ", " << std::get<3>(value)
+                    << std::endl;
 
-    // cog_coarse_path_ = collision_checker_.Transform2CoG(center_coarse_path);
-    // cog_coarse_path_ = center_coarse_path;
+        auto first_center_state = coarse_path_direction[0];
+        auto second_center_state = coarse_path_direction[1];
+
+        double t_speed = std::get<3>(first_center_state) ? 0.5 : -0.5;
+
+        auto second_cog_state = collision_checker_.Transform2CoG(
+            {std::get<0>(second_center_state), std::get<1>(second_center_state),
+             std::get<2>(second_center_state)});
+        Planning_State_ = {
+            second_cog_state.at(0),  // x
+            second_cog_state.at(1),  // y
+            second_cog_state.at(2),  // theta
+            t_speed,                 // speed
+            (std::get<2>(second_center_state) -
+             std::get<2>(first_center_state)) /
+                move_length_,  // kappa
+        };
+      }
+    }
 
   }  // GenerateTrajectory
 
@@ -150,6 +152,8 @@ class OpenSpacePlanner {
  private:
   const double move_length_;  // m
 
+  HybridAStarStatus status_;
+
   CollisionChecking_Astar collision_checker_;
   HybridAStar Hybrid_AStar_;
   PathSmoothing path_smoother_;
@@ -158,7 +162,7 @@ class OpenSpacePlanner {
   std::vector<std::array<double, 3>> cog_coarse_path_;
   std::vector<std::array<double, 3>> cog_fine_path_;
 
-};  // end class OpenSpacePlanner
+};  // namespace ASV::planning
 
 }  // namespace ASV::planning
 

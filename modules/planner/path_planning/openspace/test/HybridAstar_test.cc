@@ -97,7 +97,7 @@ int main() {
       2     // penalty_switch
   };
 
-  int test_scenario = 7;
+  int test_scenario = 11;
 
   // obstacles
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
@@ -117,14 +117,12 @@ int main() {
   auto start_point = collision_checker_.Transform2Center(start_point_cog);
   auto end_point = collision_checker_.Transform2Center(end_point_cog);
   HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
+
   Hybrid_AStar.setup_start_end(start_point.at(0), start_point.at(1),
                                start_point.at(2), end_point.at(0),
                                end_point.at(1), end_point.at(2));
 
-  Hybrid_AStar.perform_4dnode_search(collision_checker_);
-
-  auto hr = Hybrid_AStar.hybridastar_trajecotry();
-
+  auto hr = Hybrid_AStar.perform_4dnode_search(collision_checker_);
   std::vector<std::array<double, 3>> hr_plot;
   std::cout << "coarse\n";
   for (const auto &value : hr) {

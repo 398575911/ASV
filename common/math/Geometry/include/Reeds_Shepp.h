@@ -107,43 +107,49 @@ class ReedsSheppStateSpace {
         nonzero_segment.push_back(path.length_[i]);
     }
 
-    // separate each segment of rs curve
-    std::vector<std::array<double, 2>> segment_arclengths = {
-        {0.0, path.length()}};
-    std::vector<bool> segment_IsForward = {(nonzero_segment[0] > 0)};
-
     std::size_t num_nonzero = nonzero_segment.size();
-    if (num_nonzero > 1) {
-      double current_seg = 0.0;
-      for (std::size_t i = 0; i < (num_nonzero - 1); i++) {
-        current_seg += std::fabs(nonzero_segment[i]);
-        // if there exists a switch point
-        if (nonzero_segment[i] * nonzero_segment[i + 1] < 0) {
-          segment_arclengths.back().at(1) = current_seg;
-          segment_arclengths.push_back({current_seg, path.length()});
-          segment_IsForward.push_back((nonzero_segment[i + 1] > 0));
-        }
-      }  // end for loop
-    }    // end if
-
-    // interploate
-    std::size_t num_segment = segment_arclengths.size();
     std::vector<std::tuple<double, double, double, bool>> results;
-    // results.resize(num_segment);
 
-    for (std::size_t index = 0; index != num_segment; ++index) {
-      double current_arclength = segment_arclengths[index].at(0);
-      while (current_arclength < segment_arclengths[index].at(1)) {
-        auto interpolate_results = interpolate(q0, path, current_arclength);
+    if (num_nonzero > 0) {
+      // separate each segment of rs curve
+      std::vector<std::array<double, 2>> segment_arclengths = {
+          {0.0, path.length()}};
+      std::vector<bool> segment_IsForward = {(nonzero_segment[0] > 0)};
+
+      if (num_nonzero > 1) {
+        double current_seg = 0.0;
+        for (std::size_t i = 0; i < (num_nonzero - 1); i++) {
+          current_seg += std::fabs(nonzero_segment[i]);
+          // if there exists a switch point
+          if (nonzero_segment[i] * nonzero_segment[i + 1] < 0) {
+            segment_arclengths.back().at(1) = current_seg;
+            segment_arclengths.push_back({current_seg, path.length()});
+            segment_IsForward.push_back((nonzero_segment[i + 1] > 0));
+          }
+        }  // end for loop
+      }    // end if
+
+      // interploate
+      std::size_t num_segment = segment_arclengths.size();
+      // results.resize(num_segment);
+
+      for (std::size_t index = 0; index != num_segment; ++index) {
+        double current_arclength = segment_arclengths[index].at(0);
+        while (current_arclength < segment_arclengths[index].at(1)) {
+          auto interpolate_results = interpolate(q0, path, current_arclength);
+          results.push_back({interpolate_results[0], interpolate_results[1],
+                             interpolate_results[2], segment_IsForward[index]});
+          current_arclength += (step_size / rho_);
+        }
+        // Don't forget the end point
+        auto interpolate_results =
+            interpolate(q0, path, segment_arclengths[index].at(1));
         results.push_back({interpolate_results[0], interpolate_results[1],
                            interpolate_results[2], segment_IsForward[index]});
-        current_arclength += (step_size / rho_);
       }
-      // Don't forget the end point
-      auto interpolate_results =
-          interpolate(q0, path, segment_arclengths[index].at(1));
-      results.push_back({interpolate_results[0], interpolate_results[1],
-                         interpolate_results[2], segment_IsForward[index]});
+    } else {
+      // results.push_back({q0[0], q0[1], q0[2], true});
+      // results.push_back({q1[0], q1[1], q1[2], true});
     }
 
     return results;

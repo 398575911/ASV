@@ -95,7 +95,7 @@ class HybridState4DNode {
 
       if (parent_node) {
         if (!(collision_checking.InCollision(new_x, new_y, new_theta) ||
-              Issamestate(*parent_node, NewNode))) {
+              Issamestate(*parent_node, NewNode, search_config))) {
           astarsearch->AddSuccessor(NewNode);
         }
       } else {
@@ -170,12 +170,13 @@ class HybridState4DNode {
     return movement_step;
   }  // update_movement_step
 
-  bool Issamestate(const HybridState4DNode &lhs, const HybridState4DNode &rhs) {
+  bool Issamestate(const HybridState4DNode &lhs, const HybridState4DNode &rhs,
+                   const SearchConfig &search_config) {
     // same state in a maze search is simply when (x,y) are the same
-    if ((std::abs(lhs.x() - rhs.x()) <= 0.05) &&
-        (std::abs(lhs.y() - rhs.y()) <= 0.05) &&
+    if ((std::abs(lhs.x() - rhs.x()) <= search_config.x_resolution) &&
+        (std::abs(lhs.y() - rhs.y()) <= search_config.y_resolution) &&
         (std::abs(ASV::common::math::fNormalizeheadingangle(
-             lhs.theta() - rhs.theta())) < 0.01)) {
+             lhs.theta() - rhs.theta())) < search_config.theta_resolution)) {
       return true;
     }
     return false;
@@ -192,16 +193,9 @@ class HybridAStar {
   using vecpath = std::vector<std::tuple<double, double, double, bool>>;
 
  public:
-  enum HybridAStarStatus {
-    FAILURE = 0,
-    START_END_CLOSED,
-    SUCCESS,
-  };
-
   HybridAStar(const CollisionData &collisiondata,
               const HybridAStarConfig &hybridastarconfig)
-      : status_(HybridAStar::FAILURE),
-        startpoint_({0, 0, 0}),
+      : startpoint_({0, 0, 0}),
         endpoint_({0, 0, 0}),
         rscurve_(1.0 / collisiondata.MAX_CURVATURE),
         searchconfig_({
@@ -218,165 +212,147 @@ class HybridAStar {
   virtual ~HybridAStar() = default;
 
   // update the start and ending points
-  HybridAStar &setup_start_end(const float start_x, const float start_y,
-                               const float start_theta, const float end_x,
-                               const float end_y, const float end_theta) {
-    if (std::hypot(start_x - end_x, start_y - end_y) >
-        (2.0 * searchconfig_.move_length)) {
+  bool setup_start_end(const float start_x, const float start_y,
+                       const float start_theta, const float end_x,
+                       const float end_y, const float end_theta) {
+    if (!IsSameNode(start_x, start_y, start_theta, end_x, end_y, end_theta)) {
       startpoint_ = {start_x, start_y, start_theta};
       endpoint_ = {end_x, end_y, end_theta};
 
       HybridState4DNode nodeStart(start_x, start_y, start_theta);
       HybridState4DNode nodeEnd(end_x, end_y, end_theta);
       astar_4d_search_.SetStartAndGoalStates(nodeStart, nodeEnd, rscurve_);
-
-      // search status
-      status_ = HybridAStar::FAILURE;
-    } else {
-      CLOG(INFO, "Hybrid_Astar") << "start and end points are too closed!";
-      status_ = HybridAStar::START_END_CLOSED;
+      return false;
     }
-    return *this;
+    return true;
+
   }  // setup_start_end
 
-  void perform_4dnode_search(const CollisionChecking_Astar &collision_checker) {
-    if (status_ != HybridAStar::START_END_CLOSED) {
-      unsigned int SearchState;
-      unsigned int SearchSteps = 0;
+  vecpath perform_4dnode_search(
+      const CollisionChecking_Astar &collision_checker) {
+    unsigned int SearchState;
+    unsigned int SearchSteps = 0;
+    vecpath hybridastar_trajecotry;
+    do {
+      // perform a hybrid A* search
+      SearchState = astar_4d_search_.SearchStep(searchconfig_,
+                                                collision_checker, rscurve_);
+      SearchSteps++;
 
-      do {
-        // perform a hybrid A* search
-        SearchState = astar_4d_search_.SearchStep(searchconfig_,
-                                                  collision_checker, rscurve_);
-        SearchSteps++;
+      // get the current node
+      HybridState4DNode *current_p = astar_4d_search_.GetCurrentNode();
+      if (current_p) {
+        std::array<double, 3> closedlist_end = {current_p->x(), current_p->y(),
+                                                current_p->theta()};
 
-        // get the current node
-        HybridState4DNode *current_p = astar_4d_search_.GetCurrentNode();
-        if (current_p) {
-          std::array<double, 3> closedlist_end = {
-              current_p->x(), current_p->y(), current_p->theta()};
+        std::array<double, 3> rscurve_end = {static_cast<double>(endpoint_[0]),
+                                             static_cast<double>(endpoint_[1]),
+                                             static_cast<double>(endpoint_[2])};
 
-          std::array<double, 3> rscurve_end = {
-              static_cast<double>(endpoint_[0]),
-              static_cast<double>(endpoint_[1]),
-              static_cast<double>(endpoint_[2])};
+        // try a rs curve
+        auto rscurve_generated = rscurve_.rs_state(
+            closedlist_end, rscurve_end, 0.5 * searchconfig_.move_length);
 
-          // try a rs curve
-          auto rscurve_generated = rscurve_.rs_state(
-              closedlist_end, rscurve_end, 0.5 * searchconfig_.move_length);
-
-          // check the collision for the generated RS curve
-          if (!collision_checker.InCollision(rscurve_generated)) {
-            vecpath closedlist_trajecotry = {
-                {static_cast<double>(current_p->x()),
-                 static_cast<double>(current_p->y()),
-                 static_cast<double>(current_p->theta()),
-                 current_p->IsForward()}};
-            while (current_p) {
-              HybridState4DNode *current_p_copy = current_p;
-              current_p = astar_4d_search_.GetCurrentNodePrev();
-              if (current_p) {
-                bool move_dir =
-                    IsForward(current_p->x(), current_p->y(),
-                              current_p->theta(), current_p_copy->x(),
-                              current_p_copy->y(), current_p_copy->theta());
-                closedlist_trajecotry.push_back(
-                    {static_cast<double>(current_p->x()),
-                     static_cast<double>(current_p->y()),
-                     static_cast<double>(current_p->theta()), move_dir});
-              }
-            }  // end while
-            // reverse the trajectory
-            std::reverse(closedlist_trajecotry.begin(),
-                         closedlist_trajecotry.end());
-            // check the forward/reverse switch
-            FindSwitch(closedlist_trajecotry);
-            // combine two kinds of trajectory
-            auto rscurve_trajectory = rscurve_.rs_trajectory(
-                closedlist_end, rscurve_end, 1.0 * searchconfig_.move_length);
-
-            closedlist_trajecotry.insert(closedlist_trajecotry.end(),
-                                         rscurve_trajectory.begin(),
-                                         rscurve_trajectory.end());
-
-            RemoveSameState(closedlist_trajecotry);
-
-            hybridastar_trajecotry_ = closedlist_trajecotry;
-            astar_4d_search_.CancelSearch();
-
-            // search status
-            status_ = HybridAStar::SUCCESS;
-            CLOG(INFO, "Hybrid_Astar") << "find a collision free RS curve!";
-
-          }  // end if collision checking
-        }
-      } while (SearchState ==
-               HybridAStar_4dNode_Search::SEARCH_STATE_SEARCHING);
-
-      if (SearchState == HybridAStar_4dNode_Search::SEARCH_STATE_SUCCEEDED) {
-        HybridState4DNode *node = astar_4d_search_.GetSolutionStart();
-
-        if (node) {
-          vecpath closedlist_trajecotry;
-          while (node) {
-            HybridState4DNode *node_copy = node;
-            node = astar_4d_search_.GetSolutionNext();
-            if (node) {
+        // check the collision for the generated RS curve
+        if (!collision_checker.InCollision(rscurve_generated)) {
+          vecpath closedlist_trajecotry = {
+              {static_cast<double>(current_p->x()),
+               static_cast<double>(current_p->y()),
+               static_cast<double>(current_p->theta()),
+               current_p->IsForward()}};
+          while (current_p) {
+            HybridState4DNode *current_p_copy = current_p;
+            current_p = astar_4d_search_.GetCurrentNodePrev();
+            if (current_p) {
               bool move_dir =
-                  IsForward(node_copy->x(), node_copy->y(), node_copy->theta(),
-                            node->x(), node->y(), node->theta());
+                  IsForward(current_p->x(), current_p->y(), current_p->theta(),
+                            current_p_copy->x(), current_p_copy->y(),
+                            current_p_copy->theta());
               closedlist_trajecotry.push_back(
-                  {static_cast<double>(node_copy->x()),
-                   static_cast<double>(node_copy->y()),
-                   static_cast<double>(node_copy->theta()), move_dir});
+                  {static_cast<double>(current_p->x()),
+                   static_cast<double>(current_p->y()),
+                   static_cast<double>(current_p->theta()), move_dir});
             }
-          }
-          node = astar_4d_search_.GetSolutionEnd();
-          closedlist_trajecotry.push_back(
-              {static_cast<double>(node->x()), static_cast<double>(node->y()),
-               static_cast<double>(node->theta()), node->IsForward()});
-
+          }  // end while
+          // reverse the trajectory
+          std::reverse(closedlist_trajecotry.begin(),
+                       closedlist_trajecotry.end());
           // check the forward/reverse switch
           FindSwitch(closedlist_trajecotry);
+          // combine two kinds of trajectory
+          auto rscurve_trajectory = rscurve_.rs_trajectory(
+              closedlist_end, rscurve_end, 1.0 * searchconfig_.move_length);
+
+          closedlist_trajecotry.insert(closedlist_trajecotry.end(),
+                                       rscurve_trajectory.begin(),
+                                       rscurve_trajectory.end());
+
           RemoveSameState(closedlist_trajecotry);
-          hybridastar_trajecotry_ = closedlist_trajecotry;
+
+          hybridastar_trajecotry = closedlist_trajecotry;
+          astar_4d_search_.CancelSearch();
+
           // search status
-          status_ = HybridAStar::SUCCESS;
-          CLOG(INFO, "Hybrid_Astar") << "find 4d hybrid A star solution!";
+          CLOG(INFO, "Hybrid_Astar") << "find a collision free RS curve!";
+
+        }  // end if collision checking
+      }
+    } while (SearchState == HybridAStar_4dNode_Search::SEARCH_STATE_SEARCHING);
+
+    if (SearchState == HybridAStar_4dNode_Search::SEARCH_STATE_SUCCEEDED) {
+      HybridState4DNode *node = astar_4d_search_.GetSolutionStart();
+
+      if (node) {
+        vecpath closedlist_trajecotry;
+        while (node) {
+          HybridState4DNode *node_copy = node;
+          node = astar_4d_search_.GetSolutionNext();
+          if (node) {
+            bool move_dir =
+                IsForward(node_copy->x(), node_copy->y(), node_copy->theta(),
+                          node->x(), node->y(), node->theta());
+            closedlist_trajecotry.push_back(
+                {static_cast<double>(node_copy->x()),
+                 static_cast<double>(node_copy->y()),
+                 static_cast<double>(node_copy->theta()), move_dir});
+          }
         }
+        node = astar_4d_search_.GetSolutionEnd();
+        closedlist_trajecotry.push_back(
+            {static_cast<double>(node->x()), static_cast<double>(node->y()),
+             static_cast<double>(node->theta()), node->IsForward()});
 
-        // Once you're done with the solution you can free the nodes up
-        astar_4d_search_.FreeSolutionNodes();
-      }  // end if(SearchState)
+        // check the forward/reverse switch
+        FindSwitch(closedlist_trajecotry);
+        RemoveSameState(closedlist_trajecotry);
+        hybridastar_trajecotry = closedlist_trajecotry;
+        // search status
+        CLOG(INFO, "Hybrid_Astar") << "find 4d hybrid A star solution!";
+      }
 
-      // Display the number of loops the search went through
-      CLOG(INFO, "Hybrid_Astar") << "SearchSteps: " << SearchSteps;
+      // Once you're done with the solution you can free the nodes up
+      astar_4d_search_.FreeSolutionNodes();
+    }  // end if(SearchState)
 
-      astar_4d_search_.EnsureMemoryFreed();
+    // Display the number of loops the search went through
+    CLOG(INFO, "Hybrid_Astar") << "SearchSteps: " << SearchSteps;
 
-    }  // end if(status)
+    astar_4d_search_.EnsureMemoryFreed();
+
+    return hybridastar_trajecotry;
 
   }  // perform_4dnode_search
 
-  auto hybridastar_trajecotry() const noexcept {
-    return hybridastar_trajecotry_;
-  }  // hybridastar_trajecotry
-
-  HybridAStarStatus status() const noexcept { return status_; }
   std::array<float, 3> startpoint() const noexcept { return startpoint_; }
   std::array<float, 3> endpoint() const noexcept { return endpoint_; }
 
  private:
-  HybridAStarStatus status_;
   std::array<float, 3> startpoint_;
   std::array<float, 3> endpoint_;
 
   ASV::common::math::ReedsSheppStateSpace rscurve_;
   SearchConfig searchconfig_;
   HybridAStar_4dNode_Search astar_4d_search_;
-
-  // search results
-  vecpath hybridastar_trajecotry_;
 
   // generate the config for search
   SearchConfig GenerateSearchConfig(
