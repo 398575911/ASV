@@ -231,13 +231,11 @@ class HybridAStar {
   vecpath perform_4dnode_search(
       const CollisionChecking_Astar &collision_checker) {
     unsigned int SearchState;
-    unsigned int SearchSteps = 0;
     vecpath hybridastar_trajecotry;
     do {
       // perform a hybrid A* search
       SearchState = astar_4d_search_.SearchStep(searchconfig_,
                                                 collision_checker, rscurve_);
-      SearchSteps++;
 
       // get the current node
       HybridState4DNode *current_p = astar_4d_search_.GetCurrentNode();
@@ -293,7 +291,7 @@ class HybridAStar {
           astar_4d_search_.CancelSearch();
 
           // search status
-          CLOG(INFO, "Hybrid_Astar") << "find a collision free RS curve!";
+          // CLOG(INFO, "Hybrid_Astar") << "find a collision free RS curve!";
 
         }  // end if collision checking
       }
@@ -327,18 +325,14 @@ class HybridAStar {
         RemoveSameState(closedlist_trajecotry);
         hybridastar_trajecotry = closedlist_trajecotry;
         // search status
-        CLOG(INFO, "Hybrid_Astar") << "find 4d hybrid A star solution!";
+        // CLOG(INFO, "Hybrid_Astar") << "find 4d hybrid A star solution!";
       }
 
       // Once you're done with the solution you can free the nodes up
       astar_4d_search_.FreeSolutionNodes();
     }  // end if(SearchState)
 
-    // Display the number of loops the search went through
-    CLOG(INFO, "Hybrid_Astar") << "SearchSteps: " << SearchSteps;
-
     astar_4d_search_.EnsureMemoryFreed();
-
     return hybridastar_trajecotry;
 
   }  // perform_4dnode_search

@@ -21,18 +21,18 @@
 namespace ASV::planning {
 
 class OpenSpacePlanner {
+ public:
   enum HybridAStarStatus {
     FAILURE = 0,
     START_END_CLOSED,
     SUCCESS,
   };
 
- public:
   OpenSpacePlanner(const CollisionData &collisiondata,
                    const HybridAStarConfig &hybridastarconfig,
                    const SmootherConfig &smootherconfig)
       : move_length_(hybridastarconfig.move_length),
-        status_(HybridAStarStatus::FAILURE),
+        status_(FAILURE),
         collision_checker_(collisiondata),
         Hybrid_AStar_(collisiondata, hybridastarconfig),
         path_smoother_(smootherconfig),
@@ -61,7 +61,7 @@ class OpenSpacePlanner {
       const std::array<double, 3> &start_point_cog,
       const std::array<double, 3> &end_point_cog) {
     // status
-    status_ = HybridAStarStatus::FAILURE;
+    status_ = FAILURE;
 
     // transformation
     auto start_point = collision_checker_.Transform2Center(start_point_cog);
@@ -74,7 +74,7 @@ class OpenSpacePlanner {
                                       static_cast<float>(end_point.at(1)),
                                       static_cast<float>(end_point.at(2)))) {
       CLOG(INFO, "Hybrid_Astar") << "start and end points are too closed!";
-      status_ = HybridAStarStatus::SUCCESS;
+      status_ = SUCCESS;
     };
 
     return *this;
@@ -103,9 +103,7 @@ class OpenSpacePlanner {
                           const std::array<double, 3> &end_point_cog) {
     update_start_end(start_point_cog, end_point_cog);
 
-    if (status_ == HybridAStarStatus::SUCCESS) {
-      return;
-    } else {
+    if (status_ != SUCCESS) {
       auto coarse_path_direction =
           Hybrid_AStar_.perform_4dnode_search(collision_checker_);
       if (coarse_path_direction.size() < 2) {
@@ -141,10 +139,11 @@ class OpenSpacePlanner {
                 move_length_,  // kappa
         };
       }
-    }
+    }  // end if(status)
 
   }  // GenerateTrajectory
 
+  auto status() const noexcept { return status_; }
   auto coarse_path() const noexcept { return cog_coarse_path_; }
   auto cog_path() const noexcept { return cog_fine_path_; }
   auto Planning_State() const noexcept { return Planning_State_; }

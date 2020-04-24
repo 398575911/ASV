@@ -182,9 +182,14 @@ void OpenSpace_multiStep() {
     openspace.GenerateTrajectory(start_point, end_point);
     auto planning_state = openspace.Planning_State();
     start_point = {planning_state.x, planning_state.y, planning_state.theta};
+
+    if (openspace.status() == OpenSpacePlanner::SUCCESS) {
+      std::cout << "reach the endpoint!\n";
+      break;
+    }
     long int et = _timer.timeelapsed();
     std::cout << "elapsed time of OpenSpace Planner: " << et << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 }  // OpenSpace_multiStep
 

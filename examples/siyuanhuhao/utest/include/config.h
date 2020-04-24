@@ -27,6 +27,7 @@
 #include "modules/messages/stm32/include/stm32_link.h"
 #include "modules/perception/marine_radar/include/TargetTracking.h"
 #include "modules/planner/path_planning/lanefollow/include/LatticePlanner.h"
+#include "modules/planner/path_planning/openspace/include/OpenSpacePlanner.h"
 #include "modules/planner/route_planning/include/RoutePlanning.h"
 #include "modules/simulator/include/simulator.h"
 

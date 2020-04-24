@@ -48,11 +48,12 @@ enum class TESTMODE {
   SIMULATION_LOS,        // simulation for los
   SIMULATION_FRENET,     // simulation for frenet planner
   SIMULATION_AVOIDANCE,  // simulation for obstacle avoidance
+  SIMULATION_DOCKING,    // simulation for auto docking
   EXPERIMENT_DP = 10,    // experiment for dynamic positioning
   EXPERIMENT_LOS,        // experiment for los
   EXPERIMENT_FRENET,     // experiment for frenet planner
   EXPERIMENT_AVOIDANCE,  // experiment for obstacle avoidance
-
+  EXPERIMENT_DOCKING,    // experiment for auto docking
 };
 
 }  // namespace ASV::common
