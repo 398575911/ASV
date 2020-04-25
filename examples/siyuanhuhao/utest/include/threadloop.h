@@ -18,11 +18,7 @@ namespace ASV {
 
 class threadloop : public StateMonitor {
  public:
-  threadloop() : StateMonitor(), config_parse(parameter_json_path) {
-    // // write prettified JSON to another file
-    // std::ofstream o("pretty.json");
-    // o << std::setw(4) << j << std::endl;
-  }
+  threadloop() : StateMonitor(), config_parse(parameter_json_path) {}
   ~threadloop() = default;
 
   void mainloop() {
@@ -542,8 +538,9 @@ class threadloop : public StateMonitor {
         std::vector<planning::Obstacle_Vertex_Config> _Obstacles_Vertex;
         std::vector<planning::Obstacle_LineSegment_Config> _Obstacles_LS;
         std::vector<planning::Obstacle_Box2d_Config> _Obstacles_Box;
-        std::array<double, 3> start_point;
-        std::array<double, 3> end_point;
+
+        std::array<double, 3> end_point_marine = {3433823.54, 350891.0 + 5.0,
+                                                  0.5 * M_PI};
         planning::HybridAStarConfig _HybridAStarConfig{
             1,    // move_length
             1.5,  // penalty_turning
@@ -564,17 +561,23 @@ class threadloop : public StateMonitor {
         long int sample_time_ms =
             static_cast<long int>(1000 * ASV_openspace.sampletime());
 
+        std::cout << "start plann\n";
         StateMonitor::check_pathplanner();
 
         while (1) {
           outerloop_elapsed_time = timer_planner.timeelapsed();
+
+          std::cout << "estimator_RTdata\n";
+          std::cout << estimator_RTdata.State(0) << std::endl;
+          std::cout << estimator_RTdata.State(1) << std::endl;
+          std::cout << estimator_RTdata.State(2) << std::endl;
 
           auto planning_state =
               ASV_openspace
                   .GenerateTrajectory(
                       {estimator_RTdata.State(0), estimator_RTdata.State(1),
                        estimator_RTdata.State(2)},
-                      end_point)
+                      end_point_marine)
                   .Planning_State();
 
           Planning_Marine_state.x = planning_state.x;
@@ -691,22 +694,11 @@ class threadloop : public StateMonitor {
               controller_RTdata.command_rotation,
               controller_RTdata.command_alpha_deg);
           // trajectory tracking
-          // tracker_RTdata = ASV_trajectorytracker
-          //                      .FollowCircularArc(Planning_Marine_state.kappa,
-          //                                         Planning_Marine_state.speed,
-          //                                         Planning_Marine_state.theta)
-          //                      .gettrackerRTdata();
-          static int count = 0;
-          static double t_u = 0.5;
-          static double t_omega = -0.5;
-
-          tracker_RTdata =
-              ASV_trajectorytracker
-                  .FollowCircularArc(
-                      t_omega / std::abs(t_u), t_u,
-                      t_omega * ASV_Controller.sampletime() * count)
-                  .gettrackerRTdata();
-          count++;
+          tracker_RTdata = ASV_trajectorytracker
+                               .FollowCircularArc(Planning_Marine_state.kappa,
+                                                  Planning_Marine_state.speed,
+                                                  Planning_Marine_state.theta)
+                               .gettrackerRTdata();
 
           break;
         }
@@ -963,6 +955,8 @@ class threadloop : public StateMonitor {
     std::string sqlpath = config_parse.getsqlitepath();
     std::string db_config_path = config_parse.getdbconfigpath();
     std::experimental::filesystem::create_directory(sqlpath);
+
+    WriteConstConfig2File(sqlpath);
 
     common::gps_db _gps_db(sqlpath, db_config_path);
     common::stm32_db _stm32_db(sqlpath, db_config_path);

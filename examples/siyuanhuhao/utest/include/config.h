@@ -43,16 +43,77 @@ constexpr control::ACTUATION indicator_actuation =
 constexpr int max_num_targets = 20;
 
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_DP;
-constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_LOS;
+// constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_LOS;
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_FRENET;
 // constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_AVOIDANCE;
-// constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_DOCKING;
+constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_DOCKING;
 
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_DP;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_LOS;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_FRENET;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_AVOIDANCE;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_DOCKING;
+
+void WriteConstConfig2File(const std::string &filepath) {
+  // prepare the config
+  std::string j_indicator_kalman = "on";
+  if (indicator_kalman == localization::USEKALMAN::KALMANOFF)
+    j_indicator_kalman = "off";
+
+  std::string j_indicator_actuation = "Fully-actuated";
+  if (indicator_actuation == control::ACTUATION::UNDERACTUATED)
+    j_indicator_actuation = "Under-actuated";
+
+  std::string j_testmode = "";
+  switch (testmode) {
+    case common::TESTMODE::SIMULATION_DP:
+      j_testmode = "SIMULATION_DP";
+      break;
+    case common::TESTMODE::SIMULATION_LOS:
+      j_testmode = "SIMULATION_LOS";
+      break;
+    case common::TESTMODE::SIMULATION_FRENET:
+      j_testmode = "SIMULATION_FRENET";
+      break;
+    case common::TESTMODE::SIMULATION_AVOIDANCE:
+      j_testmode = "SIMULATION_AVOIDANCE";
+      break;
+    case common::TESTMODE::SIMULATION_DOCKING:
+      j_testmode = "SIMULATION_DOCKING";
+      break;
+    case common::TESTMODE::EXPERIMENT_DP:
+      j_testmode = "EXPERIMENT_DP";
+      break;
+    case common::TESTMODE::EXPERIMENT_LOS:
+      j_testmode = "EXPERIMENT_LOS";
+      break;
+    case common::TESTMODE::EXPERIMENT_FRENET:
+      j_testmode = "EXPERIMENT_FRENET";
+      break;
+    case common::TESTMODE::EXPERIMENT_AVOIDANCE:
+      j_testmode = "EXPERIMENT_AVOIDANCE";
+      break;
+    case common::TESTMODE::EXPERIMENT_DOCKING:
+      j_testmode = "EXPERIMENT_DOCKING";
+      break;
+    default:
+      break;
+  };
+
+  //  write the json file
+  nlohmann::json j = {
+      {"num_thruster", num_thruster},                //
+      {"dim_controlspace", dim_controlspace},        //
+      {"Kalman", j_indicator_kalman},                //
+      {"control_actuation", j_indicator_actuation},  //
+      {"max_num_targets", max_num_targets},          //
+      {"Test_mode", j_testmode},                     //
+  };
+
+  // write prettified JSON to another file
+  std::ofstream output_file(filepath + "cconfig.json");
+  output_file << std::setw(4) << j << std::endl;
+}  // WriteConstConfig2File
 
 }  // namespace ASV
 

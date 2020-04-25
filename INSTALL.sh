@@ -39,3 +39,7 @@ sudo mv mosek.lic ~/mosek/
 
 
 #### install pyclustering   ###
+
+
+#### install gnuplot (optional) ###
+sudo apt install gnuplot

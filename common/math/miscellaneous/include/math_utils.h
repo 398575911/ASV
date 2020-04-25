@@ -10,6 +10,7 @@
 #define _MATH_UTILS_H_
 
 #include <algorithm>
+#include <array>
 #include <cstdlib>
 #include <tuple>
 #include <vector>
@@ -84,6 +85,11 @@ std::tuple<double, double> Marine2Cart(double marine_x,
 Eigen::VectorXd Marine2Cart(const Eigen::VectorXd& _marine_y) noexcept {
   return (-1) * _marine_y;
 }  // Marine2Cart
+std::array<double, 3> Marine2Cart(
+    const std::array<double, 3>& marine_state) noexcept {
+  // marine_state: x, y, theta
+  return {marine_state.at(0), -marine_state.at(1), -marine_state.at(2)};
+}  // Marine2Cart
 
 // convert cartesian coordinate to marine coordinate
 std::tuple<double, double, double> Cart2Marine(double cart_y, double cart_theta,
@@ -94,6 +100,11 @@ std::tuple<double, double, double, double, double, double> Cart2Marine(
     double cart_x, double cart_y, double cart_theta, double cart_kappa,
     double cart_speed, double cart_dspeed) noexcept {
   return {cart_x, -cart_y, -cart_theta, -cart_kappa, cart_speed, cart_dspeed};
+}  // Cart2Marine
+std::array<double, 3> Cart2Marine(
+    const std::array<double, 3>& cart_state) noexcept {
+  // cart_state: x, y, theta
+  return {cart_state.at(0), -cart_state.at(1), -cart_state.at(2)};
 }  // Cart2Marine
 
 // convert marine X and Y to UTM_N(y) and UTM_E(x)

@@ -4,7 +4,7 @@
   "dbpath": "data/",
   "dbconfig":"../../../common/fileIO/recorder/config/dbconfig.json",
   "property": {
-    "L":3.1,
+    "L":3.2,
     "B":1.6,
     "mini_turn_radius":1,
     "Mass": [244, 0, 0, 0, 244, 80, 0, 80, 102],
@@ -99,7 +99,7 @@
       "target_speed_step":0.2
     },
     "Collision":{
-      "stern2CoG":6.1111,
+      "stern2CoG":1.6,
       "robot_radius":2.5
     }
   },

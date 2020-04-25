@@ -67,13 +67,15 @@ class estimator {
     // state toggle
     EstimatorRTData.state_toggle = common::STATETOGGLE::READY;
     return *this;
-  }
+  }  // setvalue
+
   // update the estimated force acting on the vessel
   estimator& updateestimatedforce(const Eigen::Vector3d& _thrust,
                                   const Eigen::Vector3d& _wind) {
     EstimatorRTData.BalphaU = _thrust + _wind;
     return *this;
-  }
+  }  // updateestimatedforce
+
   // read sensor data and perform state estimation
   estimator& estimatestate(double gps_x, double gps_y, double gps_z,
                            double gps_roll, double gps_pitch,
@@ -123,7 +125,7 @@ class estimator {
     computeRadarState(EstimatorRTData);
 
     return *this;
-  }
+  }  // estimatestate
 
   // realtime calculation of position and velocity errors
   estimator& estimateerror(const Eigen::Vector3d& _setpoints,
@@ -137,7 +139,7 @@ class estimator {
     EstimatorRTData.p_error = EstimatorRTData.CTG2B * _perror;
     EstimatorRTData.v_error = _vsetpoints - EstimatorRTData.State.tail(3);
     return *this;
-  }
+  }  // estimateerror
 
   void setmotionrawdata(double gps_x, double gps_y, double gps_z,
                         double gps_roll, double gps_pitch, double gps_heading,
@@ -152,7 +154,8 @@ class estimator {
     Motionrawdata.gps_Ve = gps_Ve;
     Motionrawdata.gps_Vn = gps_Vn;
     Motionrawdata.gps_roti = gps_roti;
-  }
+  }  // setmotionrawdata
+
   auto getEstimatorRTData() const noexcept { return EstimatorRTData; }
   double getsampletime() const noexcept { return sample_time; }
 
@@ -207,7 +210,7 @@ class estimator {
     _CTB2G(1, 1) = cvalue;
     _CTB2G(0, 1) = -svalue;
     _CTB2G(1, 0) = svalue;
-  }
+  }  // calculateCoordinateTransform
 
   // calculate the real time coordinate transform matrix
   void calculateCoordinateTransform(Eigen::Matrix3d& _CTG2B,
@@ -226,7 +229,7 @@ class estimator {
     _CTB2G(1, 1) = cvalue;
     _CTB2G(0, 1) = -svalue;
     _CTB2G(1, 0) = svalue;
-  }
+  }  // calculateCoordinateTransform
 
   // GPS primary antenna is different from CoG, such deviation should be
   // considered.

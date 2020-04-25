@@ -159,10 +159,10 @@ void OpenSpace_multiStep() {
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
   std::vector<Obstacle_Box2d_Config> Obstacles_Box;
-  std::array<double, 3> start_point;
-  std::array<double, 3> end_point;
+  std::array<double, 3> start_point_cart;
+  std::array<double, 3> end_point_cart;
   generate_obstacle_map(Obstacles_Vertex, Obstacles_LS, Obstacles_Box,
-                        start_point, end_point, test_scenario);
+                        start_point_cart, end_point_cart, test_scenario);
 
   HybridAStarConfig _HybridAStarConfig{
       1,    // move_length
@@ -177,11 +177,20 @@ void OpenSpace_multiStep() {
   OpenSpacePlanner openspace(_collisiondata, _HybridAStarConfig, smoothconfig);
   openspace.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
 
+  start_point_cart = {3433823.54, 350891.0, 0.5 * M_PI};
+  end_point_cart = {3433823.54, 350891.0 + 5.0, 0.5 * M_PI};
+
+  auto start_point_marine = ASV::common::math::Cart2Marine(start_point_cart);
+  auto end_point_marine = ASV::common::math::Cart2Marine(end_point_cart);
+
   while (1) {
     _timer.timeelapsed();
-    auto planning_state =
-        openspace.GenerateTrajectory(start_point, end_point).Planning_State();
-    start_point = {planning_state.x, planning_state.y, planning_state.theta};
+
+    auto planning_state_cart =
+        openspace.GenerateTrajectory(start_point_marine, end_point_marine)
+            .Planning_State();
+    start_point_marine = {planning_state_cart.x, -planning_state_cart.y,
+                          -planning_state_cart.theta};
 
     if (openspace.status() == OpenSpacePlanner::SUCCESS) {
       std::cout << "reach the endpoint!\n";
