@@ -118,9 +118,9 @@ int main() {
   auto end_point = collision_checker_.Transform2Center(end_point_cog);
   HybridAStar Hybrid_AStar(_collisiondata, _HybridAStarConfig);
 
-  Hybrid_AStar.setup_start_end(start_point.at(0), start_point.at(1),
-                               start_point.at(2), end_point.at(0),
-                               end_point.at(1), end_point.at(2));
+  Hybrid_AStar.setup_start_end(end_point.at(0), end_point.at(1),
+                               end_point.at(2), start_point.at(0),
+                               start_point.at(1), start_point.at(2));
 
   auto hr = Hybrid_AStar.perform_4dnode_search(collision_checker_);
   std::vector<std::array<double, 3>> hr_plot;

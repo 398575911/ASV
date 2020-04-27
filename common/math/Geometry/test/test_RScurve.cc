@@ -40,10 +40,10 @@ void rtplotting(Gnuplot &_gp, const double *state,
 }  // rtplotting
 
 int main() {
-  std::array<double, 3> q0 = {-2, 2, 0.0 * M_PI};
+  std::array<double, 3> q0 = {21.6164, 3.37329, 1.30572};
   // std::array<double, 3> q1 = {6, -8, 0.5 * M_PI};
-  std::array<double, 3> q1 = {-2, 2, 0.0 * M_PI};
-  ASV::common::math::ReedsSheppStateSpace r(3);
+  std::array<double, 3> q1 = {21.5, 2.5, 1.5708};
+  ASV::common::math::ReedsSheppStateSpace r(1 / 0.3);
 
   //----------------------------get curve type-------------------------
   auto RStypes = r.rs_type(q0, q1);
@@ -56,7 +56,7 @@ int main() {
   auto finalpath = r.rs_state(q0, q1, 0.1);
 
   //
-  auto switch_test = r.rs_trajectory(q0, q1, 0.1);
+  auto switch_test = r.rs_trajectory(q0, q1, 1);
   std::cout << "rs segment with direction\n";
   for (const auto &value : switch_test) {
     std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "

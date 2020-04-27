@@ -103,7 +103,7 @@ class ReedsSheppStateSpace {
     // remove the zero
     std::vector<double> nonzero_segment;
     for (std::size_t i = 0; i != 5; i++) {
-      if (std::fabs(path.length_[i]) > 0)
+      if (std::fabs(path.length_[i]) > 0.001)
         nonzero_segment.push_back(path.length_[i]);
     }
 
