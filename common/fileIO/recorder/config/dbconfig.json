@@ -105,6 +105,13 @@
       ["lattice_kappa", "DOUBLE"],
       ["lattice_speed", "DOUBLE"],
       ["lattice_dspeed", "DOUBLE"]
+    ],
+    "openspace":[
+      ["x", "DOUBLE"],
+      ["y", "DOUBLE"],
+      ["theta", "DOUBLE"],
+      ["kappa", "DOUBLE"],
+      ["speed", "DOUBLE"]
     ]
   },
   "controller": {

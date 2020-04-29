@@ -572,6 +572,46 @@ class planner_parser : public master_parser {
     return v_plan_lattice_db_data;
   }  // parse_lattice_table
 
+  std::vector<plan_openspace_db_data> parse_openspace_table(
+      const double start_time, const double end_time) {
+    // parse config file
+    std::string parse_string = "select DATETIME";
+    std::ifstream in(config_name);
+    nlohmann::json file;
+    in >> file;
+    auto db_config =
+        file["planner"]["openspace"]
+            .get<std::vector<std::pair<std::string, std::string>>>();
+    for (auto const &value : db_config) parse_string += ", " + value.first;
+    parse_string += " from openspace where ID= ?;";
+
+    //
+    std::vector<plan_openspace_db_data> v_plan_openspace_db_data;
+
+    // loop through the database
+    int max_id = 0;
+    db << "select MAX(ID) from openspace;" >> max_id;
+    for (int i = 0; i != max_id; i++) {
+      db << parse_string << i + 1 >> [&](std::string local_time, double x,
+                                         double y, double theta, double kappa,
+                                         double speed) {
+        double _local_time_s = master_parser::convertJulianday2Second(
+            atof(local_time.c_str()) - master_parser::timestamp0);
+        if ((start_time <= _local_time_s) && (_local_time_s <= end_time)) {
+          v_plan_openspace_db_data.push_back(plan_openspace_db_data{
+              _local_time_s,  // local_time
+              x,              // x
+              y,              // y
+              theta,          // theta
+              kappa,          // kappa
+              speed           // speed
+          });
+        }
+      };
+    }
+    return v_plan_openspace_db_data;
+  }  // parse_openspace_table
+
  private:
   std::string config_name;
   sqlite::database db;

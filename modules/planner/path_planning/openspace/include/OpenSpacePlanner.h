@@ -106,11 +106,11 @@ class OpenSpacePlanner {
   OpenSpacePlanner &GenerateTrajectory(
       const std::array<double, 3> &end_cog_marine,
       const std::array<double, 3> &start_cog_marine,
-      const double start_speed = 0.0) {
+      const double start_speed_marine = 0.0) {
     auto start_point_cog = ASV::common::math::Marine2Cart(start_cog_marine);
     auto end_point_cog = ASV::common::math::Marine2Cart(end_cog_marine);
 
-    update_start_end(end_point_cog, start_point_cog, start_speed);
+    update_start_end(end_point_cog, start_point_cog, start_speed_marine);
 
     if (status_ != SUCCESS) {
       auto coarse_path_direction =
@@ -134,10 +134,11 @@ class OpenSpacePlanner {
 
       } else {
         std::cout << "search success\n";
-        for (const auto &value : coarse_path_direction)
-          std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ", "
-                    << std::get<2>(value) << ", " << std::get<3>(value)
-                    << std::endl;
+        // for (const auto &value : coarse_path_direction)
+        //   std::cout << std::get<0>(value) << ", " << std::get<1>(value) << ",
+        //   "
+        //             << std::get<2>(value) << ", " << std::get<3>(value)
+        //             << std::endl;
 
         auto first_center_state = coarse_path_direction[0];
         auto second_center_state = coarse_path_direction[1];

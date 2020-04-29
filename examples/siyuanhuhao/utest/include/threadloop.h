@@ -36,6 +36,15 @@ class threadloop : public StateMonitor {
     std::thread socket_thread(&threadloop::socket_loop, this);
     std::thread statemonitor_thread(&threadloop::state_monitor_loop, this);
 
+    sched_param sch;
+    int policy;
+    pthread_getschedparam(path_planner_thread.native_handle(), &policy, &sch);
+    sch.sched_priority = 50;
+    if (pthread_setschedparam(path_planner_thread.native_handle(), SCHED_FIFO,
+                              &sch)) {
+      std::cout << "Failed to setschedparam: " << std::strerror(errno) << '\n';
+    }
+
     targettracking_thread.join();
     route_planner_thread.join();
     path_planner_thread.join();
@@ -539,8 +548,8 @@ class threadloop : public StateMonitor {
         std::vector<planning::Obstacle_LineSegment_Config> _Obstacles_LS;
         std::vector<planning::Obstacle_Box2d_Config> _Obstacles_Box;
 
-        std::array<double, 3> end_point_marine = {3433823.54, 350891.0 + 5.0,
-                                                  0.5 * M_PI};
+        std::array<double, 3> end_point_marine = {3433823.54 + 0.0,
+                                                  350891.0 + 5.0, 0.5 * M_PI};
         planning::HybridAStarConfig _HybridAStarConfig{
             1,    // move_length
             1.5,  // penalty_turning
@@ -561,23 +570,18 @@ class threadloop : public StateMonitor {
         long int sample_time_ms =
             static_cast<long int>(1000 * ASV_openspace.sampletime());
 
-        std::cout << "start plann\n";
         StateMonitor::check_pathplanner();
 
         while (1) {
           outerloop_elapsed_time = timer_planner.timeelapsed();
 
-          std::cout << "estimator_RTdata\n";
-          std::cout << estimator_RTdata.State(0) << std::endl;
-          std::cout << estimator_RTdata.State(1) << std::endl;
-          std::cout << estimator_RTdata.State(2) << std::endl;
-
           auto planning_state =
               ASV_openspace
                   .GenerateTrajectory(
+                      end_point_marine,
                       {estimator_RTdata.State(0), estimator_RTdata.State(1),
                        estimator_RTdata.State(2)},
-                      end_point_marine)
+                      estimator_RTdata.State(3))
                   .Planning_State();
 
           Planning_Marine_state.x = planning_state.x;
@@ -940,7 +944,7 @@ class threadloop : public StateMonitor {
 
           if (outerloop_elapsed_time > 1.1 * sample_time)
             CLOG(INFO, "estimator") << "Too much time!";
-        }
+        }  // end while loop
 
         break;
       }
@@ -965,6 +969,7 @@ class threadloop : public StateMonitor {
     common::planner_db _planner_db(sqlpath, db_config_path);
     common::controller_db _controller_db(sqlpath, db_config_path);
     common::perception_db _perception_db(sqlpath, db_config_path);
+    common::wind_db _wind_db(sqlpath, db_config_path);
 
     _gps_db.create_table();
     _stm32_db.create_table();
@@ -973,6 +978,7 @@ class threadloop : public StateMonitor {
     _planner_db.create_table();
     _controller_db.create_table();
     _perception_db.create_table();
+    _wind_db.create_table();
 
     while (1) {
       switch (testmode) {
@@ -1061,6 +1067,15 @@ class threadloop : public StateMonitor {
               std::vector<double>(RoutePlanner_RTdata.Waypoint_latitude.data(),
                                   RoutePlanner_RTdata.Waypoint_latitude.data() +
                                       num_wp)  // WPLAT
+          });
+          _planner_db.update_latticeplanner_table(common::plan_lattice_db_data{
+              -1,                           // local_time
+              Planning_Marine_state.x,      // lattice_x
+              Planning_Marine_state.y,      // lattice_y
+              Planning_Marine_state.theta,  // lattice_theta
+              Planning_Marine_state.kappa,  // lattice_kappa
+              Planning_Marine_state.speed,  // lattice_speed
+              Planning_Marine_state.dspeed  // lattice_dspeed
           });
 
           break;
@@ -1185,7 +1200,14 @@ class threadloop : public StateMonitor {
                                controller_RTdata.command_rotation.data() +
                                    num_thruster)  // rpm
           });
-
+          _planner_db.update_openspace_table(common::plan_openspace_db_data{
+              -1,                           // local_time
+              Planning_Marine_state.x,      // x
+              Planning_Marine_state.y,      // y
+              Planning_Marine_state.theta,  // theta
+              Planning_Marine_state.kappa,  // kappa
+              Planning_Marine_state.speed   // speed
+          });
           break;
         }  // SIMULATION_DOCKING
 

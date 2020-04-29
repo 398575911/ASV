@@ -230,7 +230,7 @@ void OpenSpace_multiStep() {
   ASV::common::timecounter _timer;
 
   // obstacles
-  int test_scenario = 0;
+  int test_scenario = 9;
 
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
@@ -253,8 +253,8 @@ void OpenSpace_multiStep() {
   OpenSpacePlanner openspace(_collisiondata, _HybridAStarConfig, smoothconfig);
   openspace.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
 
-  // start_point_cart = {3433823.54, 350891.0, 0.5 * M_PI};
-  // end_point_cart = {3433823.54, 350891.0 + 5.0, 0.0 * M_PI};
+  start_point_cart = {3433823.54, -350891.0, -0.5 * M_PI};
+  end_point_cart = {3433823.54, -(350891.0 + 5.0), -0.5 * M_PI};
 
   double start_speed = 0;
   auto start_point_marine = ASV::common::math::Cart2Marine(start_point_cart);
@@ -272,13 +272,16 @@ void OpenSpace_multiStep() {
             .GenerateTrajectory(end_point_marine, start_point_marine,
                                 start_speed)
             .Planning_State();
-    std::array<double, 3> start_point_cart = {planning_state_cart.x,
-                                              planning_state_cart.y,
-                                              planning_state_cart.theta};
-    std::cout << "speed: " << planning_state_cart.speed << std::endl;
+    auto cog_path = openspace.coarse_path();
+
+    rtplotting_path_varyingstart(gp1, end_point_cart, start_point_cart,
+                                 start_speed, cog_path, Obstacles_Vertex,
+                                 Obstacles_LS, Obstacles_Box);
+
+    start_point_cart = {planning_state_cart.x, planning_state_cart.y,
+                        planning_state_cart.theta};
     start_speed = planning_state_cart.speed;
     start_point_marine = ASV::common::math::Cart2Marine(start_point_cart);
-    auto cog_path = openspace.coarse_path();
 
     if (openspace.status() == OpenSpacePlanner::SUCCESS) {
       std::cout << "reach the endpoint!\n";
@@ -287,11 +290,7 @@ void OpenSpace_multiStep() {
     long int et = _timer.timeelapsed();
     std::cout << "elapsed time of OpenSpace Planner: " << et << std::endl;
 
-    rtplotting_path_varyingstart(gp1, end_point_cart, start_point_cart,
-                                 start_speed, cog_path, Obstacles_Vertex,
-                                 Obstacles_LS, Obstacles_Box);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
   }
 }  // OpenSpace_multiStep
 

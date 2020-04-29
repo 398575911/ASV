@@ -1,0 +1,8 @@
+{
+    "Kalman": "off",
+    "Test_mode": "SIMULATION_DOCKING",
+    "control_actuation": "Under-actuated",
+    "dim_controlspace": 3,
+    "max_num_targets": 20,
+    "num_thruster": 2
+}

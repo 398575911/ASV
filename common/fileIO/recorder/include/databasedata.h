@@ -138,6 +138,15 @@ struct plan_lattice_db_data {
   double lattice_dspeed;
 };  // plan_lattice_db_data
 
+struct plan_openspace_db_data {
+  double local_time;
+  double x;
+  double y;
+  double theta;
+  double kappa;
+  double speed;
+};  // plan_openspace_db_data
+
 struct control_setpoint_db_data {
   double local_time;
   double set_x;

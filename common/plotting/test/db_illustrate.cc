@@ -9,11 +9,12 @@
 */
 
 #include "common/fileIO/recorder/include/dataparser.h"
+#include "common/math/miscellaneous/include/math_utils.h"
 #include "common/plotting/include/gnuplot-iostream.h"
 
 // setup the time interval
 const double starting_time = 0;
-const double end_time = 10;
+const double end_time = 30;
 
 const std::string folderp = "../../data/";
 const std::string config_path =
@@ -27,6 +28,8 @@ void plot_planner() {
   auto read_route = planner_parser.parse_route_table(starting_time, end_time);
   auto read_lattice =
       planner_parser.parse_lattice_table(starting_time, end_time);
+  auto read_openspace =
+      planner_parser.parse_openspace_table(starting_time, end_time);
 
   std::cout << "results of route planning\n";
   for (const auto &value : read_route) {
@@ -54,6 +57,79 @@ void plot_planner() {
     for (const auto &v : value.WPLAT) std::cout << v << " ";
     std::cout << std::endl;
   }
+
+  /******************** plotting of openspace planner ********************/
+  std::vector<std::pair<double, double>> xy_pts_A;
+  std::vector<std::pair<double, double>> xy_pts_B;
+  std::vector<std::pair<double, double>> xy_pts_C;
+  std::vector<std::pair<double, double>> xy_pts_D;
+  std::vector<std::pair<double, double>> xy_pts_E;
+  for (std::size_t index = 0; index != read_openspace.size(); index++) {
+    auto openspace_i = read_openspace[index];
+    xy_pts_A.push_back(std::make_pair(openspace_i.local_time, openspace_i.x));
+    xy_pts_B.push_back(std::make_pair(openspace_i.local_time, openspace_i.y));
+    xy_pts_C.push_back(
+        std::make_pair(openspace_i.local_time, openspace_i.theta));
+    xy_pts_D.push_back(
+        std::make_pair(openspace_i.local_time, openspace_i.speed));
+    xy_pts_E.push_back(
+        std::make_pair(openspace_i.local_time, openspace_i.kappa));
+  }
+
+  ++figure_id;
+  Gnuplot gp;
+  gp << "set terminal x11 size 1000, 1000 " + std::to_string(figure_id) + "\n";
+  gp << "set multiplot layout 5, 1 title 'time series of openspace planner' "
+        "font ',14'\n";
+  // x
+  gp << "set xtics out\n";
+  gp << "set ytics out\n";
+  gp << "set format y '%9.2f'\n";
+  gp << "set ylabel 'x (m)'\n";
+  gp << "plot " << gp.file1d(xy_pts_A)
+     << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
+
+  // y
+  gp << "set xtics out\n";
+  gp << "set ytics out\n";
+  gp << "set format y '%9.2f'\n";
+  gp << "set ylabel 'y (m)'\n";
+  gp << "plot " << gp.file1d(xy_pts_B)
+     << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
+
+  // theta
+  gp << "set xtics out\n";
+  gp << "set ytics out\n";
+  gp << "set format y '%6.3f'\n";
+  gp << "set ylabel 'theta (rad)'\n";
+  gp << "plot " << gp.file1d(xy_pts_C)
+     << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
+
+  // speed
+  gp << "set xtics out\n";
+  gp << "set ytics out\n";
+  gp << "set format y '%6.2f'\n";
+  gp << "set ylabel 'speed (m/s)'\n";
+  gp << "plot " << gp.file1d(xy_pts_D)
+     << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
+
+  // kappa
+  gp << "set xtics out\n";
+  gp << "set ytics out\n";
+  gp << "set format y '%6.2f'\n";
+  gp << "set ylabel 'kappa (1/m)'\n";
+  gp << "set xlabel 'time (s)'\n";
+  gp << "plot " << gp.file1d(xy_pts_E)
+     << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
+
+  // end multiplot
+  gp << "unset multiplot\n";
+
 }  // plot_planner
 
 // plot the results stored in perception database
@@ -87,32 +163,41 @@ void plot_GPS() {
   // latitude
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.7f'\n";
   gp << "set ylabel 'latitude (deg)'\n";
   gp << "plot " << gp.file1d(xy_pts_A)
      << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
 
   // longitude
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.7f'\n";
   gp << "set ylabel 'longitude (deg)'\n";
   gp << "plot " << gp.file1d(xy_pts_B)
      << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
 
   // UTM_x
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'UTM_x (m)'\n";
   gp << "plot " << gp.file1d(xy_pts_C)
      << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
 
   // UTM_y
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'UTM_y (m)'\n";
   gp << "set xlabel 'time (s)'\n";
   gp << "plot " << gp.file1d(xy_pts_D)
      << " with lines lt 1 lw 2 lc rgb '#4393C3' notitle\n";
+  gp << "unset format\n";
 
+  // end multiplot
   gp << "unset multiplot\n";
 
   /********************* plotting of rotation ************************/
@@ -235,9 +320,10 @@ void plot_estimator() {
     auto meas_i = read_measurement[index];
     xy_pts_A_meas.push_back(std::make_pair(meas_i.local_time, meas_i.meas_x));
     xy_pts_B_meas.push_back(std::make_pair(meas_i.local_time, meas_i.meas_y));
-    xy_pts_C_meas.push_back(
-        std::make_pair(meas_i.local_time, meas_i.meas_theta * 180.0 / M_PI));
+    xy_pts_C_meas.push_back(std::make_pair(
+        meas_i.local_time, ASV::common::math::Rad2Degree(meas_i.meas_theta)));
   }
+
   for (std::size_t index = 0; index != read_state.size(); index++) {
     auto state_i = read_state[index];
     xy_pts_A_state.push_back(
@@ -245,7 +331,8 @@ void plot_estimator() {
     xy_pts_B_state.push_back(
         std::make_pair(state_i.local_time, state_i.state_y));
     xy_pts_C_state.push_back(
-        std::make_pair(state_i.local_time, state_i.state_theta * 180.0 / M_PI));
+        std::make_pair(state_i.local_time,
+                       ASV::common::math::Rad2Degree(state_i.state_theta)));
   }
 
   ++figure_id;
@@ -256,22 +343,26 @@ void plot_estimator() {
   // X
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'X (m)'\n";
   gp << "plot " << gp.file1d(xy_pts_A_meas)
      << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
         "pointsize 1 title 'meas', "
      << gp.file1d(xy_pts_A_state)
      << " with lines lt 1 lw 2 lc rgb 'black' title 'state'\n";
+  gp << "unset format\n";
 
   // Y
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'Y (m)'\n";
   gp << "plot " << gp.file1d(xy_pts_B_meas)
      << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
         "pointsize 1 title 'meas', "
      << gp.file1d(xy_pts_B_state)
      << " with lines lt 1 lw 2 lc rgb 'black' title 'state'\n";
+  gp << "unset format\n";
 
   // theta
   gp << "set xtics out\n";
@@ -370,16 +461,20 @@ void plot_estimator() {
   // X
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'error in X (m)'\n";
   gp << "plot " << gp.file1d(xy_pts_A)
      << " with lines lt 1 lw 2 lc rgb 'black' notitle\n";
+  gp << "unset format\n";
 
   // Y
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'error in Y (m)'\n";
   gp << "plot " << gp.file1d(xy_pts_B)
      << " with lines lt 1 lw 2 lc rgb 'black' notitle\n";
+  gp << "unset format\n";
 
   // theta
   gp << "set xtics out\n";
@@ -435,7 +530,8 @@ void plot_controller() {
     auto set_i = read_setpoint[index];
     xy_pts_A.push_back(std::make_pair(set_i.local_time, set_i.set_x));
     xy_pts_B.push_back(std::make_pair(set_i.local_time, set_i.set_y));
-    xy_pts_C.push_back(std::make_pair(set_i.local_time, set_i.set_theta));
+    xy_pts_C.push_back(std::make_pair(
+        set_i.local_time, ASV::common::math::Rad2Degree(set_i.set_theta)));
     xy_pts_D.push_back(std::make_pair(set_i.local_time, set_i.set_u));
     xy_pts_E.push_back(std::make_pair(set_i.local_time, set_i.set_v));
     xy_pts_F.push_back(std::make_pair(set_i.local_time, set_i.set_r));
@@ -449,23 +545,29 @@ void plot_controller() {
   // X
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'desired X (m)'\n";
   gp << "plot " << gp.file1d(xy_pts_A)
      << " with lines lt 1 lw 2 lc rgb 'black' notitle\n";
+  gp << "unset format\n";
 
   // Y
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'desired Y (m)'\n";
   gp << "plot " << gp.file1d(xy_pts_B)
      << " with lines lt 1 lw 2 lc rgb 'black' notitle\n";
+  gp << "unset format\n";
 
   // theta
   gp << "set xtics out\n";
   gp << "set ytics out\n";
-  gp << "set ylabel 'desired theta (rad)'\n";
+  gp << "set format y '%5.1f'\n";
+  gp << "set ylabel 'desired theta (deg)'\n";
   gp << "plot " << gp.file1d(xy_pts_C)
      << " with lines lt 1 lw 2 lc rgb 'black' notitle\n";
+  gp << "unset format\n";
 
   // error in u
   gp << "set xtics out\n";
@@ -515,26 +617,31 @@ void plot_controller() {
   // X
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'Fx (N)'\n";
   gp << "plot " << gp.file1d(xy_pts_de_fx)
      << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
         "pointsize 1 title 'desired', "
      << gp.file1d(xy_pts_es_fx)
      << " with lines lt 1 lw 2 lc rgb 'black' title 'est'\n";
+  gp << "unset format\n";
 
   // Y
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'Fy (N)'\n";
   gp << "plot " << gp.file1d(xy_pts_de_fy)
      << " with linespoints linetype 1 lw 2 lc rgb '#4393C3' pointtype 7 "
         "pointsize 1 title 'desired', "
      << gp.file1d(xy_pts_es_fy)
      << " with lines lt 1 lw 2 lc rgb 'black' title 'est'\n";
+  gp << "unset format\n";
 
   // theta
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'Mz (N*m)'\n";
   gp << "set xlabel 'time (s)'\n";
   gp << "plot " << gp.file1d(xy_pts_de_mz)
@@ -542,7 +649,9 @@ void plot_controller() {
         "pointsize 1 title 'desired', "
      << gp.file1d(xy_pts_es_mz)
      << " with lines lt 1 lw 2 lc rgb 'black' title 'est'\n";
+  gp << "unset format\n";
 
+  //  end multiplot
   gp << "unset multiplot\n";
 
   /******************** time series of propeller (alpha) ********************/
@@ -610,6 +719,8 @@ void plot_2dposition() {
   gp << "set title 'comparision of estimator position'\n";
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format x '%10.2f'\n";
+  gp << "set format y '%10.2f'\n";
   gp << "set ylabel 'X (m)'\n";
   gp << "set xlabel 'Y (m)'\n";
   gp << "set size ratio -1\n";
@@ -625,6 +736,5 @@ int main() {
   plot_planner();
   plot_estimator();
   plot_controller();
-  plot_planner();
   plot_2dposition();
 }

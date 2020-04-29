@@ -615,6 +615,7 @@ class planner_db : public master_db {
         config_name(_config_name),
         insert_string_routeplanner(""),
         insert_string_latticeplanner(""),
+        insert_string_openspace(""),
         db(dbpath) {}
   ~planner_db() {}
 
@@ -628,7 +629,9 @@ class planner_db : public master_db {
     auto db_config_latticeplanner =
         file["planner"]["latticeplanner"]
             .get<std::vector<std::pair<std::string, std::string>>>();
-
+    auto db_config_openspace =
+        file["planner"]["openspace"]
+            .get<std::vector<std::pair<std::string, std::string>>>();
     try {
       // routeplanner
       std::string str =
@@ -658,6 +661,21 @@ class planner_db : public master_db {
       }
       str += ");";
       insert_string_latticeplanner += ") ";
+      db << str;
+
+      // openspace planner
+      str =
+          "CREATE TABLE openspace"
+          "(ID          INTEGER PRIMARY KEY AUTOINCREMENT,"
+          " DATETIME    TEXT       NOT NULL";
+      insert_string_openspace = "(DATETIME";
+
+      for (auto const &[name, type] : db_config_openspace) {
+        str += ", " + name + " " + type;
+        insert_string_openspace += ", " + name;
+      }
+      str += ");";
+      insert_string_openspace += ") ";
       db << str;
 
     } catch (sqlite::sqlite_exception &e) {
@@ -724,12 +742,38 @@ class planner_db : public master_db {
     }
   }  // update_latticeplanner_table
 
+  void update_openspace_table(
+      const plan_openspace_db_data &update_data,
+      const std::string &_datetime = "julianday('now')") {
+    try {
+      std::string str = "INSERT INTO openspace";
+      str += insert_string_openspace;
+      str += "VALUES(";
+      str += _datetime;
+      str += ", ";
+      str += std::to_string(update_data.x);
+      str += ", ";
+      str += std::to_string(update_data.y);
+      str += ", ";
+      str += std::to_string(update_data.theta);
+      str += ", ";
+      str += std::to_string(update_data.kappa);
+      str += ", ";
+      str += std::to_string(update_data.speed);
+      str += ");";
+
+      db << str;
+    } catch (sqlite::sqlite_exception &e) {
+      CLOG(ERROR, "sql-planner") << e.what();
+    }
+  }  // update_openspace_table
+
  private:
   std::string dbpath;
   std::string config_name;
   std::string insert_string_routeplanner;
   std::string insert_string_latticeplanner;
-
+  std::string insert_string_openspace;
   sqlite::database db;
 
 };  // end class planner_db
