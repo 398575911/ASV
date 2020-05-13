@@ -14,12 +14,21 @@
 
 // setup the time interval
 const double starting_time = 0;
-const double end_time = 30;
+const double end_time = 20;
 
 const std::string folderp = "../../data/";
 const std::string config_path =
     "/home/scar1et/Coding/ASV/common/fileIO/recorder/config/dbconfig.json";
 int figure_id = 0;
+
+bool parse_cconfig() {
+  nlohmann::json file;
+  std::ifstream in(folderp + "cconfig.json");
+  in >> file;
+  std::string test_type = file["Test_type"];
+  if (test_type == "experiment") return true;
+  return false;
+}  // parse_cconfig
 
 // plot the results stored in planner database
 void plot_planner() {
@@ -367,6 +376,7 @@ void plot_estimator() {
   // theta
   gp << "set xtics out\n";
   gp << "set ytics out\n";
+  gp << "set format y '%10.1f'\n";
   gp << "set ylabel 'heading (deg)'\n";
   gp << "set xlabel 'time (s)'\n";
   gp << "plot " << gp.file1d(xy_pts_C_meas)
@@ -374,7 +384,9 @@ void plot_estimator() {
         "pointsize 1 title 'meas', "
      << gp.file1d(xy_pts_C_state)
      << " with lines lt 1 lw 2 lc rgb 'black' title 'state'\n";
+  gp << "unset format\n";
 
+  //  end multiplot
   gp << "unset multiplot\n";
 
   /******************** comparision of estimator velocity ********************/
@@ -731,8 +743,10 @@ void plot_2dposition() {
 }  // plot_2dposition
 
 int main() {
-  plot_wind();
-  plot_GPS();
+  if (parse_cconfig()) {
+    plot_wind();
+    plot_GPS();
+  }
   plot_planner();
   plot_estimator();
   plot_controller();

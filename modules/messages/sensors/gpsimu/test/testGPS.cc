@@ -14,6 +14,9 @@
 using std::setprecision;
 using namespace ASV;
 int main() {
+  el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
+  LOG(INFO) << "The program has started!";
+
   // real time GPS/IMU data
   messages::gpsRTdata gps_data{
       0,    // UTC
@@ -33,7 +36,7 @@ int main() {
   };
   try {
     common::timecounter _timer;
-    messages::GPS _gpsimu(115200, "/dev/ttyUSB0");  // zone 51 N
+    messages::GPS _gpsimu(115200, "/dev/ttyr00");  // zone 51 N
     long int totaltime = 0;
     while (1) {
       gps_data = _gpsimu.parseGPS().getgpsRTdata();

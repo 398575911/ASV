@@ -230,7 +230,7 @@ void OpenSpace_multiStep() {
   ASV::common::timecounter _timer;
 
   // obstacles
-  int test_scenario = 9;
+  int test_scenario = 7;
 
   std::vector<Obstacle_Vertex_Config> Obstacles_Vertex;
   std::vector<Obstacle_LineSegment_Config> Obstacles_LS;
@@ -253,8 +253,8 @@ void OpenSpace_multiStep() {
   OpenSpacePlanner openspace(_collisiondata, _HybridAStarConfig, smoothconfig);
   openspace.update_obstacles(Obstacles_Vertex, Obstacles_LS, Obstacles_Box);
 
-  start_point_cart = {3433823.54, -350891.0, -0.5 * M_PI};
-  end_point_cart = {3433823.54, -(350891.0 + 5.0), -0.5 * M_PI};
+  // start_point_cart = {3433823.54, -350891.0, -0.5 * M_PI};
+  // end_point_cart = {3433823.54, -(350891.0 + 5.0), -0.5 * M_PI};
 
   double start_speed = 0;
   auto start_point_marine = ASV::common::math::Cart2Marine(start_point_cart);
@@ -290,7 +290,7 @@ void OpenSpace_multiStep() {
     long int et = _timer.timeelapsed();
     std::cout << "elapsed time of OpenSpace Planner: " << et << std::endl;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 }  // OpenSpace_multiStep
 

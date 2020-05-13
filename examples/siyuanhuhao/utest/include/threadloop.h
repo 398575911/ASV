@@ -39,7 +39,7 @@ class threadloop : public StateMonitor {
     sched_param sch;
     int policy;
     pthread_getschedparam(path_planner_thread.native_handle(), &policy, &sch);
-    sch.sched_priority = 50;
+    sch.sched_priority = 90;
     if (pthread_setschedparam(path_planner_thread.native_handle(), SCHED_FIFO,
                               &sch)) {
       std::cout << "Failed to setschedparam: " << std::strerror(errno) << '\n';
@@ -119,9 +119,9 @@ class threadloop : public StateMonitor {
   planning::CartesianState Planning_Marine_state{
       0,           // x
       0,           // y
-      M_PI / 3.0,  // theta
+      0.5 * M_PI,  // theta
       0,           // kappa
-      2,           // speed
+      0,           // speed
       0,           // dspeed
       0,           // yaw_rate
       0            // yaw_accel
@@ -548,8 +548,8 @@ class threadloop : public StateMonitor {
         std::vector<planning::Obstacle_LineSegment_Config> _Obstacles_LS;
         std::vector<planning::Obstacle_Box2d_Config> _Obstacles_Box;
 
-        std::array<double, 3> end_point_marine = {3433823.54 + 0.0,
-                                                  350891.0 + 5.0, 0.5 * M_PI};
+        std::array<double, 3> end_point_marine = {3433823.54 + 5.0,
+                                                  350891.0 + 5.0, 0.0 * M_PI};
         planning::HybridAStarConfig _HybridAStarConfig{
             1,    // move_length
             1.5,  // penalty_turning
@@ -574,6 +574,15 @@ class threadloop : public StateMonitor {
 
         while (1) {
           outerloop_elapsed_time = timer_planner.timeelapsed();
+
+          if ((std::abs(estimator_RTdata.State(0) - end_point_marine.at(0)) <=
+               0.1) &&
+              (std::abs(estimator_RTdata.State(1) - end_point_marine.at(1)) <=
+               0.1) &&
+              (std::abs(common::math::Normalizeheadingangle(
+                   estimator_RTdata.State(2) - end_point_marine.at(2))) <=
+               0.04))
+            std::cout << "reach the neighbour of endpoints\n";
 
           auto planning_state =
               ASV_openspace
@@ -1752,16 +1761,18 @@ class threadloop : public StateMonitor {
             StateMonitor::indicator_estimator = common::STATETOGGLE::READY;
             CLOG(INFO, "estimator") << "initialation successful!";
           }
-
           if ((StateMonitor::indicator_pathplanner ==
-               common::STATETOGGLE::IDLE) &&
-              (StateMonitor::indicator_controller ==
                common::STATETOGGLE::IDLE) &&
               (StateMonitor::indicator_estimator ==
                common::STATETOGGLE::READY)) {
             CLOG(INFO, "path-planner") << "initialation successful!";
-            CLOG(INFO, "controller") << "initialation successful!";
             StateMonitor::indicator_pathplanner = common::STATETOGGLE::READY;
+          }
+          if ((StateMonitor::indicator_controller ==
+               common::STATETOGGLE::IDLE) &&
+              (StateMonitor::indicator_pathplanner ==
+               common::STATETOGGLE::READY)) {
+            CLOG(INFO, "controller") << "initialation successful!";
             StateMonitor::indicator_controller = common::STATETOGGLE::READY;
           }
           std::this_thread::sleep_for(std::chrono::milliseconds(50));

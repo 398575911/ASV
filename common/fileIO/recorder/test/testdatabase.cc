@@ -281,6 +281,17 @@ BOOST_AUTO_TEST_CASE(planner) {
       6    // lattice_dspeed
   };
 
+  ASV::common::plan_latticedetail_db_data plan_latticedetail_db_data{
+      -1,             // local_time
+      {1, 23, 4, 4},  // x
+      {1, 23, 4, 4},  // y
+      {1, 23, 4, 4},  // theta
+      {1, 23, 4, 4},  // kappa
+      {1, 23, 4, 4},  // speed
+      {1, 23, 4, 4},  // dspeed
+      {}              // roti
+  };
+
   ASV::common::plan_openspace_db_data plan_openspace_db_data{
       -1,       // local_time
       1.2,      // x
@@ -294,6 +305,7 @@ BOOST_AUTO_TEST_CASE(planner) {
   planner_db.create_table();
   planner_db.update_routeplanner_table(plan_route_db_data);
   planner_db.update_latticeplanner_table(plan_lattice_db_data);
+  planner_db.update_latticeplannerdetail_table(plan_latticedetail_db_data);
   planner_db.update_openspace_table(plan_openspace_db_data);
 
   // parse
@@ -301,6 +313,8 @@ BOOST_AUTO_TEST_CASE(planner) {
   auto read_route = planner_parser.parse_route_table(starting_time, end_time);
   auto read_lattice =
       planner_parser.parse_lattice_table(starting_time, end_time);
+  auto read_lattice_detail =
+      planner_parser.parse_latticedetail_table(starting_time, end_time);
   auto read_openspace =
       planner_parser.parse_openspace_table(starting_time, end_time);
 }

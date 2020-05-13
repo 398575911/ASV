@@ -27,7 +27,7 @@
     },
     "surge": {
       "position_P": 0,
-      "position_I": 0.2,
+      "position_I": 0.0,
       "velocity_P": 400,
       "velocity_I": 100,
       "position_allowed_error": 0.01,
@@ -46,7 +46,7 @@
       "max_output": 14
     },
     "yaw": {
-      "position_P": 300,
+      "position_P": 200,
       "position_I": 0,
       "velocity_P": 400,
       "velocity_I": 0,

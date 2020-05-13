@@ -101,16 +101,21 @@ class imu {
       }
     }
 
-    if (mtPort.empty()) {
-      CLOG(ERROR, "IMU") << "No MTi device found!";
-      return -1;
-    }
+    // if (mtPort.empty()) {
+    //   CLOG(ERROR, "IMU") << "No MTi device found!";
+    //   return -1;
+    // }
 
-    if (!control->openPort(mtPort.portName().toStdString(),
-                           mtPort.baudrate())) {
+    if (!control->openPort("/dev/ttyr00", (XsBaudRate)115200)) {
       CLOG(ERROR, "IMU") << "Could not open port!";
       return -1;
     }
+
+    // if (!control->openPort(mtPort.portName().toStdString(),
+    //                        mtPort.baudrate())) {
+    //   CLOG(ERROR, "IMU") << "Could not open port!";
+    //   return -1;
+    // }
 
     // Get the device object
     XsDevice* device = control->device(mtPort.deviceId());

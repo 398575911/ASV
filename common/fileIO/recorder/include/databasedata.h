@@ -138,6 +138,17 @@ struct plan_lattice_db_data {
   double lattice_dspeed;
 };  // plan_lattice_db_data
 
+struct plan_latticedetail_db_data {
+  double local_time;
+  std::vector<double> x;
+  std::vector<double> y;
+  std::vector<double> theta;
+  std::vector<double> kappa;
+  std::vector<double> speed;
+  std::vector<double> dspeed;
+  std::vector<double> roti;
+};  // plan_latticedetail_db_data
+
 struct plan_openspace_db_data {
   double local_time;
   double x;

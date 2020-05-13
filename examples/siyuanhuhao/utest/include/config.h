@@ -64,37 +64,48 @@ void WriteConstConfig2File(const std::string &filepath) {
   if (indicator_actuation == control::ACTUATION::UNDERACTUATED)
     j_indicator_actuation = "Under-actuated";
 
+  std::string j_testtype = "";
   std::string j_testmode = "";
   switch (testmode) {
     case common::TESTMODE::SIMULATION_DP:
-      j_testmode = "SIMULATION_DP";
+      j_testmode = "dynamic positioning";
+      j_testtype = "simulation";
       break;
     case common::TESTMODE::SIMULATION_LOS:
-      j_testmode = "SIMULATION_LOS";
+      j_testmode = "line of sight";
+      j_testtype = "simulation";
       break;
     case common::TESTMODE::SIMULATION_FRENET:
-      j_testmode = "SIMULATION_FRENET";
+      j_testmode = "lattice planning";
+      j_testtype = "simulation";
       break;
     case common::TESTMODE::SIMULATION_AVOIDANCE:
-      j_testmode = "SIMULATION_AVOIDANCE";
+      j_testmode = "collision avoidance";
+      j_testtype = "simulation";
       break;
     case common::TESTMODE::SIMULATION_DOCKING:
-      j_testmode = "SIMULATION_DOCKING";
+      j_testmode = "auto docking";
+      j_testtype = "simulation";
       break;
     case common::TESTMODE::EXPERIMENT_DP:
-      j_testmode = "EXPERIMENT_DP";
+      j_testmode = "dynamic positioning";
+      j_testtype = "experiment";
       break;
     case common::TESTMODE::EXPERIMENT_LOS:
-      j_testmode = "EXPERIMENT_LOS";
+      j_testmode = "line of sight";
+      j_testtype = "experiment";
       break;
     case common::TESTMODE::EXPERIMENT_FRENET:
-      j_testmode = "EXPERIMENT_FRENET";
+      j_testmode = "lattice planning";
+      j_testtype = "experiment";
       break;
     case common::TESTMODE::EXPERIMENT_AVOIDANCE:
-      j_testmode = "EXPERIMENT_AVOIDANCE";
+      j_testmode = "collision avoidance";
+      j_testtype = "experiment";
       break;
     case common::TESTMODE::EXPERIMENT_DOCKING:
-      j_testmode = "EXPERIMENT_DOCKING";
+      j_testmode = "auto docking";
+      j_testtype = "experiment";
       break;
     default:
       break;
@@ -107,6 +118,7 @@ void WriteConstConfig2File(const std::string &filepath) {
       {"Kalman", j_indicator_kalman},                //
       {"control_actuation", j_indicator_actuation},  //
       {"max_num_targets", max_num_targets},          //
+      {"Test_type", j_testtype},                     //
       {"Test_mode", j_testmode},                     //
   };
 

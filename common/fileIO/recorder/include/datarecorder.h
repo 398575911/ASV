@@ -615,6 +615,7 @@ class planner_db : public master_db {
         config_name(_config_name),
         insert_string_routeplanner(""),
         insert_string_latticeplanner(""),
+        insert_string_latticeplanner_detail(""),
         insert_string_openspace(""),
         db(dbpath) {}
   ~planner_db() {}
@@ -628,6 +629,9 @@ class planner_db : public master_db {
             .get<std::vector<std::pair<std::string, std::string>>>();
     auto db_config_latticeplanner =
         file["planner"]["latticeplanner"]
+            .get<std::vector<std::pair<std::string, std::string>>>();
+    auto db_config_latticeplanner_detail =
+        file["planner"]["latticeplanner_detail"]
             .get<std::vector<std::pair<std::string, std::string>>>();
     auto db_config_openspace =
         file["planner"]["openspace"]
@@ -661,6 +665,21 @@ class planner_db : public master_db {
       }
       str += ");";
       insert_string_latticeplanner += ") ";
+      db << str;
+
+      // latticeplanner_detail
+      str =
+          "CREATE TABLE latticeplanner_detail"
+          "(ID          INTEGER PRIMARY KEY AUTOINCREMENT,"
+          " DATETIME    TEXT       NOT NULL";
+      insert_string_latticeplanner_detail = "(DATETIME";
+
+      for (auto const &[name, type] : db_config_latticeplanner_detail) {
+        str += ", " + name + " " + type;
+        insert_string_latticeplanner_detail += ", " + name;
+      }
+      str += ");";
+      insert_string_latticeplanner_detail += ") ";
       db << str;
 
       // openspace planner
@@ -742,6 +761,25 @@ class planner_db : public master_db {
     }
   }  // update_latticeplanner_table
 
+  void update_latticeplannerdetail_table(
+      const plan_latticedetail_db_data &update_data,
+      const std::string &_datetime = "julianday('now')") {
+    try {
+      std::string str = "INSERT INTO latticeplanner_detail";
+      str += insert_string_latticeplanner_detail;
+      str += "VALUES(";
+      str += _datetime;
+      str += ", ?, ?, ?, ?, ?, ?, ?); ";
+
+      db << str << update_data.x << update_data.y << update_data.theta
+         << update_data.kappa << update_data.speed << update_data.dspeed
+         << update_data.roti;
+
+    } catch (sqlite::sqlite_exception &e) {
+      CLOG(ERROR, "sql-planner") << e.what();
+    }
+  }  // update_latticeplannerdetail_table
+
   void update_openspace_table(
       const plan_openspace_db_data &update_data,
       const std::string &_datetime = "julianday('now')") {
@@ -773,6 +811,7 @@ class planner_db : public master_db {
   std::string config_name;
   std::string insert_string_routeplanner;
   std::string insert_string_latticeplanner;
+  std::string insert_string_latticeplanner_detail;
   std::string insert_string_openspace;
   sqlite::database db;
 

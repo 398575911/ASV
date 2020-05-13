@@ -31,7 +31,7 @@ class OpenSpacePlanner {
   OpenSpacePlanner(const CollisionData &collisiondata,
                    const HybridAStarConfig &hybridastarconfig,
                    const SmootherConfig &smootherconfig)
-      : sample_time_(0.5),
+      : sample_time_(1.0),
         move_length_(hybridastarconfig.move_length),
         status_(FAILURE),
         collision_checker_(collisiondata),

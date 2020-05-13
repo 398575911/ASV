@@ -115,8 +115,10 @@ plt.plot(estimatordata["meas_y"],
 # plt.plot(wpdata['Y'], wpdata['X'],
 #          color='tab:gray', lineStyle='-', lw=1)
 plt.axis('equal')
-plt.xlabel('E (m)')
-plt.ylabel('N (m)')
+plt.xlabel('E (m)', fontsize=16)
+plt.ylabel('N (m)', fontsize=16)
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
 
 plt.savefig('trajectory.png')
 ############ time series of 3DoF motion #############
@@ -127,8 +129,10 @@ plt.plot(estimatordata['DATETIME'], estimatordata['state_u'], '-r', lw=2)
 plt.plot(controllerdata['DATETIME'], controllerdata['set_u'],
          color='tab:blue', lineStyle='-', lw=2)
 plt.ylim(0.8, 1.4)
-plt.ylabel('u (m/s)')
-plt.legend(('estimated', 'desired'), loc='upper right')
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.ylabel('u (m/s)', fontsize=16)
+plt.legend(('estimated', 'desired'), loc='upper right', fontsize=16)
 
 
 plt.subplot(2, 1, 2)
@@ -136,8 +140,11 @@ plt.plot(estimatordata['DATETIME'],
          estimatordata['state_theta']*180/math.pi, '-r', lw=2)
 plt.plot(controllerdata['DATETIME'], controllerdata['set_theta']*180/math.pi,
          color='tab:blue', lineStyle='-', lw=2)
-plt.ylabel('theta (deg)')
-plt.legend(('estimated',  'desired'), loc='upper right')
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.ylabel('theta (deg)', fontsize=16)
+plt.xlabel('time (s)', fontsize=16)
+plt.legend(('estimated',  'desired'), loc='upper right', fontsize=16)
 
 plt.savefig('time.png')
 

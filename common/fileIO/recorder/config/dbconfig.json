@@ -106,6 +106,15 @@
       ["lattice_speed", "DOUBLE"],
       ["lattice_dspeed", "DOUBLE"]
     ],
+    "latticeplanner_detail":[
+      ["x", "BLOB"],
+      ["y", "BLOB"],
+      ["theta", "BLOB"],
+      ["kappa", "BLOB"],
+      ["speed", "BLOB"],
+      ["dspeed", "BLOB"],
+      ["roti", "BLOB"]
+    ],
     "openspace":[
       ["x", "DOUBLE"],
       ["y", "DOUBLE"],
