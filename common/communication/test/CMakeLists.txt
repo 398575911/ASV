@@ -25,6 +25,10 @@ set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY}
 set(SOURCE_FILES ${SOURCE_FILES} 
 	"${PROJECT_SOURCE_DIR}/../../logging/src/easylogging++.cc" )
 
+find_library(SERIALPORT_LIBRARY serialport HINTS ${LIBRARY_DIRECTORY})
+
+
+
 # 指定生成目标
 add_executable (testcrc testcrc.cc)
 target_include_directories(testcrc PRIVATE ${HEADER_DIRECTORY})
@@ -34,3 +38,8 @@ target_include_directories(testtcpserver PRIVATE ${HEADER_DIRECTORY})
 
 add_executable (testtcpclient testtcpclient.cc)
 target_include_directories(testtcpclient PRIVATE ${HEADER_DIRECTORY})
+
+
+add_executable (serial_test serial_test.cc)
+target_include_directories(serial_test PRIVATE ${SERIALPORT_LIBRARY})
+target_link_libraries(serial_test PRIVATE ${SERIALPORT_LIBRARY})
