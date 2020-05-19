@@ -11,11 +11,9 @@
 #ifndef _SERIALPORT_H_
 #define _SERIALPORT_H_
 
-#include <libserialport.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "common/logging/include/easylogging++.h"
 
+#include <libserialport.h>
 #include <string>
 
 namespace ASV::common {
@@ -31,22 +29,56 @@ class serialport {
     initializeport();
   }
   ~serialport() {
-    free(buf_);
     /* Close ports and free resources. */
     sp_close(s_port_);
     sp_free_port(s_port_);
   }
 
-  void testssss() {
-    for (int it = 0; it != 100; ++it) {
-      /* Try to receive the data on the other port. */
-      int result = sp_blocking_read(s_port_, buf_, max_bytes_, timeout_);
+  void list_ports() {}  // list_ports
 
-      /* Check if we received the same data we sent. */
-      buf_[result] = '\0';
-      printf("Received '%s'.\n", buf_);
-    }
-  }
+  std::string readline() {
+    // data buffer
+    char *buf = (char *)malloc(max_bytes_ + 1);
+    /* Try to receive the data on the other port. */
+    int result = check(sp_blocking_read(s_port_, buf, max_bytes_, timeout_));
+
+    /* Check if we received the same data we sent. */
+    buf[result] = '\0';
+
+    // convert char* to string
+    std::string str_read(buf);
+    free(buf);
+
+    return str_read;
+  }  // readline
+
+  void readline(char *buf, int read_bytes) {
+    /* Try to receive the data on the other port. */
+    int result = check(sp_blocking_read(s_port_, buf, read_bytes, timeout_));
+
+    /* Check if we received the same data we sent. */
+    buf[result] = '\0';
+
+  }  // readline
+
+  // send data to serial port
+  void writeline(const std::string &send_buffer) {
+    writeline(send_buffer.c_str());
+
+  }  // writeline
+
+  // send data to serial port
+  void writeline(const char *send_buffer) {
+    // data buffer
+    int size = sizeof(send_buffer) / sizeof(*send_buffer);
+    /* Try to receive the data on the other port. */
+    int result = check(sp_blocking_write(s_port_, send_buffer, size, timeout_));
+
+    /* Check whether we sent all of the data. */
+    if (result != size)
+      CLOG(ERROR, "serialport") << "Timed out in writing port";
+
+  }  // writeline
 
  private:
   void initializeport() {
@@ -54,22 +86,40 @@ class serialport {
     sp_get_port_by_name(port_name_.c_str(), &s_port_);
     sp_open(s_port_, SP_MODE_READ_WRITE);
 
-    sp_set_baudrate(s_port_, 115200);
+    sp_set_baudrate(s_port_, baud_rate_);
     sp_set_bits(s_port_, 8);
     sp_set_parity(s_port_, SP_PARITY_NONE);
     sp_set_stopbits(s_port_, 1);
     sp_set_flowcontrol(s_port_, SP_FLOWCONTROL_NONE);
 
-    // data buffer
-    buf_ = (char *)malloc(max_bytes_ + 1);
   }  // initializeport
+
+  /* Helper function for error handling. */
+  int check(enum sp_return result) {
+    switch (result) {
+      case SP_ERR_ARG:
+        CLOG(ERROR, "serialport") << "Invalid argument";
+        return 0;
+      case SP_ERR_FAIL:
+        CLOG(ERROR, "serialport") << "Failed";
+        return 0;
+      case SP_ERR_SUPP:
+        CLOG(ERROR, "serialport") << "Not supported.";
+        return 0;
+      case SP_ERR_MEM:
+        CLOG(ERROR, "serialport") << "Couldn't allocate memory.";
+        return 0;
+      case SP_OK:
+      default:
+        return result;
+    }
+  }  // check
 
   const std::string port_name_;
   const int baud_rate_;
   const unsigned int timeout_;
   const int max_bytes_;
 
-  char *buf_;
   struct sp_port *s_port_; /* The ports we will use. */
 
 };  // end class serialport

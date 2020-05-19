@@ -23,26 +23,30 @@ set(HEADER_DIRECTORY ${HEADER_DIRECTORY}
 set(SOURCE_FILES ${SOURCE_FILES} 
 	"${PROJECT_SOURCE_DIR}/../../../../../common/logging/src/easylogging++.cc")     
 
+
+
+
+
 #GeographicLib库
 find_package (GeographicLib 1.49 REQUIRED)
 find_package(Threads REQUIRED)
-find_library(SERIAL_LIBRARY serial HINTS ${LIBRARY_DIRECTORY})
+find_library(SERIALPORT_LIBRARY serialport HINTS ${LIBRARY_DIRECTORY})
 find_library(SQLITE3_LIBRARY sqlite3 HINTS ${LIBRARY_DIRECTORY})
 
 
 # 指定生成目标
 add_executable (testGPS testGPS.cc  ${SOURCE_FILES})
 target_include_directories(testGPS PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(testGPS ${SERIAL_LIBRARY})
+target_link_libraries(testGPS ${SERIALPORT_LIBRARY})
 target_link_libraries(testGPS ${GeographicLib_LIBRARIES})
 
 
 # 指定生成目标
-add_executable (testGPSSave testGPSandSave.cc ${SOURCE_FILES})
-target_include_directories(testGPSSave PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(testGPSSave ${SERIAL_LIBRARY})
-target_link_libraries(testGPSSave ${GeographicLib_LIBRARIES})
-target_link_libraries(testGPSSave ${SQLITE3_LIBRARY})
+# add_executable (testGPSSave testGPSandSave.cc ${SOURCE_FILES})
+# target_include_directories(testGPSSave PRIVATE ${HEADER_DIRECTORY})
+# target_link_libraries(testGPSSave ${SERIALPORT_LIBRARY})
+# target_link_libraries(testGPSSave ${GeographicLib_LIBRARIES})
+# target_link_libraries(testGPSSave ${SQLITE3_LIBRARY})
 
 
 # 指定生成目标

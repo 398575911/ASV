@@ -10,7 +10,6 @@
 
 #include <chrono>
 #include <iostream>
-#include <thread>
 #include "../include/wind.h"
 
 using namespace ASV;
@@ -37,8 +36,6 @@ void readloop() {
 }
 
 int main() {
-  std::thread _thread(readloop);
-  _thread.detach();
   while (1) {
     std::cout << "OK" << _windRTdata.speed << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));

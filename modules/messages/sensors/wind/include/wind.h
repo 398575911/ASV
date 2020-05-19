@@ -4,7 +4,7 @@
  *function for read and parse the data from wind sensor
  *the header file can be read by C++ compilers
  *
- *by Wei Li (SJTU)
+ *by ZH.Hu (SJTU)
  *************************************************
  */
 
@@ -12,41 +12,59 @@
 #define _WIND_H_
 
 #include <cmath>
-#include "third_party/serial/include/serial/serial.h"
+#include "common/communication/include/serialport.h"
 #include "winddata.h"
 
-namespace ASV {
+namespace ASV::messages {
 
 class wind {
  public:
-  explicit wind(unsigned long _baud,  // baudrate
-                const std::string& _port = "/dev/ttyUSB0")
-      : ser_wind(_port, _baud, serial::Timeout::simpleTimeout(2000)) {}
+  explicit wind(int baud,  // baudrate
+                const std::string& port = "/dev/ttyUSB0")
+      : ser_wind_(port, baud, 1000) {}
   wind() = delete;
   ~wind() {}
 
   wind& readwind() {
-    if (ser_wind.available()) {
-      ser_wind.read(s_buffer, 7);
-      if (s_buffer[0] == 0xaa) {
-        int _wspeed = 0;
-        int _orientation = 0;
-        _wspeed = s_buffer[2] << 8 | s_buffer[3];
-        _orientation = s_buffer[4] << 8 | s_buffer[5];
-        restrictdata(_wspeed, _orientation);
-        _windRTdata.speed = _wspeed / 10.0;
-        _windRTdata.orientation = _orientation * M_PI / 180;
-      }
-    }
+    char buff_send_wind[8];
+    char buff_send_angle[8];
+    buff_send_wind[0] = 0x02;
+    buff_send_wind[1] = 0x03;
+    buff_send_wind[2] = 0x00;
+    buff_send_wind[3] = 0x2A;
+    buff_send_wind[4] = 0x00;
+    buff_send_wind[5] = 0x01;
+    buff_send_wind[6] = 0xA5;
+    buff_send_wind[7] = 0xF1;
+    buff_send_angle[0] = 0x02;
+    buff_send_angle[1] = 0x03;
+    buff_send_angle[2] = 0x00;
+    buff_send_angle[3] = 0x2B;
+    buff_send_angle[4] = 0x00;
+    buff_send_angle[5] = 0x01;
+    buff_send_angle[6] = 0xF4;
+    buff_send_angle[7] = 0x31;
+
+    char buff_rec[7];
+
+    ser_wind_.writeline(buff_send_wind);
+    ser_wind_.readline(buff_rec, 7);
+
+    float data_wind = (buff_rec[4] + buff_rec[3] * 256) / 10.0;
+
+    ser_wind_.writeline(buff_send_angle);
+    ser_wind_.readline(buff_rec, 7);
+
+    float data_angle = (buff_rec[4] + buff_rec[3] * 256) / 10.0;
 
     return *this;
-  }
+  }  // readwind
 
   windRTdata getwindRTdata() const { return _windRTdata; }
 
  private:
   // serial data
-  serial::Serial ser_wind;
+  common::serialport ser_wind_;
   windRTdata _windRTdata;
   uint8_t s_buffer[7];
 
@@ -56,6 +74,6 @@ class wind {
   }
 };  // end class wind
 
-}  // end namespace ASV
+}  // namespace ASV::messages
 
 #endif /*_WIND_H_*/

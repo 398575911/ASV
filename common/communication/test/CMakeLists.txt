@@ -18,8 +18,8 @@ set(HEADER_DIRECTORY ${HEADER_DIRECTORY}
     )
 
 set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY} 
-    "/usr/lib"
-    "/usr/local/lib"
+    "/usr/lib/"
+    "/usr/local/lib/"
    )
  
 set(SOURCE_FILES ${SOURCE_FILES} 
@@ -40,6 +40,6 @@ add_executable (testtcpclient testtcpclient.cc)
 target_include_directories(testtcpclient PRIVATE ${HEADER_DIRECTORY})
 
 
-add_executable (serial_test serial_test.cc)
-target_include_directories(serial_test PRIVATE ${SERIALPORT_LIBRARY})
+add_executable (serial_test serial_test.cc ${SOURCE_FILES} )
+target_include_directories(serial_test PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(serial_test PRIVATE ${SERIALPORT_LIBRARY})

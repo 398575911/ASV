@@ -19,10 +19,10 @@
 #include <GeographicLib/UTMUPS.hpp>
 #include <exception>
 #include <tuple>
+#include "common/communication/include/serialport.h"
 #include "common/logging/include/easylogging++.h"
 #include "modules/messages/sensors/gpsimu/include/gpsdata.h"
 #include "modules/messages/sensors/gpsimu/include/nmea.h"
-#include "third_party/serial/include/serial/serial.h"
 
 namespace ASV::messages {
 class GPS final : public nmea {
@@ -46,14 +46,14 @@ class GPS final : public nmea {
             0,      // UTM_y
             "NULL"  // UTM_zone
         }),
-        GPS_serial(_port, _baud, serial::Timeout::simpleTimeout(2000)),
+        GPS_serial(_port, _baud, 100),
         serial_buffer("") {}
   GPS() = delete;
   ~GPS() {}
 
   // read serial data and transform to UTM
   GPS& parseGPS(const std::string& _planning_utm_zone = "OFF") {
-    serial_buffer = GPS_serial.readline(150);
+    serial_buffer = GPS_serial.readline();
     hemisphereV102(serial_buffer, _planning_utm_zone, GPSdata);
     return *this;
   }
@@ -64,7 +64,7 @@ class GPS final : public nmea {
  private:
   gpsRTdata GPSdata;
   /** serial data **/
-  serial::Serial GPS_serial;
+  ASV::common::serialport GPS_serial;
   std::string serial_buffer;
 
   /** real time NMEA data **/
@@ -108,16 +108,6 @@ class GPS final : public nmea {
       CLOG(ERROR, "GPS") << "No NMEA Data!";
     }
   }  // hemisphereV102
-
-  void enumerate_ports() {
-    std::vector<serial::PortInfo> devices_found = serial::list_ports();
-
-    std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
-
-    while (iter != devices_found.end()) {
-      serial::PortInfo device = *iter++;
-    }
-  }
 
   // check the gps status and give the warning
   void check_gps_status(const gpsRTdata& _gpsdata) {
