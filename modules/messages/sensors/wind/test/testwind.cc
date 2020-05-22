@@ -22,7 +22,7 @@ windRTdata _windRTdata{
 
 void readloop() {
   try {
-    wind _wind(9600);  // zone 30n
+    messages::wind _wind(9600);  // zone 30n
 
     while (1) {
       _windRTdata = _wind.readwind().getwindRTdata();

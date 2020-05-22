@@ -9,7 +9,13 @@
 
 /* Helper function for error handling. */
 int check(enum sp_return result);
+// float unpack754(uint64_t i, unsigned bits, unsigned expbits);
 unsigned int GetCRC16(unsigned char *ptr,  unsigned char len);
+
+union data{  
+	float f;  
+	char c[4];  
+};
 
 int main(int argc, char **argv)
 {
@@ -44,7 +50,7 @@ int main(int argc, char **argv)
 		check(sp_open(ports[i], SP_MODE_READ_WRITE));
 
 		printf("Setting port to 9600 8N1, no flow control.\n");
-		check(sp_set_baudrate(ports[i], 9600));
+		check(sp_set_baudrate(ports[i], 57600));
 		check(sp_set_bits(ports[i], 8));
 		check(sp_set_parity(ports[i], SP_PARITY_NONE));
 		check(sp_set_stopbits(ports[i], 1));
@@ -58,46 +64,121 @@ int main(int argc, char **argv)
 		struct sp_port *tx_port = ports[tx];
 		struct sp_port *rx_port = ports[rx];
 
-		/* The data we will send. */
-		float data_wind = 0;
-		float data_angle = 0;
-		unsigned char buff_send_wind[8];
-		unsigned char buff_rec[9];
-		buff_send_wind[0] = 0x02;
-		buff_send_wind[1] = 0x03;
-		buff_send_wind[2] = 0x00;
-		buff_send_wind[3] = 0x2A;
-		buff_send_wind[4] = 0x00;
-		buff_send_wind[5] = 0x02;
-		buff_send_wind[6] = 0xE5;
-		buff_send_wind[7] = 0xF0;
+	union data 
+		  data_Ua, data_Ub, data_Uc,
+		  data_Uab, data_Ubc, data_Uca,
+		  data_Ia, data_Ib, data_Ic, 
+		  data_Fa, data_Fb, data_Fc, 
+		  data_Sa, data_Sb, data_Sc, data_Ss;
+		unsigned char buff_send[8];
+		unsigned char buff_rec[134];
+		buff_send[0] = 0x01;
+		buff_send[1] = 0x03;
+		buff_send[2] = 0x00;
+		buff_send[3] = 0x1C;
+		buff_send[4] = 0x00;
+		buff_send[5] = 0x40;
+		buff_send[6] = 0x85;
+		buff_send[7] = 0xFC;
 
-		int size = sizeof(buff_send_wind);
 		unsigned int crc_result;
 
-		/* We'll allow a 1 second timeout for send and receive. */
-		unsigned int timeout = 100;
+		int size = sizeof(buff_send);
 
-		/* On success, sp_blocking_write() and sp_blocking_read()
-		 * return the number of bytes sent/received before the
-		 * timeout expired. We'll store that result here. */
+		/* We'll allow a 1 second timeout for send and receive. */
+		unsigned int timeout = 1000;
+
 		int result;
 
 		while(1)
 		{
-			/* Send data. */
-			check(sp_blocking_write(tx_port, buff_send_wind, size, timeout));
-			check(sp_blocking_read(rx_port, buff_rec, 10, timeout));
-			crc_result = GetCRC16(buff_rec, 7);
-			if((buff_rec[7] == (crc_result>>8)) && (buff_rec[8] == (crc_result & 0x00FF)))
+			check(sp_blocking_write(tx_port, buff_send, size, timeout));
+			check(sp_blocking_read(rx_port, buff_rec, 134, timeout));
+			crc_result = GetCRC16(buff_rec, 131);
+			if((buff_rec[131] == (crc_result>>8)) && (buff_rec[132] == (crc_result & 0x00FF)))
 			{
-				data_wind = (buff_rec[4] + buff_rec[3]*256)/10.0;
-			    data_angle = (buff_rec[6] + buff_rec[5]*256)/10.0;
-			    printf("wind = %.1f angle = %.1f\n",data_wind,data_angle);
+				printf("crc successful!\n");
+				int cnt = 0;
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Ua.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Ub.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Uc.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Uab.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Ubc.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Uca.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Ia.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Ib.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Ic.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Fa.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Fb.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Fc.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Sa.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Sb.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Sc.c[j] = buff_rec[cnt+3];
+				}
+				for(int j=3; j>=0; j--,cnt++)
+				{
+					data_Ss.c[j] = buff_rec[cnt+3];
+				}
+
+			    // printf("rec: %#X %X %X %X %X %X %X %X %X %X %X %X %X %X %X %X\n", 
+			    // 	buff_rec[0], buff_rec[1], buff_rec[2], buff_rec[3], 
+			    // 	buff_rec[4], buff_rec[5], buff_rec[6], buff_rec[7], 
+			    // 	buff_rec[8], buff_rec[9], buff_rec[10], buff_rec[11],
+			    // 	buff_rec[12], buff_rec[13], buff_rec[14], buff_rec[15]);
+
+			    printf("Ua  = %.2f, Ub  = %.2f, Uc  = %.2f\nUab = %.2f, Ubc = %.2f, Uca = %.2f\nIa  = %.2f, Ib  = %.2f, Ic  = %.2f\nFa  = %.2f, Fb  = %.2f, Fc  = %.2f\nSa  = %.2f, Sb  = %.2f, Sc  = %.2f Ss  =%.2f\n",		  
+					   data_Ua.f, data_Ub.f, data_Uc.f,
+					   data_Uab.f, data_Ubc.f, data_Uca.f,
+					   data_Ia.f, data_Ib.f, data_Ic.f, 
+					   data_Fa.f, data_Fb.f, data_Fc.f, 
+					   data_Sa.f, data_Sb.f, data_Sc.f, data_Ss.f);
 			}
 			else printf("===============crc fail!===============\n");
 		}
-
 	}
 
 	/* Close ports and free resources. */

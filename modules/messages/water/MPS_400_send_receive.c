@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 /* Example of how to send and receive data.
  *
@@ -9,6 +10,7 @@
 
 /* Helper function for error handling. */
 int check(enum sp_return result);
+// float unpack754(uint64_t i, unsigned bits, unsigned expbits);
 unsigned int GetCRC16(unsigned char *ptr,  unsigned char len);
 
 int main(int argc, char **argv)
@@ -58,46 +60,56 @@ int main(int argc, char **argv)
 		struct sp_port *tx_port = ports[tx];
 		struct sp_port *rx_port = ports[rx];
 
-		/* The data we will send. */
-		float data_wind = 0;
-		float data_angle = 0;
-		unsigned char buff_send_wind[8];
-		unsigned char buff_rec[9];
-		buff_send_wind[0] = 0x02;
-		buff_send_wind[1] = 0x03;
-		buff_send_wind[2] = 0x00;
-		buff_send_wind[3] = 0x2A;
-		buff_send_wind[4] = 0x00;
-		buff_send_wind[5] = 0x02;
-		buff_send_wind[6] = 0xE5;
-		buff_send_wind[7] = 0xF0;
+		float data_Temp, data_diandaolv, data_pH,
+			  data_ORP, data_DO, data_NH4, data_TS;
+		unsigned char buff_send[8];
+		unsigned char buff_rec[41];
+		buff_send[0] = 0x06;
+		buff_send[1] = 0x03;
+		buff_send[2] = 0x00;
+		buff_send[3] = 0x00;
+		buff_send[4] = 0x00;
+		buff_send[5] = 0x12;
+		buff_send[6] = 0xC4;
+		buff_send[7] = 0x70;
 
-		int size = sizeof(buff_send_wind);
 		unsigned int crc_result;
 
-		/* We'll allow a 1 second timeout for send and receive. */
-		unsigned int timeout = 100;
+		int size = sizeof(buff_send);
 
-		/* On success, sp_blocking_write() and sp_blocking_read()
-		 * return the number of bytes sent/received before the
-		 * timeout expired. We'll store that result here. */
-		int result;
+		/* We'll allow a 1 second timeout for send and receive. */
+		unsigned int timeout = 500;
+
+		// int result;
 
 		while(1)
 		{
-			/* Send data. */
-			check(sp_blocking_write(tx_port, buff_send_wind, size, timeout));
-			check(sp_blocking_read(rx_port, buff_rec, 10, timeout));
-			crc_result = GetCRC16(buff_rec, 7);
-			if((buff_rec[7] == (crc_result>>8)) && (buff_rec[8] == (crc_result & 0x00FF)))
+			check(sp_blocking_write(tx_port, buff_send, size, timeout));
+			check(sp_blocking_read(rx_port, buff_rec, 42, timeout));
+			crc_result = GetCRC16(buff_rec, 39);
+			if((buff_rec[39] == (crc_result>>8)) && (buff_rec[40] == (crc_result & 0x00FF)))
 			{
-				data_wind = (buff_rec[4] + buff_rec[3]*256)/10.0;
-			    data_angle = (buff_rec[6] + buff_rec[5]*256)/10.0;
-			    printf("wind = %.1f angle = %.1f\n",data_wind,data_angle);
+				printf("crc successful!\n");
+				data_Temp =      (buff_rec[3] *256 + buff_rec[4] ) / pow(10,buff_rec[6]);
+				data_diandaolv = (buff_rec[15]*256 + buff_rec[16]) / pow(10,buff_rec[18]);
+				data_pH =		 (buff_rec[19]*256 + buff_rec[20]) / pow(10,buff_rec[22]);
+  				data_ORP = 		 (buff_rec[23]*256 + buff_rec[24]) / pow(10,buff_rec[26]);
+  				data_DO =		 (buff_rec[27]*256 + buff_rec[28]) / pow(10,buff_rec[30]);
+  				data_NH4 = 		 (buff_rec[31]*256 + buff_rec[32]) / pow(10,buff_rec[34]);
+  				data_TS =		 (buff_rec[35]*256 + buff_rec[36]) / pow(10,buff_rec[38]);
+
+			    // printf("rec: %#X %X %X %X %X %X %X %X %X %X %X %X %X %X %X %X\n", 
+			    // 	buff_rec[0], buff_rec[1], buff_rec[2], buff_rec[3], 
+			    // 	buff_rec[4], buff_rec[5], buff_rec[6], buff_rec[7], 
+			    // 	buff_rec[8], buff_rec[9], buff_rec[10], buff_rec[11],
+			    // 	buff_rec[12], buff_rec[13], buff_rec[14], buff_rec[15]);
+
+			    printf("Temp  = %.2f, diandaolv  = %.2f, pH = %.2f ORP = %.2f, DO = %.2f, NH4 = %.2f TS = %.2f\n",
+					   data_Temp, data_diandaolv, data_pH,
+		  			   data_ORP, data_DO, data_NH4, data_TS);
 			}
 			else printf("===============crc fail!===============\n");
 		}
-
 	}
 
 	/* Close ports and free resources. */

@@ -59,7 +59,7 @@ class serialport {
     int result = check(sp_blocking_read(s_port_, buf, read_bytes, timeout_));
 
     /* Check if we received the same data we sent. */
-    buf[result] = '\0';
+    // buf[result] = '\0';
 
   }  // readline
 
@@ -83,7 +83,8 @@ class serialport {
       if (result == 0) {
         break;  // Timeout occured on reading 1 byte
       }
-      if (t_buffer.substr(read_so_far - len_eol, len_eol) == eol) {
+      if ((read_so_far >= len_eol) &&
+          (t_buffer.substr(read_so_far - len_eol, std::string::npos) == eol)) {
         break;  // EOL found
       }
       if (read_so_far == max_bytes) {
@@ -105,10 +106,25 @@ class serialport {
     // data buffer
     int size = sizeof(send_buffer) / sizeof(*send_buffer);
     /* Try to receive the data on the other port. */
-    int result = check(sp_blocking_write(s_port_, send_buffer, size, timeout_));
+    // int result = check(sp_blocking_write(s_port_, send_buffer, size,
+    // timeout_));
 
     /* Check whether we sent all of the data. */
-    if (result != size)
+    if (check(sp_blocking_write(s_port_, send_buffer, size, timeout_)) != size)
+      CLOG(ERROR, "serialport") << "Timed out in writing port";
+
+  }  // writeline
+
+  // send data to serial port
+  void writeline(const unsigned char *send_buffer) {
+    // data buffer
+    int size = sizeof(send_buffer) / sizeof(*send_buffer);
+    /* Try to receive the data on the other port. */
+    // int result = check(sp_blocking_write(s_port_, send_buffer, size,
+    // timeout_));
+
+    /* Check whether we sent all of the data. */
+    if (check(sp_blocking_write(s_port_, send_buffer, size, timeout_)) != size)
       CLOG(ERROR, "serialport") << "Timed out in writing port";
 
   }  // writeline
