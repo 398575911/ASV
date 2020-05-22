@@ -16,6 +16,8 @@
 #include <libserialport.h>
 #include <string>
 
+#include <unistd.h>
+
 namespace ASV::common {
 
 class serialport {
@@ -36,21 +38,21 @@ class serialport {
 
   void list_ports() {}  // list_ports
 
-  std::string readline() {
-    // data buffer
-    char *buf = (char *)malloc(max_bytes_ + 1);
-    /* Try to receive the data on the other port. */
-    int result = check(sp_blocking_read(s_port_, buf, max_bytes_, timeout_));
+  // std::string readline() {
+  //   // data buffer
+  //   char *buf = (char *)malloc(max_bytes_ + 1);
+  //   /* Try to receive the data on the other port. */
+  //   int result = check(sp_blocking_read(s_port_, buf, max_bytes_, timeout_));
 
-    /* Check if we received the same data we sent. */
-    buf[result] = '\0';
+  //   /* Check if we received the same data we sent. */
+  //   buf[result] = '\0';
 
-    // convert char* to string
-    std::string str_read(buf);
-    free(buf);
+  //   // convert char* to string
+  //   std::string str_read(buf);
+  //   free(buf);
 
-    return str_read;
-  }  // readline
+  //   return str_read;
+  // }  // readline
 
   void readline(char *buf, int read_bytes) {
     /* Try to receive the data on the other port. */
@@ -59,6 +61,37 @@ class serialport {
     /* Check if we received the same data we sent. */
     buf[result] = '\0';
 
+  }  // readline
+
+  std::string readline(std::size_t max_bytes = 1000,
+                       const std::string &eol = "\n") {
+    std::size_t len_eol = eol.length();
+
+    // data buffer
+    std::string t_buffer;
+    std::size_t read_so_far = 0;
+    while (1) {
+      char buf[1];
+
+      /* Try to receive the data on port with timeout = 1, max_byte = 1 */
+      std::size_t result =
+          static_cast<std::size_t>(sp_blocking_read(s_port_, buf, 1, timeout_));
+
+      t_buffer += std::string(buf);
+      read_so_far += result;
+
+      if (result == 0) {
+        break;  // Timeout occured on reading 1 byte
+      }
+      if (t_buffer.substr(read_so_far - len_eol, len_eol) == eol) {
+        break;  // EOL found
+      }
+      if (read_so_far == max_bytes) {
+        break;  // Reached the maximum read length
+      }
+    }
+
+    return t_buffer;
   }  // readline
 
   // send data to serial port

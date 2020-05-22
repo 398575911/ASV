@@ -54,7 +54,8 @@ class GPS final : public nmea {
   // read serial data and transform to UTM
   GPS& parseGPS(const std::string& _planning_utm_zone = "OFF") {
     serial_buffer = GPS_serial.readline();
-    hemisphereV102(serial_buffer, _planning_utm_zone, GPSdata);
+    if (serial_buffer.length() > 0)
+      hemisphereV102(serial_buffer, _planning_utm_zone, GPSdata);
     return *this;
   }
 
