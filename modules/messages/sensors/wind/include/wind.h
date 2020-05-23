@@ -29,23 +29,23 @@ class wind {
     unsigned char buff_send_wind[] = {0x02, 0x03, 0x00, 0x2A,
                                       0x00, 0x02, 0xE5, 0xF0};
 
-    char buff_rec[7];
+    char buff_rec[9];
 
     ser_wind_.writeline(buff_send_wind);
-    ser_wind_.readline(buff_rec, 7);
+    ser_wind_.readline(buff_rec, 9);
 
-    float data_wind = (buff_rec[4] + buff_rec[3] * 256) / 10.0;
-    float data_angle = (buff_rec[6] + buff_rec[5] * 256) / 10.0;
+    windRTdata_.speed = 0.1 * (buff_rec[4] + buff_rec[3] * 256);
+    windRTdata_.orientation = 0.1 * (buff_rec[6] + buff_rec[5] * 256);
 
     return *this;
   }  // readwind
 
-  windRTdata getwindRTdata() const { return _windRTdata; }
+  windRTdata getwindRTdata() const { return windRTdata_; }
 
  private:
   // serial data
   common::serialport ser_wind_;
-  windRTdata _windRTdata;
+  windRTdata windRTdata_;
 
   void restrictdata(int& _wspeed, int& _orientation) {
     if ((_wspeed < 0) || (_wspeed > 300)) _wspeed = 0;
