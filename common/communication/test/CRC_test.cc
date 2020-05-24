@@ -43,10 +43,6 @@
 #include <iostream>  // Includes ::std::cerr, ::std::endl
 #include <string>    // Includes ::std::string
 
-#ifdef CRCPP_USE_NAMESPACE
-using ::CRCPP::CRC;
-#endif
-
 /**
     @brief Checks the result of a CRC test and prints an error message if the
    test failed.
@@ -62,15 +58,15 @@ using ::CRCPP::CRC;
     @tparam CRCWidth Number of bits in the CRC
 */
 template <typename CRCType, uint16_t CRCWidth>
-static void PrintResult(const void *data, size_t size,
-                        const CRC::Parameters<CRCType, CRCWidth> &parameters,
-                        CRCType expectedCRC, CRCType computedCRC,
-                        const std::string &crcName) {
-  using ::std::cerr;
-  using ::std::endl;
-  using ::std::hex;
-  using ::std::setw;
-  using ::std::string;
+static void PrintResult(
+    const void *data, size_t size,
+    const ASV::common::CRC::Parameters<CRCType, CRCWidth> &parameters,
+    CRCType expectedCRC, CRCType computedCRC, const std::string &crcName) {
+  using std::cerr;
+  using std::endl;
+  using std::hex;
+  using std::setw;
+  using std::string;
 
   if (expectedCRC != computedCRC) {
     string dataAsASCII(reinterpret_cast<const char *>(data),
@@ -113,9 +109,9 @@ static void PrintResult(const void *data, size_t size,
 template <typename CRCType, uint16_t CRCWidth>
 static void CRCBitByBitTest(
     const char *data, size_t size,
-    const CRC::Parameters<CRCType, CRCWidth> &parameters, CRCType expectedCRC,
-    const std::string &crcName) {
-  CRCType computedCRC = CRC::Calculate(data, size, parameters);
+    const ASV::common::CRC::Parameters<CRCType, CRCWidth> &parameters,
+    CRCType expectedCRC, const std::string &crcName) {
+  CRCType computedCRC = ASV::common::CRC::Calculate(data, size, parameters);
 
   PrintResult<CRCType, CRCWidth>(data, size, parameters, expectedCRC,
                                  computedCRC, crcName);
@@ -135,13 +131,13 @@ static void CRCBitByBitTest(
 template <typename CRCType, uint16_t CRCWidth>
 static void PartialCRCBitByBitTest(
     const char *data, size_t size,
-    const CRC::Parameters<CRCType, CRCWidth> &parameters, CRCType expectedCRC,
-    const std::string &crcName) {
-  CRCType computedCRC = CRC::Calculate(data, size / 2, parameters);
+    const ASV::common::CRC::Parameters<CRCType, CRCWidth> &parameters,
+    CRCType expectedCRC, const std::string &crcName) {
+  CRCType computedCRC = ASV::common::CRC::Calculate(data, size / 2, parameters);
 
   // Don't forget (size + 1) to round odd numbers properly!
-  computedCRC = CRC::Calculate(data + (size / 2), (size + 1) / 2, parameters,
-                               computedCRC);
+  computedCRC = ASV::common::CRC::Calculate(data + (size / 2), (size + 1) / 2,
+                                            parameters, computedCRC);
 
   PrintResult<CRCType, CRCWidth>(data, size, parameters, expectedCRC,
                                  computedCRC, crcName);
@@ -159,12 +155,13 @@ static void PartialCRCBitByBitTest(
     @tparam CRCWidth Number of bits in the CRC
 */
 template <typename CRCType, uint16_t CRCWidth>
-static void CRCTableTest(const char *data, size_t size,
-                         const CRC::Parameters<CRCType, CRCWidth> &parameters,
-                         CRCType expectedCRC, const std::string &crcName) {
-  CRC::Table<CRCType, CRCWidth> crcTable(parameters);
+static void CRCTableTest(
+    const char *data, size_t size,
+    const ASV::common::CRC::Parameters<CRCType, CRCWidth> &parameters,
+    CRCType expectedCRC, const std::string &crcName) {
+  ASV::common::CRC::Table<CRCType, CRCWidth> crcTable(parameters);
 
-  CRCType computedCRC = CRC::Calculate(data, size, crcTable);
+  CRCType computedCRC = ASV::common::CRC::Calculate(data, size, crcTable);
 
   PrintResult<CRCType, CRCWidth>(data, size, parameters, expectedCRC,
                                  computedCRC, crcName);
@@ -184,15 +181,15 @@ static void CRCTableTest(const char *data, size_t size,
 template <typename CRCType, uint16_t CRCWidth>
 static void PartialCRCTableTest(
     const char *data, size_t size,
-    const CRC::Parameters<CRCType, CRCWidth> &parameters, CRCType expectedCRC,
-    const std::string &crcName) {
-  CRC::Table<CRCType, CRCWidth> crcTable(parameters);
+    const ASV::common::CRC::Parameters<CRCType, CRCWidth> &parameters,
+    CRCType expectedCRC, const std::string &crcName) {
+  ASV::common::CRC::Table<CRCType, CRCWidth> crcTable(parameters);
 
-  CRCType computedCRC = CRC::Calculate(data, size / 2, crcTable);
+  CRCType computedCRC = ASV::common::CRC::Calculate(data, size / 2, crcTable);
 
   // Don't forget (size + 1) to round odd numbers properly!
-  computedCRC =
-      CRC::Calculate(data + (size / 2), (size + 1) / 2, crcTable, computedCRC);
+  computedCRC = ASV::common::CRC::Calculate(data + (size / 2), (size + 1) / 2,
+                                            crcTable, computedCRC);
 
   PrintResult<CRCType, CRCWidth>(data, size, parameters, expectedCRC,
                                  computedCRC, crcName);
@@ -229,89 +226,108 @@ int main(int argc, char **argv) {
   (void)argc;
   (void)argv;
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_4_ITU, uint8_t(0x7));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_5_EPC, uint8_t(0x00));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_5_ITU, uint8_t(0x07));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_5_USB, uint8_t(0x19));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_6_CDMA2000A, uint8_t(0x0D));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_6_CDMA2000B, uint8_t(0x3B));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_6_ITU, uint8_t(0x06));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_7, uint8_t(0x75));
-#endif
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_8, uint8_t(0xF4));
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_8_EBU, uint8_t(0x97));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_8_MAXIM, uint8_t(0xA1));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_8_WCDMA, uint8_t(0x25));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_10, uint16_t(0x199));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_10_CDMA2000,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_4_ITU,
+           uint8_t(0x7));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_5_EPC,
+           uint8_t(0x00));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_5_ITU,
+           uint8_t(0x07));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_5_USB,
+           uint8_t(0x19));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_6_CDMA2000A,
+           uint8_t(0x0D));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_6_CDMA2000B,
+           uint8_t(0x3B));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_6_ITU,
+           uint8_t(0x06));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_7,
+           uint8_t(0x75));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_8,
+           uint8_t(0xF4));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_8_EBU,
+           uint8_t(0x97));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_8_MAXIM,
+           uint8_t(0xA1));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_8_WCDMA,
+           uint8_t(0x25));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_10,
+           uint16_t(0x199));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_10_CDMA2000,
            uint16_t(0x233));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_11, uint16_t(0x5A3));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_12_UMTS, uint16_t(0xDAF));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_12_CDMA2000,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_11,
+           uint16_t(0x5A3));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_12_UMTS,
+           uint16_t(0xDAF));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_12_CDMA2000,
            uint16_t(0xD4D));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_12_DECT, uint16_t(0xF5B));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_13_BBC, uint16_t(0x04FA));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_15, uint16_t(0x059E));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_15_MPT1327,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_12_DECT,
+           uint16_t(0xF5B));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_13_BBC,
+           uint16_t(0x04FA));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_15,
+           uint16_t(0x059E));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_15_MPT1327,
            uint16_t(0x2566));
-#endif
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_ARC, uint16_t(0xBB3D));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_BUYPASS,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_ARC,
+           uint16_t(0xBB3D));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_BUYPASS,
            uint16_t(0xFEE8));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_CCITTFALSE,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_CCITTFALSE,
            uint16_t(0x29B1));
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_CDMA2000,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_CDMA2000,
            uint16_t(0x4C06));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_CMS, uint16_t(0xAEE7));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_DECTR, uint16_t(0x007E));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_DECTX, uint16_t(0x007F));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_DNP, uint16_t(0xEA82));
-#endif
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_GENIBUS,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_CMS,
+           uint16_t(0xAEE7));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_DECTR,
+           uint16_t(0x007E));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_DECTX,
+           uint16_t(0x007F));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_DNP,
+           uint16_t(0xEA82));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_GENIBUS,
            uint16_t(0xD64E));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_KERMIT,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_KERMIT,
            uint16_t(0x2189));
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_MAXIM, uint16_t(0x44C2));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_MODBUS,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_MAXIM,
+           uint16_t(0x44C2));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_MODBUS,
            uint16_t(0x4B37));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_T10DIF,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_T10DIF,
            uint16_t(0xD0DB));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_USB, uint16_t(0xB4C8));
-#endif
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_X25, uint16_t(0x906E));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_16_XMODEM,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_USB,
+           uint16_t(0xB4C8));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_X25,
+           uint16_t(0x906E));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_16_XMODEM,
            uint16_t(0x31C3));
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_17_CAN, uint32_t(0x04F03));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_21_CAN, uint32_t(0x0ED841));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_24, uint32_t(0x21CF02));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_24_FLEXRAYA,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_17_CAN,
+           uint32_t(0x04F03));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_21_CAN,
+           uint32_t(0x0ED841));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_24,
+           uint32_t(0x21CF02));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_24_FLEXRAYA,
            uint32_t(0x7979BD));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_24_FLEXRAYB,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_24_FLEXRAYB,
            uint32_t(0x1F23B8));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_30, uint32_t(0x3B3CB540));
-#endif
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_32, uint32_t(0xCBF43926));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_32_BZIP2,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_30,
+           uint32_t(0x3B3CB540));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_32,
+           uint32_t(0xCBF43926));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_32_BZIP2,
            uint32_t(0xFC891918));
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_32_C, uint32_t(0xE3069283));
-#endif
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_32_MPEG2,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_32_C,
+           uint32_t(0xE3069283));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_32_MPEG2,
            uint32_t(0x0376E6E7));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_32_POSIX,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_32_POSIX,
            uint32_t(0x765E7680));
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_32_Q, uint32_t(0x3010BF7F));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_40_GSM,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_32_Q,
+           uint32_t(0x3010BF7F));
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_40_GSM,
            uint64_t(0xD4164FC646));
-  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, CRC::CRC_64,
+  CRC_TEST(CRC_CHECK_DATA, CRC_CHECK_SIZE, ASV::common::CRC::CRC_64,
            uint64_t(0x6C40DF5F0B497347));
-#endif
 
   return 0;
 }

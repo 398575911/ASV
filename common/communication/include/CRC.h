@@ -62,11 +62,7 @@
 
    #define crcpp_size
    - This type is used for loop iteration and function signatures only. Defaults
-   to
-   ::std::size_t.
-
-   #define CRCPP_USE_NAMESPACE
-   - Define to place all CRC++ code within the ::CRCPP namespace.
+   to std::size_t.
 
    #define CRCPP_BRANCHLESS
    - Define to enable a branchless CRC implementation.
@@ -75,97 +71,48 @@
    implementation may be faster on processor architectures which support
    single-instruction integer multiplication.
 
-   #define CRCPP_USE_CPP11
-   - Define to enables C++11 features (move semantics, constexpr, static_assert,
-   etc.).
-
-   #define CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-   - Define to include definitions for little-used CRCs.
 */
 
 #ifndef CRCPP_CRC_H_
 #define CRCPP_CRC_H_
 
-#include <climits>  // Includes CHAR_BIT
-#ifdef CRCPP_USE_CPP11
-#include <cstddef>  // Includes ::std::size_t
-#include <cstdint>  // Includes ::std::uint8_t, ::std::uint16_t, ::std::uint32_t, ::std::uint64_t
-#else
 #include <stddef.h>  // Includes size_t
 #include <stdint.h>  // Includes uint8_t, uint16_t, uint32_t, uint64_t
-#endif
+
+#include <climits>  // Includes CHAR_BIT
 #include <limits>   // Includes ::std::numeric_limits
 #include <utility>  // Includes ::std::move
 
 #ifndef crcpp_uint8
-#ifdef CRCPP_USE_CPP11
-/// @brief Unsigned 8-bit integer definition, used primarily for parameter
-/// definitions.
-#define crcpp_uint8 ::std::uint8_t
-#else
 /// @brief Unsigned 8-bit integer definition, used primarily for parameter
 /// definitions.
 #define crcpp_uint8 uint8_t
 #endif
-#endif
 
 #ifndef crcpp_uint16
-#ifdef CRCPP_USE_CPP11
-/// @brief Unsigned 16-bit integer definition, used primarily for parameter
-/// definitions.
-#define crcpp_uint16 ::std::uint16_t
-#else
 /// @brief Unsigned 16-bit integer definition, used primarily for parameter
 /// definitions.
 #define crcpp_uint16 uint16_t
 #endif
-#endif
 
 #ifndef crcpp_uint32
-#ifdef CRCPP_USE_CPP11
-/// @brief Unsigned 32-bit integer definition, used primarily for parameter
-/// definitions.
-#define crcpp_uint32 ::std::uint32_t
-#else
 /// @brief Unsigned 32-bit integer definition, used primarily for parameter
 /// definitions.
 #define crcpp_uint32 uint32_t
 #endif
-#endif
 
 #ifndef crcpp_uint64
-#ifdef CRCPP_USE_CPP11
-/// @brief Unsigned 64-bit integer definition, used primarily for parameter
-/// definitions.
-#define crcpp_uint64 ::std::uint64_t
-#else
 /// @brief Unsigned 64-bit integer definition, used primarily for parameter
 /// definitions.
 #define crcpp_uint64 uint64_t
 #endif
-#endif
 
 #ifndef crcpp_size
-#ifdef CRCPP_USE_CPP11
-/// @brief Unsigned size definition, used for specifying data sizes.
-#define crcpp_size ::std::size_t
-#else
 /// @brief Unsigned size definition, used for specifying data sizes.
 #define crcpp_size size_t
 #endif
-#endif
 
-#ifdef CRCPP_USE_CPP11
-/// @brief Compile-time expression definition.
-#define crcpp_constexpr constexpr
-#else
-/// @brief Compile-time expression definition.
-#define crcpp_constexpr const
-#endif
-
-#ifdef CRCPP_USE_NAMESPACE
-namespace CRCPP {
-#endif
+namespace ASV::common {
 
 /**
     @brief Static class for computing CRCs.
@@ -205,10 +152,6 @@ class CRC {
     // Constructors are intentionally NOT marked explicit.
     Table(const Parameters<CRCType, CRCWidth> &parameters);
 
-#ifdef CRCPP_USE_CPP11
-    Table(Parameters<CRCType, CRCWidth> &&parameters);
-#endif
-
     const Parameters<CRCType, CRCWidth> &GetParameters() const;
 
     const CRCType *GetTable() const;
@@ -247,7 +190,6 @@ class CRC {
   // Common CRCs up to 64 bits.
   // Note: Check values are the computed CRCs when given an ASCII input of
   // "123456789" (without null terminator)
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
   static const Parameters<crcpp_uint8, 4> &CRC_4_ITU();
   static const Parameters<crcpp_uint8, 5> &CRC_5_EPC();
   static const Parameters<crcpp_uint8, 5> &CRC_5_ITU();
@@ -256,9 +198,7 @@ class CRC {
   static const Parameters<crcpp_uint8, 6> &CRC_6_CDMA2000B();
   static const Parameters<crcpp_uint8, 6> &CRC_6_ITU();
   static const Parameters<crcpp_uint8, 7> &CRC_7();
-#endif
   static const Parameters<crcpp_uint8, 8> &CRC_8();
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
   static const Parameters<crcpp_uint8, 8> &CRC_8_EBU();
   static const Parameters<crcpp_uint8, 8> &CRC_8_MAXIM();
   static const Parameters<crcpp_uint8, 8> &CRC_8_WCDMA();
@@ -271,62 +211,41 @@ class CRC {
   static const Parameters<crcpp_uint16, 13> &CRC_13_BBC();
   static const Parameters<crcpp_uint16, 15> &CRC_15();
   static const Parameters<crcpp_uint16, 15> &CRC_15_MPT1327();
-#endif
   static const Parameters<crcpp_uint16, 16> &CRC_16_ARC();
   static const Parameters<crcpp_uint16, 16> &CRC_16_BUYPASS();
   static const Parameters<crcpp_uint16, 16> &CRC_16_CCITTFALSE();
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
   static const Parameters<crcpp_uint16, 16> &CRC_16_CDMA2000();
   static const Parameters<crcpp_uint16, 16> &CRC_16_CMS();
   static const Parameters<crcpp_uint16, 16> &CRC_16_DECTR();
   static const Parameters<crcpp_uint16, 16> &CRC_16_DECTX();
   static const Parameters<crcpp_uint16, 16> &CRC_16_DNP();
-#endif
   static const Parameters<crcpp_uint16, 16> &CRC_16_GENIBUS();
   static const Parameters<crcpp_uint16, 16> &CRC_16_KERMIT();
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
   static const Parameters<crcpp_uint16, 16> &CRC_16_MAXIM();
   static const Parameters<crcpp_uint16, 16> &CRC_16_MODBUS();
   static const Parameters<crcpp_uint16, 16> &CRC_16_T10DIF();
   static const Parameters<crcpp_uint16, 16> &CRC_16_USB();
-#endif
   static const Parameters<crcpp_uint16, 16> &CRC_16_X25();
   static const Parameters<crcpp_uint16, 16> &CRC_16_XMODEM();
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
   static const Parameters<crcpp_uint32, 17> &CRC_17_CAN();
   static const Parameters<crcpp_uint32, 21> &CRC_21_CAN();
   static const Parameters<crcpp_uint32, 24> &CRC_24();
   static const Parameters<crcpp_uint32, 24> &CRC_24_FLEXRAYA();
   static const Parameters<crcpp_uint32, 24> &CRC_24_FLEXRAYB();
   static const Parameters<crcpp_uint32, 30> &CRC_30();
-#endif
   static const Parameters<crcpp_uint32, 32> &CRC_32();
   static const Parameters<crcpp_uint32, 32> &CRC_32_BZIP2();
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
   static const Parameters<crcpp_uint32, 32> &CRC_32_C();
-#endif
   static const Parameters<crcpp_uint32, 32> &CRC_32_MPEG2();
   static const Parameters<crcpp_uint32, 32> &CRC_32_POSIX();
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
   static const Parameters<crcpp_uint32, 32> &CRC_32_Q();
   static const Parameters<crcpp_uint64, 40> &CRC_40_GSM();
   static const Parameters<crcpp_uint64, 64> &CRC_64();
-#endif
-
-#ifdef CRCPP_USE_CPP11
-  CRC() = delete;
-  CRC(const CRC &other) = delete;
-  CRC &operator=(const CRC &other) = delete;
-  CRC(CRC &&other) = delete;
-  CRC &operator=(CRC &&other) = delete;
-#endif
 
  private:
-#ifndef CRCPP_USE_CPP11
   CRC();
   CRC(const CRC &other);
   CRC &operator=(const CRC &other);
-#endif
 
   template <typename IntegerType>
   static IntegerType Reflect(IntegerType value, crcpp_uint16 numBits);
@@ -379,21 +298,6 @@ inline CRC::Table<CRCType, CRCWidth>::Table(
   InitTable();
 }
 
-#ifdef CRCPP_USE_CPP11
-/**
-    @brief Constructs a CRC table from a set of CRC parameters
-    @param[in] params CRC parameters
-    @tparam CRCType Integer type for storing the CRC result
-    @tparam CRCWidth Number of bits in the CRC
-*/
-template <typename CRCType, crcpp_uint16 CRCWidth>
-inline CRC::Table<CRCType, CRCWidth>::Table(
-    Parameters<CRCType, CRCWidth> &&params)
-    : parameters(::std::move(params)) {
-  InitTable();
-}
-#endif
-
 /**
     @brief Gets the CRC parameters used to construct the CRC table
     @tparam CRCType Integer type for storing the CRC result
@@ -439,13 +343,13 @@ template <typename CRCType, crcpp_uint16 CRCWidth>
 inline void CRC::Table<CRCType, CRCWidth>::InitTable() {
   // For masking off the bits for the CRC (in the event that the number of bits
   // in CRCType is larger than CRCWidth)
-  static crcpp_constexpr CRCType BIT_MASK(
+  static constexpr CRCType BIT_MASK(
       (CRCType(1) << (CRCWidth - CRCType(1))) |
       ((CRCType(1) << (CRCWidth - CRCType(1))) - CRCType(1)));
 
   // The conditional expression is used to avoid a -Wshift-count-overflow
   // warning.
-  static crcpp_constexpr CRCType SHIFT(
+  static constexpr CRCType SHIFT(
       (CHAR_BIT >= CRCWidth) ? static_cast<CRCType>(CHAR_BIT - CRCWidth) : 0);
 
   CRCType crc;
@@ -615,7 +519,7 @@ inline CRCType CRC::Finalize(CRCType remainder, CRCType finalXOR,
                              bool reflectOutput) {
   // For masking off the bits for the CRC (in the event that the number of bits
   // in CRCType is larger than CRCWidth)
-  static crcpp_constexpr CRCType BIT_MASK =
+  static constexpr CRCType BIT_MASK =
       (CRCType(1) << (CRCWidth - CRCType(1))) |
       ((CRCType(1) << (CRCWidth - CRCType(1))) - CRCType(1));
 
@@ -650,7 +554,7 @@ inline CRCType CRC::UndoFinalize(CRCType crc, CRCType finalXOR,
                                  bool reflectOutput) {
   // For masking off the bits for the CRC (in the event that the number of bits
   // in CRCType is larger than CRCWidth)
-  static crcpp_constexpr CRCType BIT_MASK =
+  static constexpr CRCType BIT_MASK =
       (CRCType(1) << (CRCWidth - CRCType(1))) |
       ((CRCType(1) << (CRCWidth - CRCType(1))) - CRCType(1));
 
@@ -678,20 +582,12 @@ template <typename CRCType, crcpp_uint16 CRCWidth>
 inline CRCType CRC::CalculateRemainder(
     const void *data, crcpp_size size,
     const Parameters<CRCType, CRCWidth> &parameters, CRCType remainder) {
-#ifdef CRCPP_USE_CPP11
-  // This static_assert is put here because this function will always be
-  // compiled in no matter what the template parameters are and whether or not a
-  // table lookup or bit-by-bit algorithm is used.
-  static_assert(::std::numeric_limits<CRCType>::digits >= CRCWidth,
-                "CRCType is too small to contain a CRC of width CRCWidth.");
-#else
   // Catching this compile-time error is very important. Sadly, the compiler
   // error will be very cryptic, but it's better than nothing.
   enum {
     static_assert_failed_CRCType_is_too_small_to_contain_a_CRC_of_width_CRCWidth =
         1 / (::std::numeric_limits<CRCType>::digits >= CRCWidth ? 1 : 0)
   };
-#endif
 
   const unsigned char *current = reinterpret_cast<const unsigned char *>(data);
 
@@ -721,14 +617,14 @@ inline CRCType CRC::CalculateRemainder(
       }
     }
   } else if (CRCWidth >= CHAR_BIT) {
-    static crcpp_constexpr CRCType CRC_WIDTH_MINUS_ONE(CRCWidth - CRCType(1));
+    static constexpr CRCType CRC_WIDTH_MINUS_ONE(CRCWidth - CRCType(1));
 #ifndef CRCPP_BRANCHLESS
-    static crcpp_constexpr CRCType CRC_HIGHEST_BIT_MASK(CRCType(1)
-                                                        << CRC_WIDTH_MINUS_ONE);
+    static constexpr CRCType CRC_HIGHEST_BIT_MASK(CRCType(1)
+                                                  << CRC_WIDTH_MINUS_ONE);
 #endif
     // The conditional expression is used to avoid a -Wshift-count-overflow
     // warning.
-    static crcpp_constexpr CRCType SHIFT(
+    static constexpr CRCType SHIFT(
         (CRCWidth >= CHAR_BIT) ? static_cast<CRCType>(CRCWidth - CHAR_BIT) : 0);
 
     while (size--) {
@@ -756,14 +652,14 @@ inline CRCType CRC::CalculateRemainder(
       }
     }
   } else {
-    static crcpp_constexpr CRCType CHAR_BIT_MINUS_ONE(CHAR_BIT - 1);
+    static constexpr CRCType CHAR_BIT_MINUS_ONE(CHAR_BIT - 1);
 #ifndef CRCPP_BRANCHLESS
-    static crcpp_constexpr CRCType CHAR_BIT_HIGHEST_BIT_MASK(
-        CRCType(1) << CHAR_BIT_MINUS_ONE);
+    static constexpr CRCType CHAR_BIT_HIGHEST_BIT_MASK(CRCType(1)
+                                                       << CHAR_BIT_MINUS_ONE);
 #endif
     // The conditional expression is used to avoid a -Wshift-count-overflow
     // warning.
-    static crcpp_constexpr CRCType SHIFT(
+    static constexpr CRCType SHIFT(
         (CHAR_BIT >= CRCWidth) ? static_cast<CRCType>(CHAR_BIT - CRCWidth) : 0);
 
     CRCType polynomial = static_cast<CRCType>(parameters.polynomial << SHIFT);
@@ -835,7 +731,7 @@ inline CRCType CRC::CalculateRemainder(
   } else if (CRCWidth >= CHAR_BIT) {
     // The conditional expression is used to avoid a -Wshift-count-overflow
     // warning.
-    static crcpp_constexpr CRCType SHIFT(
+    static constexpr CRCType SHIFT(
         (CRCWidth >= CHAR_BIT) ? static_cast<CRCType>(CRCWidth - CHAR_BIT) : 0);
 
     while (size--) {
@@ -846,7 +742,7 @@ inline CRCType CRC::CalculateRemainder(
   } else {
     // The conditional expression is used to avoid a -Wshift-count-overflow
     // warning.
-    static crcpp_constexpr CRCType SHIFT(
+    static constexpr CRCType SHIFT(
         (CHAR_BIT >= CRCWidth) ? static_cast<CRCType>(CHAR_BIT - CRCWidth) : 0);
 
     remainder = static_cast<CRCType>(remainder << SHIFT);
@@ -864,7 +760,6 @@ inline CRCType CRC::CalculateRemainder(
   return remainder;
 }
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 /**
     @brief Returns a set of parameters for CRC-4 ITU.
     @note The parameters are static and are delayed-constructed to reduce memory
@@ -1016,7 +911,6 @@ inline const CRC::Parameters<crcpp_uint8, 7> &CRC::CRC_7() {
                                                         false};
   return parameters;
 }
-#endif  // CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 
 /**
     @brief Returns a set of parameters for CRC-8 SMBus.
@@ -1037,7 +931,6 @@ inline const CRC::Parameters<crcpp_uint8, 8> &CRC::CRC_8() {
   return parameters;
 }
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 /**
     @brief Returns a set of parameters for CRC-8 EBU (aka CRC-8 AES).
     @note The parameters are static and are delayed-constructed to reduce memory
@@ -1265,7 +1158,6 @@ inline const CRC::Parameters<crcpp_uint16, 15> &CRC::CRC_15_MPT1327() {
                                                           0x0001, false, false};
   return parameters;
 }
-#endif  // CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 
 /**
     @brief Returns a set of parameters for CRC-16 ARC (aka CRC-16 IBM, CRC-16
@@ -1326,7 +1218,6 @@ inline const CRC::Parameters<crcpp_uint16, 16> &CRC::CRC_16_CCITTFALSE() {
   return parameters;
 }
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 /**
     @brief Returns a set of parameters for CRC-16 CDMA2000.
     @note The parameters are static and are delayed-constructed to reduce memory
@@ -1421,7 +1312,6 @@ inline const CRC::Parameters<crcpp_uint16, 16> &CRC::CRC_16_DNP() {
                                                           0xFFFF, true, true};
   return parameters;
 }
-#endif  // CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 
 /**
     @brief Returns a set of parameters for CRC-16 GENIBUS (aka CRC-16 EPC,
@@ -1463,7 +1353,6 @@ inline const CRC::Parameters<crcpp_uint16, 16> &CRC::CRC_16_KERMIT() {
   return parameters;
 }
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 /**
     @brief Returns a set of parameters for CRC-16 MAXIM.
     @note The parameters are static and are delayed-constructed to reduce memory
@@ -1540,8 +1429,6 @@ inline const CRC::Parameters<crcpp_uint16, 16> &CRC::CRC_16_USB() {
   return parameters;
 }
 
-#endif  // CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-
 /**
     @brief Returns a set of parameters for CRC-16 X-25 (aka CRC-16 IBM-SDLC,
    CRC-16 ISO-HDLC, CRC-16 B).
@@ -1582,7 +1469,6 @@ inline const CRC::Parameters<crcpp_uint16, 16> &CRC::CRC_16_XMODEM() {
   return parameters;
 }
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 /**
     @brief Returns a set of parameters for CRC-17 CAN.
     @note The parameters are static and are delayed-constructed to reduce memory
@@ -1696,7 +1582,6 @@ inline const CRC::Parameters<crcpp_uint32, 30> &CRC::CRC_30() {
       0x2030B9C7, 0x3FFFFFFF, 0x00000000, false, false};
   return parameters;
 }
-#endif  // CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 
 /**
     @brief Returns a set of parameters for CRC-32 (aka CRC-32 ADCCP, CRC-32
@@ -1738,7 +1623,6 @@ inline const CRC::Parameters<crcpp_uint32, 32> &CRC::CRC_32_BZIP2() {
   return parameters;
 }
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 /**
     @brief Returns a set of parameters for CRC-32 C (aka CRC-32 ISCSI, CRC-32
    Castagnoli, CRC-32 Interlaken).
@@ -1758,7 +1642,6 @@ inline const CRC::Parameters<crcpp_uint32, 32> &CRC::CRC_32_C() {
       0x1EDC6F41, 0xFFFFFFFF, 0xFFFFFFFF, true, true};
   return parameters;
 }
-#endif
 
 /**
     @brief Returns a set of parameters for CRC-32 MPEG-2.
@@ -1798,7 +1681,6 @@ inline const CRC::Parameters<crcpp_uint32, 32> &CRC::CRC_32_POSIX() {
   return parameters;
 }
 
-#ifdef CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 /**
     @brief Returns a set of parameters for CRC-32 Q.
     @note The parameters are static and are delayed-constructed to reduce memory
@@ -1855,10 +1737,7 @@ inline const CRC::Parameters<crcpp_uint64, 64> &CRC::CRC_64() {
       0x42F0E1EBA9EA3693, 0x0000000000000000, 0x0000000000000000, false, false};
   return parameters;
 }
-#endif  // CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
 
-#ifdef CRCPP_USE_NAMESPACE
-}
-#endif
+}  // namespace ASV::common
 
 #endif  // CRCPP_CRC_H_

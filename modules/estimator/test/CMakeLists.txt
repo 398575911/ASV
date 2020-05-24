@@ -54,11 +54,11 @@ target_link_libraries(testkalman ${RARE_LIBRARIES})
 add_executable (testestimator testestimator.cc)
 target_include_directories(testestimator PRIVATE ${HEADER_DIRECTORY})
 
- 
+
 add_executable (testAntenna testAntennadeviation.cc ${SOURCE_FILES})
 target_include_directories(testAntenna PRIVATE ${HEADER_DIRECTORY})
-find_library(SERIAL_LIBRARY serial ${LIBRARY_DIRECTORY})
+find_library(SERIALPORT_LIBRARY serialport ${LIBRARY_DIRECTORY})
 find_library(SQLITE3_LIBRARY sqlite3 HINTS ${LIBRARY_DIRECTORY})
-target_link_libraries(testAntenna ${SERIAL_LIBRARY})
+target_link_libraries(testAntenna ${SERIALPORT_LIBRARY})
 target_link_libraries(testAntenna ${GeographicLib_LIBRARIES})
 target_link_libraries(testAntenna ${SQLITE3_LIBRARY})

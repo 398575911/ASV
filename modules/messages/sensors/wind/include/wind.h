@@ -12,10 +12,11 @@
 #define _WIND_H_
 
 #include <cmath>
-#include "common/communication/include/crc.h"
 #include "common/communication/include/serialport.h"
-
 #include "winddata.h"
+
+#define CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
+#include "common/communication/include/CRC.h"
 
 namespace ASV::messages {
 
@@ -23,9 +24,7 @@ class wind {
  public:
   explicit wind(int baud,  // baudrate
                 const std::string& port = "/dev/ttyUSB0")
-      : ser_wind_(port, baud, 1000),
-        crc16_(ASV::common::CRC16::eMODBUS),
-        windRTdata_({0, 0}) {}
+      : ser_wind_(port, baud, 1000), windRTdata_({0, 0}) {}
   wind() = delete;
   ~wind() {}
 
@@ -38,7 +37,8 @@ class wind {
     ser_wind_.writeline(buff_send_wind);
     ser_wind_.readline(buff_rec, 9);
 
-    unsigned short crc_result = crc16_.crcCompute(buff_rec, 7);
+    uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
+        buff_rec, 7, ASV::common::CRC::CRC_16_MODBUS());
 
     if ((buff_rec[7] == (crc_result >> 8)) &&
         (buff_rec[8] == (crc_result & 0x00FF))) {
@@ -60,7 +60,6 @@ class wind {
  private:
   // serial data
   common::serialport ser_wind_;
-  common::CRC16 crc16_;
   windRTdata windRTdata_;
 
   void restrictdata(int& _wspeed, int& _orientation) {
