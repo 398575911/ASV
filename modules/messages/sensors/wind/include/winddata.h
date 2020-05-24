@@ -11,19 +11,13 @@
 #ifndef _WINDDATA_H_
 #define _WINDDATA_H_
 
-#include <vector>
-
-namespace ASV {
-union windsocketmsg {
-  double double_msg[2];
-  char char_msg[16];
-};
+namespace ASV::messages {
 
 struct windRTdata {
   double speed;        // m/s
   double orientation;  // rad
 };
 
-}  //  end namespace ASV
+}  // namespace ASV::messages
 
 #endif /* _WINDDATA_H_ */

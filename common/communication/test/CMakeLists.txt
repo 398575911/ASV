@@ -30,8 +30,13 @@ find_library(SERIALPORT_LIBRARY serialport HINTS ${LIBRARY_DIRECTORY})
 
 
 # 指定生成目标
-add_executable (testcrc testcrc.cc)
-target_include_directories(testcrc PRIVATE ${HEADER_DIRECTORY})
+add_executable (crc_test CRC_test.cc)
+target_include_directories(crc_test PRIVATE ${HEADER_DIRECTORY})
+
+
+add_executable (simple_crc_test simple_crc_test.cc)
+target_include_directories(simple_crc_test PRIVATE ${HEADER_DIRECTORY})
+
 
 add_executable (testtcpserver testtcpserver.cc  ${SOURCE_FILES})
 target_include_directories(testtcpserver PRIVATE ${HEADER_DIRECTORY})

@@ -12,32 +12,26 @@
 #include <iostream>
 #include "../include/wind.h"
 
-using namespace ASV;
+using namespace ASV::messages;
 
-// real time wind sensor
-windRTdata _windRTdata{
-    0,  // speed
-    0   // orientation
-};
+int main() {
+  // real time wind sensor
+  windRTdata _windRTdata{
+      0,  // speed
+      0   // orientation
+  };
 
-void readloop() {
   try {
-    messages::wind _wind(9600);  // zone 30n
+    wind _wind(9600, "/dev/ttyr7");  // zone 30n
 
     while (1) {
       _windRTdata = _wind.readwind().getwindRTdata();
       std::cout << "wind speed: " << _windRTdata.speed << std::endl;
       std::cout << "wind orientation: " << _windRTdata.orientation << std::endl;
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
   } catch (std::exception& e) {
     std::cerr << "Unhandled Exception: " << e.what() << std::endl;
-  }
-}
-
-int main() {
-  while (1) {
-    std::cout << "OK" << _windRTdata.speed << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 }
