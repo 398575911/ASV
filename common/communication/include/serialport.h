@@ -11,12 +11,9 @@
 #ifndef _SERIALPORT_H_
 #define _SERIALPORT_H_
 
-#include "common/logging/include/easylogging++.h"
-
 #include <libserialport.h>
 #include <string>
-
-#include <unistd.h>
+#include "common/logging/include/easylogging++.h"
 
 namespace ASV::common {
 
@@ -60,7 +57,16 @@ class serialport {
     int result = check(sp_blocking_read(s_port_, buf, read_bytes, timeout_));
 
     /* Check if we received the same data we sent. */
-    // buf[result] = '\0';
+    buf[result] = '\0';
+
+  }  // readline
+
+  void readline(unsigned char *buf, int read_bytes) {
+    /* Try to receive the data on the other port. */
+    int result = check(sp_blocking_read(s_port_, buf, read_bytes, timeout_));
+
+    /* Check if we received the same data we sent. */
+    buf[result] = '\0';
 
   }  // readline
 

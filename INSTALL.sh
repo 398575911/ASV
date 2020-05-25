@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo apt update
 sudo apt install build-essential cmake sqlite3 libsqlite3-dev libboost-all-dev rsync \
-	catkin python3 python3-pip vim sshfs cutecom
+   python3 python3-pip vim sshfs cutecom gnuplot
 
 # install GeographicLib
 cd third_party/
@@ -18,7 +18,9 @@ cd ../../sqlite_modern_cpp
 ./configure && make && sudo make install
 
 # install serial
-cd ../serial
+cd ../libserialport
+./autogen.sh
+./configure
 make
 sudo make install	
 

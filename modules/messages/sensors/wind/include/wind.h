@@ -11,12 +11,9 @@
 #ifndef _WIND_H_
 #define _WIND_H_
 
-#include <cmath>
+#include "common/communication/include/CRC.h"
 #include "common/communication/include/serialport.h"
 #include "winddata.h"
-
-#define CRCPP_INCLUDE_ESOTERIC_CRC_DEFINITIONS
-#include "common/communication/include/CRC.h"
 
 namespace ASV::messages {
 
@@ -34,7 +31,7 @@ class wind {
 
     char buff_rec[9];
 
-    ser_wind_.writeline(buff_send_wind);
+    ser_wind_.writeline(buff_send_wind, 8);
     ser_wind_.readline(buff_rec, 9);
 
     uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
@@ -70,4 +67,4 @@ class wind {
 
 }  // namespace ASV::messages
 
-#endif /*_WIND_H_*/
+#endif /* _WIND_H_ */
