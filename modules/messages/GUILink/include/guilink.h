@@ -11,17 +11,16 @@
 #define _GUILINK_H_
 
 #include <chrono>
-#include <iostream>
 #include <thread>
 #include <vector>
 
-#include "common/communication/include/crc.h"
+#include "common/communication/include/CRC.h"
+#include "common/communication/include/serialport.h"
 #include "common/fileIO/include/utilityio.h"
 #include "common/logging/include/easylogging++.h"
 #include "common/math/miscellaneous/include/math_utils.h"
 #include "common/timer/include/timecounter.h"
 #include "guilinkdata.h"
-#include "third_party/serial/include/serial/serial.h"
 
 namespace ASV::messages {
 template <int num_thruster, int num_battery, int n = 3>
@@ -32,13 +31,12 @@ class guilink_serial {
                  unsigned long _rate = 115200,
                  const std::string &_port = "/dev/ttyUSB0")
       : guilinkrtdata(_guilinkRTdata),
-        gui_serial(_port, _rate, serial::Timeout::simpleTimeout(200)),
+        gui_serial(_port, _rate, 200),
         send_buffer(""),
         recv_buffer(""),
         bytes_send(0),
         bytes_reci(0),
-        gui_connetion_failure_count(0),
-        crc16(CRC16::eCCITT_FALSE) {
+        gui_connetion_failure_count(0) {
     checkserialstatus();
   }
 
@@ -90,27 +88,13 @@ class guilink_serial {
 
  private:
   guilinkRTdata<num_thruster, num_battery> guilinkrtdata;
-  serial::Serial gui_serial;
+  ASV::common::serialport gui_serial;
   std::string send_buffer;
   std::string recv_buffer;
   std::size_t bytes_send;
   std::size_t bytes_reci;
 
   int gui_connetion_failure_count;
-
-  CRC16 crc16;
-
-  void enumerate_ports() {
-    std::vector<serial::PortInfo> devices_found = serial::list_ports();
-
-    std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
-
-    while (iter != devices_found.end()) {
-      serial::PortInfo device = *iter++;
-      std::cout << device.port.c_str() << ", " << device.description.c_str()
-                << ", " << device.hardware_id.c_str() << std::endl;
-    }
-  }
 
   void checkserialstatus() {
     if (gui_serial.isOpen())
@@ -212,8 +196,9 @@ class guilink_serial {
         std::string expected_crc = recv_buffer.substr(rpos + 1);
         expected_crc.pop_back();
         recv_buffer = recv_buffer.substr(0, rpos);
-        if (std::to_string(crc16.crcCompute(recv_buffer.c_str(), rpos)) ==
-            expected_crc) {
+        if (std::to_string(ASV::common::CRC::Calculate<uint16_t, 16>(
+                recv_buffer.c_str(), rpos,
+                ASV::common::CRC::CRC_16_MODBUS())) == expected_crc) {
           int _guistutus_gui2PC = 0;
           double _heading = 0.0;
           double wp1_x = 0.0;
@@ -260,10 +245,13 @@ class guilink_serial {
     send_buffer.clear();
     send_buffer = "GUI";
     convert2string_lightweight(_guilinkRTdata, send_buffer);
-    unsigned short crc =
-        crc16.crcCompute(send_buffer.c_str(), send_buffer.length());
+
+    unsigned short crc = ASV::common::CRC::Calculate<uint16_t, 16>(
+        send_buffer.c_str(), send_buffer.length(),
+        ASV::common::CRC::CRC_16_MODBUS());
+
     send_buffer = "$" + send_buffer + "*" + std::to_string(crc) + "\n";
-    bytes_send = gui_serial.write(send_buffer);
+    bytes_send = gui_serial.writeline(send_buffer);
   }  // senddata2gui
 };
 

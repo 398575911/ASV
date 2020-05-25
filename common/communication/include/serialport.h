@@ -27,7 +27,8 @@ class serialport {
       : port_name_(port_name),
         baud_rate_(baudrate),
         timeout_(timeout),
-        max_bytes_(300) {
+        max_bytes_(300),
+        isopen_(false) {
     initializeport();
   }
   ~serialport() {
@@ -96,45 +97,43 @@ class serialport {
   }  // readline
 
   // send data to serial port
-  void writeline(const std::string &send_buffer) {
-    writeline(send_buffer.c_str());
-
+  size_t writeline(const std::string &send_buffer) {
+    return writeline(send_buffer.c_str(), send_buffer.length());
   }  // writeline
 
   // send data to serial port
-  void writeline(const char *send_buffer) {
-    // data buffer
-    int size = sizeof(send_buffer) / sizeof(*send_buffer);
-    /* Try to receive the data on the other port. */
-    // int result = check(sp_blocking_write(s_port_, send_buffer, size,
-    // timeout_));
-
+  size_t writeline(const void *send_buffer, size_t size) {
     /* Check whether we sent all of the data. */
-    if (check(sp_blocking_write(s_port_, send_buffer, size, timeout_)) != size)
+    int result = check(sp_blocking_write(s_port_, send_buffer, size, timeout_));
+    if (result != (int)size) {
       CLOG(ERROR, "serialport") << "Timed out in writing port";
-
+      return 0;
+    }
+    return result;
   }  // writeline
 
-  // send data to serial port
-  void writeline(const unsigned char *send_buffer) {
-    // data buffer
-    int size = sizeof(send_buffer) / sizeof(*send_buffer);
-    /* Try to receive the data on the other port. */
-    // int result = check(sp_blocking_write(s_port_, send_buffer, size,
-    // timeout_));
+  // // send data to serial port
+  // void writeline(const unsigned char *send_buffer) {
+  //   // data buffer
+  //   int size = sizeof(send_buffer) / sizeof(*send_buffer);
+  //   /* Try to receive the data on the other port. */
+  //   // int result = check(sp_blocking_write(s_port_, send_buffer, size,
+  //   // timeout_));
 
-    /* Check whether we sent all of the data. */
-    if (check(sp_blocking_write(s_port_, send_buffer, size, timeout_)) != size)
-      CLOG(ERROR, "serialport") << "Timed out in writing port";
+  //   /* Check whether we sent all of the data. */
+  //   if (check(sp_blocking_write(s_port_, send_buffer, size, timeout_)) !=
+  //   size)
+  //     CLOG(ERROR, "serialport") << "Timed out in writing port";
 
-  }  // writeline
+  // }  // writeline
+
+  bool isOpen() const { return isopen_; }
 
  private:
   void initializeport() {
     /* Open and configure port. */
     sp_get_port_by_name(port_name_.c_str(), &s_port_);
-    sp_open(s_port_, SP_MODE_READ_WRITE);
-
+    if (sp_open(s_port_, SP_MODE_READ_WRITE) == SP_OK) isopen_ = true;
     sp_set_baudrate(s_port_, baud_rate_);
     sp_set_bits(s_port_, 8);
     sp_set_parity(s_port_, SP_PARITY_NONE);
@@ -169,6 +168,7 @@ class serialport {
   const unsigned int timeout_;
   const int max_bytes_;
 
+  bool isopen_;
   struct sp_port *s_port_; /* The ports we will use. */
 
 };  // end class serialport

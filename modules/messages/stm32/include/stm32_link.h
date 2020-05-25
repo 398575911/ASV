@@ -12,10 +12,10 @@
 
 #include <chrono>
 #include <thread>
-#include "common/communication/include/crc.h"
+#include "common/communication/include/CRC.h"
+#include "common/communication/include/serialport.h"
 #include "common/logging/include/easylogging++.h"
 #include "stm32data.h"
-#include "third_party/serial/include/serial/serial.h"
 
 namespace ASV::messages {
 
@@ -25,12 +25,11 @@ class stm32_link {
                       unsigned long _baud = 115200,  // baudrate
                       const std::string& _port = "/dev/ttyUSB0")
       : stmdata(_stm32data),
-        stm32_serial(_port, _baud, serial::Timeout::simpleTimeout(100)),
+        stm32_serial(_port, _baud, 100),
         send_buffer(""),
         recv_buffer(""),
         bytes_send(0),
         bytes_reci(0),
-        crc16(CRC16::eCCITT_FALSE),
         connection_count(0) {
     checkserialstatus();
   }
@@ -74,25 +73,13 @@ class stm32_link {
  private:
   stm32data stmdata;
   /** serial data **/
-  serial::Serial stm32_serial;
+  ASV::common::serialport stm32_serial;
   std::string send_buffer;
   std::string recv_buffer;
   std::size_t bytes_send;
   std::size_t bytes_reci;
 
-  CRC16 crc16;
-
   int connection_count;
-
-  void enumerate_ports() {
-    std::vector<serial::PortInfo> devices_found = serial::list_ports();
-
-    std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
-
-    while (iter != devices_found.end()) {
-      serial::PortInfo device = *iter++;
-    }
-  }
 
   void checkconnection(stm32data& _stm32data) {
     if (connection_count < 2)
@@ -123,8 +110,10 @@ class stm32_link {
         std::string expected_crc = recv_buffer.substr(rpos + 1);
         expected_crc.pop_back();
         recv_buffer = recv_buffer.substr(0, rpos);
-        if (std::to_string(crc16.crcCompute(recv_buffer.c_str(), rpos)) ==
-            expected_crc) {
+
+        if (std::to_string(ASV::common::CRC::Calculate<uint16_t, 16>(
+                recv_buffer.c_str(), rpos,
+                ASV::common::CRC::CRC_16_MODBUS())) == expected_crc) {
           int _stm32status = 0;
           sscanf(recv_buffer.c_str(),
                  "PC,"
@@ -169,10 +158,13 @@ class stm32_link {
     send_buffer.clear();
     send_buffer = "STM";
     convert2string(_stm32data, send_buffer);
-    unsigned short crc =
-        crc16.crcCompute(send_buffer.c_str(), send_buffer.length());
+
+    uint16_t crc = ASV::common::CRC::Calculate<uint16_t, 16>(
+        send_buffer.c_str(), send_buffer.length(),
+        ASV::common::CRC::CRC_16_MODBUS());
+
     send_buffer = "$" + send_buffer + "*" + std::to_string(crc) + "\n";
-    bytes_send = stm32_serial.write(send_buffer);
+    bytes_send = stm32_serial.writeline(send_buffer);
   }  // senddata2stm32
 
   void convert2string(const stm32data& _stm32data, std::string& _str) {

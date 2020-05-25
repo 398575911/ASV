@@ -28,10 +28,8 @@ set(SOURCE_FILES ${SOURCE_FILES}
 	"${PROJECT_SOURCE_DIR}/../../../../common/logging/src/easylogging++.cc" )
 
 
-find_package(Boost 1.71.0 COMPONENTS date_time REQUIRED)
-find_library(SERIAL_LIBRARY serial ${LIBRARY_DIRECTORY})
+find_library(SERIALPORT_LIBRARY serialport ${LIBRARY_DIRECTORY})
 # 指定生成目标
-add_executable (teststm32 teststm32.cc  ${SOURCE_FILES})
+add_executable (teststm32 teststm32.cc ${SOURCE_FILES})
 target_include_directories(teststm32 PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(teststm32 ${Boost_LIBRARIES})
-target_link_libraries(teststm32 ${SERIAL_LIBRARY})
+target_link_libraries(teststm32 ${SERIALPORT_LIBRARY})

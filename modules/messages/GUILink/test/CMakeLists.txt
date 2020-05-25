@@ -20,11 +20,9 @@ set(SOURCE_FILES ${SOURCE_FILES}
 	"${PROJECT_SOURCE_DIR}/../../../../common/logging/src/easylogging++.cc" ) 
 
 # 指定生成目标
-find_package(Boost 1.71.0 COMPONENTS date_time REQUIRED)
-find_library(SERIAL_LIBRARY serial ${LIBRARY_DIRECTORY})
+find_library(SERIALPORT_LIBRARY serialport ${LIBRARY_DIRECTORY})
 
 add_executable (testgui ${SOURCE_FILES} testguilink.cc)
 target_include_directories(testgui PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(testgui ${SERIAL_LIBRARY})
-target_link_libraries(testgui ${Boost_LIBRARIES})
+target_link_libraries(testgui ${SERIALPORT_LIBRARY})
 
