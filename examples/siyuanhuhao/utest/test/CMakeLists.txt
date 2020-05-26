@@ -15,7 +15,7 @@ elseif(WIN32)
     message("This is a Windows System")
 endif()
 
-set(CMAKE_BUILD_TYPE "Release") # "Debug" or "Release" mode
+set(CMAKE_BUILD_TYPE "Debug") # "Debug" or "Release" mode
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -Wextra -g -ggdb -pedantic")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -march=native -mavx")
 
@@ -41,7 +41,7 @@ set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY}
 find_package(Threads REQUIRED)
 find_package(GeographicLib 1.49 REQUIRED)
 find_package(osqp REQUIRED)
-find_library(SERIAL_LIBRARY serial HINTS ${LIBRARY_DIRECTORY})
+find_library(SERIALPORT_LIBRARY serialport HINTS ${LIBRARY_DIRECTORY})
 find_library(SQLITE3_LIBRARY sqlite3 HINTS ${LIBRARY_DIRECTORY})
 find_library(MOSEK8_LIBRARY mosek64 HINTS ${LIBRARY_DIRECTORY})
 find_library(NRPCLIENT_LIBRARY NRPClient HINTS ${LIBRARY_DIRECTORY})
@@ -55,7 +55,7 @@ set(SOURCE_FILES ${SOURCE_FILES}
 	"${CMAKE_CURRENT_SOURCE_DIR}/run.cc")
 add_executable (testASV ${SOURCE_FILES})
 target_include_directories(testASV PRIVATE ${HEADER_DIRECTORY})
-target_link_libraries(testASV PUBLIC ${SERIAL_LIBRARY})
+target_link_libraries(testASV PUBLIC ${SERIALPORT_LIBRARY})
 target_link_libraries(testASV PUBLIC ${SQLITE3_LIBRARY})
 target_link_libraries(testASV PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(testASV PUBLIC ${MOSEK8_LIBRARY})

@@ -54,6 +54,7 @@ constexpr common::TESTMODE testmode = common::TESTMODE::SIMULATION_DOCKING;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_AVOIDANCE;
 // constexpr common::TESTMODE testmode = common::TESTMODE::EXPERIMENT_DOCKING;
 
+// record the config file
 void WriteConstConfig2File(const std::string &filepath) {
   // prepare the config
   std::string j_indicator_kalman = "on";
