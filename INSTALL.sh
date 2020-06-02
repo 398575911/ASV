@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo apt update
-sudo apt install build-essential cmake sqlite3 libsqlite3-dev libboost-all-dev rsync \
-   python3 python3-pip vim sshfs cutecom gnuplot
+sudo apt install build-essential cmake sqlite3 libsqlite3-dev rsync \
+   python3 python3-pip vim sshfs cutecom
 
 # install GeographicLib
 cd third_party/
@@ -22,7 +22,9 @@ cd ../libserialport
 ./autogen.sh
 ./configure
 make
-sudo make install	
+sudo make install
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+sudo ldconfig
 
 #### install mosek9   ###
 cd ../mosek
@@ -38,10 +40,14 @@ sudo mkdir -m 777 ~/mosek
 sudo mv mosek.lic ~/mosek/
 
 #### install osqp   ###
-
+cd ../osqp
+sudo mkdir build
+cd build
+cmake -G "Unix Makefiles" ..
+sudo cmake --build . --target install
 
 #### install pyclustering   ###
 
 
 #### install gnuplot (optional) ###
-sudo apt install gnuplot
+sudo apt install gnuplot libboost-all-dev

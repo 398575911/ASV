@@ -29,7 +29,7 @@ class wind {
     static unsigned char buff_send_wind[] = {0x02, 0x03, 0x00, 0x2A,
                                              0x00, 0x02, 0xE5, 0xF0};
 
-    char buff_rec[9];
+    unsigned char buff_rec[9];
 
     ser_wind_.writeline(buff_send_wind, 8);
     ser_wind_.readline(buff_rec, 9);

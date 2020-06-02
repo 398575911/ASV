@@ -110,8 +110,8 @@ controllerdata = controllerdata[
 # results of 2d trajectory of vessel
 plt.figure(2, figsize=(10, 8))
 plt.suptitle("Plannar trajectory of GPS", fontsize=14)
-plt.plot(estimatordata["meas_y"],
-         estimatordata["meas_x"]-3e6, 'ko', lw=2, markersize=1)
+plt.plot(estimatordata["meas_y"]-3.509e5,
+         estimatordata["meas_x"]-3.4337e6, 'ko', lw=2, markersize=1)
 # plt.plot(wpdata['Y'], wpdata['X'],
 #          color='tab:gray', lineStyle='-', lw=1)
 plt.axis('equal')
@@ -127,7 +127,7 @@ plt.suptitle("time series of positions", fontsize=12)
 plt.subplot(2, 1, 1)
 plt.plot(estimatordata['DATETIME'], estimatordata['state_u'], '-r', lw=2)
 plt.plot(controllerdata['DATETIME'], controllerdata['set_u'],
-         color='tab:blue', lineStyle='-', lw=2)
+         ':k', lw=2)
 plt.ylim(0.8, 1.4)
 plt.xticks(fontsize=16)
 plt.yticks(fontsize=16)
@@ -139,7 +139,7 @@ plt.subplot(2, 1, 2)
 plt.plot(estimatordata['DATETIME'],
          estimatordata['state_theta']*180/math.pi, '-r', lw=2)
 plt.plot(controllerdata['DATETIME'], controllerdata['set_theta']*180/math.pi,
-         color='tab:blue', lineStyle='-', lw=2)
+         ':k', lw=2)
 plt.xticks(fontsize=16)
 plt.yticks(fontsize=16)
 plt.ylabel('theta (deg)', fontsize=16)

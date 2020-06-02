@@ -107,16 +107,19 @@ controllerdata = controllerdata[
     & (controllerdata['DATETIME'] < time_stamp_select[1])]
 
 
+fontsize_ = 14
 # results of 2d trajectory of vessel
 plt.figure(2, figsize=(10, 8))
-plt.suptitle("Plannar trajectory of GPS", fontsize=14)
+plt.suptitle("Plannar trajectory of GPS", fontsize=10)
 plt.plot(estimatordata["meas_y"]-3.509e5,
          estimatordata["meas_x"]-3.4337e6, 'ko', lw=2, markersize=1)
 # plt.plot(wpdata['Y'], wpdata['X'],
 #          color='tab:gray', lineStyle='-', lw=1)
 plt.axis('equal')
-plt.xlabel('E (m)')
-plt.ylabel('N (m)')
+plt.xticks(fontsize=fontsize_)
+plt.yticks(fontsize=fontsize_)
+plt.xlabel('E (m)', fontsize=fontsize_)
+plt.ylabel('N (m)', fontsize=fontsize_)
 
 
 plt.savefig('trajectory.png')
@@ -127,26 +130,30 @@ plt.suptitle("time series of speed", fontsize=12)
 plt.subplot(3, 1, 1)
 plt.plot(estimatordata['DATETIME'], estimatordata['state_u'], '-r', lw=2)
 plt.plot(controllerdata['DATETIME'], controllerdata['set_u'],
-         color='tab:blue', lineStyle='-', lw=2)
-plt.ylabel('u (m/s)')
-plt.legend(('estimated', 'desired'), loc='upper right')
+         ':k', lw=2)
+plt.ylabel('u (m/s)', fontsize=fontsize_)
+plt.legend(('estimated', 'desired'), loc='lower right', fontsize=fontsize_)
+plt.xticks(fontsize=fontsize_)
+plt.yticks(fontsize=fontsize_)
 
 plt.subplot(3, 1, 2)
 plt.plot(estimatordata['DATETIME'],
          estimatordata['state_theta']*180/math.pi, '-r', lw=2)
 plt.plot(controllerdata['DATETIME'], controllerdata['set_theta']*180/math.pi,
-         color='tab:blue', lineStyle='-', lw=2)
-plt.ylabel('theta (deg)')
-plt.legend(('estimated', 'desired'), loc='upper right')
-
+         ':k', lw=2)
+plt.ylabel('theta (deg)', fontsize=fontsize_)
+plt.legend(('estimated', 'desired'), loc='upper right', fontsize=fontsize_)
+plt.xticks(fontsize=fontsize_)
+plt.yticks(fontsize=fontsize_)
 
 plt.subplot(3, 1, 3)
 plt.plot(estimatordata['DATETIME'], estimatordata['state_r'], '-r', lw=2)
-plt.plot(controllerdata['DATETIME'], controllerdata['set_r'],
-         color='tab:blue', lineStyle='-', lw=2)
-plt.ylabel('r (rad/s)')
-plt.legend(('estimated', 'desired'), loc='upper right')
-
+plt.plot(controllerdata['DATETIME'], controllerdata['set_r'], ':k', lw=2)
+plt.ylabel('r (rad/s)', fontsize=fontsize_)
+plt.xlabel('time (s)', fontsize=fontsize_)
+plt.legend(('estimated', 'desired'), loc='lower right', fontsize=fontsize_)
+plt.xticks(fontsize=fontsize_)
+plt.yticks(fontsize=fontsize_)
 plt.savefig('time.png')
 
 
