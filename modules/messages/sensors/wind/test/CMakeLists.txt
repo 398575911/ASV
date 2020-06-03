@@ -21,7 +21,6 @@ set(SOURCE_FILES ${SOURCE_FILES}
 find_library(SERIALPORT_LIBRARY serialport HINTS ${LIBRARY_DIRECTORY})
 
 
-
 # 指定生成目标
 add_executable (testwind testwind.cc ${SOURCE_FILES} )
 target_include_directories(testwind PRIVATE ${HEADER_DIRECTORY})

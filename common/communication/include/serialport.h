@@ -52,14 +52,14 @@ class serialport {
   //   return str_read;
   // }  // readline
 
-  void readline(char *buf, int read_bytes) {
-    /* Try to receive the data on the other port. */
-    int result = check(sp_blocking_read(s_port_, buf, read_bytes, timeout_));
+  // void readline(char *buf, int read_bytes) {
+  //   /* Try to receive the data on the other port. */
+  //   int result = check(sp_blocking_read(s_port_, buf, read_bytes, timeout_));
 
-    /* Check if we received the same data we sent. */
-    buf[result] = '\0';
+  //   /* Check if we received the same data we sent. */
+  //   buf[result] = '\0';
 
-  }  // readline
+  // }  // readline
 
   void readline(unsigned char *buf, int read_bytes) {
     /* Try to receive the data on the other port. */

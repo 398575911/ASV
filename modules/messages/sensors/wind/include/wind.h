@@ -13,6 +13,7 @@
 
 #include "common/communication/include/CRC.h"
 #include "common/communication/include/serialport.h"
+#include "common/logging/include/easylogging++.h"
 #include "winddata.h"
 
 namespace ASV::messages {
@@ -39,15 +40,11 @@ class wind {
 
     if ((buff_rec[7] == (crc_result >> 8)) &&
         (buff_rec[8] == (crc_result & 0x00FF))) {
-      printf("check success\n");
+      windRTdata_.speed = 0.1 * (buff_rec[4] + buff_rec[3] * 256);
+      windRTdata_.orientation = 0.1 * (buff_rec[6] + buff_rec[5] * 256);
     } else {
-      printf("crc fail\n");
+      CLOG(ERROR, "Wind") << "crc16 check fail!";
     }
-
-    // printf("%04x\n", c1);
-
-    windRTdata_.speed = 0.1 * (buff_rec[4] + buff_rec[3] * 256);
-    windRTdata_.orientation = 0.1 * (buff_rec[6] + buff_rec[5] * 256);
 
     return *this;
   }  // readwind

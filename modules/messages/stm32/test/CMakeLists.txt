@@ -21,14 +21,13 @@ set(HEADER_DIRECTORY ${HEADER_DIRECTORY}
 
 set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY} 
     "/usr/lib"
-    "/usr/local/lib"
    )
  
 set(SOURCE_FILES ${SOURCE_FILES} 
 	"${PROJECT_SOURCE_DIR}/../../../../common/logging/src/easylogging++.cc" )
 
 
-find_library(SERIALPORT_LIBRARY serialport ${LIBRARY_DIRECTORY})
+find_library(SERIALPORT_LIBRARY serialport HINTS ${LIBRARY_DIRECTORY})
 # 指定生成目标
 add_executable (teststm32 teststm32.cc ${SOURCE_FILES})
 target_include_directories(teststm32 PRIVATE ${HEADER_DIRECTORY})

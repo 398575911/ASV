@@ -12,7 +12,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 
 set(LIBRARY_DIRECTORY ${LIBRARY_DIRECTORY} 
     "/usr/lib"
-    "/usr/local/lib"
    )
     
 # 添加 include 子目录

@@ -15,6 +15,9 @@
 using namespace ASV::messages;
 
 int main() {
+  el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
+  LOG(INFO) << "The program has started!";
+
   // real time wind sensor
   windRTdata _windRTdata{
       0,  // speed
