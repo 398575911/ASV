@@ -14,6 +14,7 @@
 #include <thread>
 #include "PLCdata.h"
 #include "common/communication/include/CRC.h"
+#include "common/communication/include/dataserialization.h"
 #include "common/communication/include/serialport.h"
 #include "common/logging/include/easylogging++.h"
 
@@ -38,9 +39,9 @@ class PLC_link {
   // communication with PLC
   PLC_link& PLConestep() {
     checkconnection(connection_count_, PLCdata_);
-    senddata2PLC(PLCdata_);
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(1));  // 对于单片机，最好不要sleep
+    // senddata2PLC(PLCdata_);
+    // std::this_thread::sleep_for(
+    //     std::chrono::milliseconds(1));  // 对于单片机，最好不要sleep
     if (parsedata_from_PLC(PLCdata_)) {
       // parse successfully
       connection_count_ = std::min(connection_count_ + 1, 10);
@@ -104,85 +105,37 @@ class PLC_link {
   }
 
   bool parsedata_from_PLC(PLCdata& _PLCdata) {
-    recv_buffer_ = PLC_serial_.readline(100, "\n");
+    unsigned char read_buffer[100];
 
-    std::size_t pos = recv_buffer.find("$");
-    if (pos != std::string::npos) {
-      // remove string before "$"
-      recv_buffer = recv_buffer.substr(pos + 1);
-      std::size_t rpos = recv_buffer.rfind("*");
-      if (rpos != std::string::npos) {
-        // compute the expected crc checksum value
-        std::string expected_crc = recv_buffer.substr(rpos + 1);
-        expected_crc.pop_back();
-        recv_buffer = recv_buffer.substr(0, rpos);
+    PLC_serial_.readline(read_buffer, 100);
 
-        if (std::to_string(ASV::common::CRC::Calculate<uint16_t, 16>(
-                recv_buffer.c_str(), rpos,
-                ASV::common::CRC::CRC_16_MODBUS())) == expected_crc) {
-          int _stm32status = 0;
-          sscanf(recv_buffer.c_str(),
-                 "PC,"
-                 "%d,"   // stm32status
-                 "%lf,"  // voltage_b1
-                 "%lf,"  // voltage_b2
-                 "%lf,"  // voltage_b3
-                 "%lf,"  // feedback_u1
-                 "%lf,"  // feedback_u2
-                 "%d,"   // feedback_pwm1
-                 "%d,"   // feedback_pwm2
-                 "%lf,"  // RC_X
-                 "%lf,"  // RC_Y
-                 "%lf"   // RC_Mz
-                 ,
-                 &_stm32status,                // int
-                 &(_stm32data.voltage_b1),     // double
-                 &(_stm32data.voltage_b2),     // double
-                 &(_stm32data.voltage_b3),     // double
-                 &(_stm32data.feedback_u1),    // double
-                 &(_stm32data.feedback_u2),    // double
-                 &(_stm32data.feedback_pwm1),  // int
-                 &(_stm32data.feedback_pwm2),  // int
-                 &(_stm32data.RC_X),           // double
-                 &(_stm32data.RC_Y),           // double
-                 &(_stm32data.RC_Mz)           // double
-          );
+    uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
+        read_buffer, 10, ASV::common::CRC::CRC_16_MODBUS());
 
-          _stm32data.feedback_stm32status =
-              static_cast<STM32STATUS>(_stm32status);
-          return true;
-
-        } else {
-          CLOG(INFO, "stm32-serial") << " checksum error!";
-        }
-      }
+    if ((read_buffer[8] == (crc_result >> 8)) &&
+        (read_buffer[7] == (crc_result & 0x00FF))) {
+      // windRTdata_.speed = 0.1 * (buff_rec[4] + buff_rec[3] * 256);
+      // windRTdata_.orientation = 0.1 * (buff_rec[6] + buff_rec[5] * 256);
+      return true;
+    } else {
+      CLOG(INFO, "PLC-serial") << " checksum error!";
     }
+
     return false;
-  }  // parsedata_from_stm32
+  }  // parsedata_from_PLC
 
-  void senddata2stm32(const stm32data& _stm32data) {
-    send_buffer.clear();
-    send_buffer = "STM";
-    convert2string(_stm32data, send_buffer);
+  // void senddata2PLC(const stm32data& _stm32data) {
+  //   send_buffer.clear();
+  //   send_buffer = "STM";
+  //   convert2string(_stm32data, send_buffer);
 
-    uint16_t crc = ASV::common::CRC::Calculate<uint16_t, 16>(
-        send_buffer.c_str(), send_buffer.length(),
-        ASV::common::CRC::CRC_16_MODBUS());
+  //   uint16_t crc = ASV::common::CRC::Calculate<uint16_t, 16>(
+  //       send_buffer.c_str(), send_buffer.length(),
+  //       ASV::common::CRC::CRC_16_MODBUS());
 
-    send_buffer = "$" + send_buffer + "*" + std::to_string(crc) + "\n";
-    bytes_send = stm32_serial.writeline(send_buffer);
-  }  // senddata2stm32
-
-  void convert2string(const stm32data& _stm32data, std::string& _str) {
-    _str += ",";
-    _str += _stm32data.UTC_time;
-    _str += ",";
-    _str += std::to_string(_stm32data.command_u1);
-    _str += ",";
-    _str += std::to_string(_stm32data.command_u2);
-    _str += ",";
-    _str += std::to_string(static_cast<int>(_stm32data.command_stm32status));
-  }  // convert2string
+  //   send_buffer = "$" + send_buffer + "*" + std::to_string(crc) + "\n";
+  //   bytes_send = stm32_serial.writeline(send_buffer);
+  // }  // senddata2PLC
 
 };  // end class PLC_link
 

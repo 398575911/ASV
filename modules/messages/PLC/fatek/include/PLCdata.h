@@ -27,7 +27,7 @@ enum class PLCSTATUS {
   EMERGENCY_STOP  // 急停
 };
 
-struct IPC2PLCdata {
+struct PLCdata {
   /********* from IPC to PLC **********/
   // motor
   int16_t Thruster_A_rpm_command;      // rpm

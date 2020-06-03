@@ -1,6 +1,15 @@
+/*
+*******************************************************************************
+* dataserial_test.cc:
+* unit test for data serialization
+* This header file can be read by C++ compilers
+*
+* by Hu.ZH(CrossOcean.ai)
+*******************************************************************************
+*/
 #include "../include/dataserialization.h"
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #include <assert.h>
 #include <float.h>
@@ -18,13 +27,14 @@ int main(void) {
   char s2[96];
   unsigned int packetsize, ps2;
 
-  packetsize = pack(buf, "CHhlsd", 'B', 0, 37, -5, s, -3490.5);
-  packi16(buf + 1, packetsize);  // store packet size in packet for kicks
+  packetsize = ASV::common::pack(buf, "CHhlsd", 'B', 0, 37, -5, s, -3490.5);
+  ASV::common::packi16(buf + 1,
+                       packetsize);  // store packet size in packet for kicks
 
   printf("packet is %u bytes\n", packetsize);
 
-  unpack(buf, "CHhl96sd", &magic, &ps2, &monkeycount, &altitude, s2,
-         &absurdityfactor);
+  ASV::common::unpack(buf, "CHhl96sd", &magic, &ps2, &monkeycount, &altitude,
+                      s2, &absurdityfactor);
 
   printf("'%c' %hhu %u %ld \"%s\" %f\n", magic, ps2, monkeycount, altitude, s2,
          absurdityfactor);
@@ -35,20 +45,21 @@ int main(void) {
   int x;
 
   long long k, k2;
-  long long test64[14] = {0,
-                          -0,
-                          1,
-                          2,
-                          -1,
-                          -2,
-                          0x7fffffffffffffffll >> 1,
-                          0x7ffffffffffffffell,
-                          0x7fffffffffffffffll,
-                          -0x7fffffffffffffffll,
-                          -0x8000000000000000ll,
-                          9007199254740991ll,
-                          9007199254740992ll,
-                          9007199254740993ll};
+
+  long long int test64[14] = {0,
+                              -0,
+                              1,
+                              2,
+                              -1,
+                              -2,
+                              0x7fffffffffffffffll >> 1,
+                              0x7ffffffffffffffell,
+                              0x7fffffffffffffffll,
+                              -0x7fffffffffffffffll,
+                              -0x8000000000000001ll,
+                              9007199254740991ll,
+                              9007199254740992ll,
+                              9007199254740993ll};
 
   unsigned long long K, K2;
   unsigned long long testu64[14] = {0,
@@ -101,8 +112,8 @@ int main(void) {
 
   for (x = 0; x < 14; x++) {
     k = test64[x];
-    pack(buf, "q", k);
-    unpack(buf, "q", &k2);
+    ASV::common::pack(buf, "q", k);
+    ASV::common::unpack(buf, "q", &k2);
 
     if (k2 != k) {
       printf("64: %lld != %lld\n", k, k2);
@@ -117,8 +128,8 @@ int main(void) {
     }
 
     K = testu64[x];
-    pack(buf, "Q", K);
-    unpack(buf, "Q", &K2);
+    ASV::common::pack(buf, "Q", K);
+    ASV::common::unpack(buf, "Q", &K2);
 
     if (K2 != K) {
       printf("64: %llu != %llu\n", K, K2);
@@ -127,8 +138,8 @@ int main(void) {
     }
 
     i = test32[x];
-    pack(buf, "l", i);
-    unpack(buf, "l", &i2);
+    ASV::common::pack(buf, "l", i);
+    ASV::common::unpack(buf, "l", &i2);
 
     if (i2 != i) {
       printf("32(%d): %ld != %ld\n", x, i, i2);
@@ -143,8 +154,8 @@ int main(void) {
     }
 
     I = testu32[x];
-    pack(buf, "L", I);
-    unpack(buf, "L", &I2);
+    ASV::common::pack(buf, "L", I);
+    ASV::common::unpack(buf, "L", &I2);
 
     if (I2 != I) {
       printf("32(%d): %lu != %lu\n", x, I, I2);
@@ -153,8 +164,8 @@ int main(void) {
     }
 
     j = test16[x];
-    pack(buf, "h", j);
-    unpack(buf, "h", &j2);
+    ASV::common::pack(buf, "h", j);
+    ASV::common::unpack(buf, "h", &j2);
 
     if (j2 != j) {
       printf("16: %d != %d\n", j, j2);
@@ -170,8 +181,8 @@ int main(void) {
 
     for (i = 0; i < 8; i++) {
       f = testf64[i];
-      pack(buf, "g", f);
-      unpack(buf, "g", &f2);
+      ASV::common::pack(buf, "g", f);
+      ASV::common::unpack(buf, "g", &f2);
 
       if (f2 != f) {
         printf("f64: %Lf != %Lf\n", f, f2);
@@ -192,8 +203,8 @@ int main(void) {
 
     for (i = 0; i < 7; i++) {
       f = testf32[i];
-      pack(buf, "d", f);
-      unpack(buf, "d", &f2);
+      ASV::common::pack(buf, "d", f);
+      ASV::common::unpack(buf, "d", &f2);
 
       if (f2 != f) {
         printf("f32: %.10f != %.10f\n", f, f2);
@@ -214,8 +225,8 @@ int main(void) {
 
     for (i = 0; i < 7; i++) {
       f = testf16[i];
-      pack(buf, "f", f);
-      unpack(buf, "f", &f2);
+      ASV::common::pack(buf, "f", f);
+      ASV::common::unpack(buf, "f", &f2);
 
       if (f2 != f) {
         printf("f16: %f != %f\n", f, f2);

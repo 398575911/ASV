@@ -16,13 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 
-// macros for packing floats and doubles:
-#define pack754_16(f) (pack754((f), 16, 5))
-#define pack754_32(f) (pack754((f), 32, 8))
-#define pack754_64(f) (pack754((f), 64, 11))
-#define unpack754_16(i) (unpack754((i), 16, 5))
-#define unpack754_32(i) (unpack754((i), 32, 8))
-#define unpack754_64(i) (unpack754((i), 64, 11))
+namespace ASV::common {
 
 // pack754() -- pack a floating point number into IEEE-754 format
 unsigned long long int pack754(long double f, unsigned bits, unsigned expbits) {
@@ -232,7 +226,7 @@ unsigned long long int unpacku64(unsigned char *buf) {
 **  (16-bit unsigned length is automatically prepended to strings)
 */
 
-unsigned int pack(unsigned char *buf, char *format, ...) {
+unsigned int pack(unsigned char *buf, const char *format, ...) {
   va_list ap;
 
   signed char c;  // 8-bit
@@ -318,7 +312,7 @@ unsigned int pack(unsigned char *buf, char *format, ...) {
       case 'f':  // float-16
         size += 2;
         f = (float)va_arg(ap, double);  // promoted
-        fhold = pack754_16(f);          // convert to IEEE 754
+        fhold = pack754(f, 16, 5);      // convert to IEEE 754
         packi16(buf, fhold);
         buf += 2;
         break;
@@ -326,7 +320,7 @@ unsigned int pack(unsigned char *buf, char *format, ...) {
       case 'd':  // float-32
         size += 4;
         d = va_arg(ap, double);
-        fhold = pack754_32(d);  // convert to IEEE 754
+        fhold = pack754(d, 32, 8);  // convert to IEEE 754
         packi32(buf, fhold);
         buf += 4;
         break;
@@ -334,7 +328,7 @@ unsigned int pack(unsigned char *buf, char *format, ...) {
       case 'g':  // float-64
         size += 8;
         g = va_arg(ap, long double);
-        fhold = pack754_64(g);  // convert to IEEE 754
+        fhold = pack754(g, 64, 11);  // convert to IEEE 754
         packi64(buf, fhold);
         buf += 8;
         break;
@@ -370,7 +364,7 @@ unsigned int pack(unsigned char *buf, char *format, ...) {
 **  (string is extracted based on its stored length, but 's' can be
 **  prepended with a max length)
 */
-void unpack(unsigned char *buf, char *format, ...) {
+void unpack(unsigned char *buf, const char *format, ...) {
   va_list ap;
 
   signed char *c;  // 8-bit
@@ -452,21 +446,21 @@ void unpack(unsigned char *buf, char *format, ...) {
       case 'f':  // float
         f = va_arg(ap, float *);
         fhold = unpacku16(buf);
-        *f = unpack754_16(fhold);
+        *f = unpack754(fhold, 16, 5);
         buf += 2;
         break;
 
       case 'd':  // float-32
         d = va_arg(ap, double *);
         fhold = unpacku32(buf);
-        *d = unpack754_32(fhold);
+        *d = unpack754(fhold, 32, 8);
         buf += 4;
         break;
 
       case 'g':  // float-64
         g = va_arg(ap, long double *);
         fhold = unpacku64(buf);
-        *g = unpack754_64(fhold);
+        *g = unpack754(fhold, 64, 11);
         buf += 8;
         break;
 
@@ -494,5 +488,7 @@ void unpack(unsigned char *buf, char *format, ...) {
 
   va_end(ap);
 }
+
+}  // namespace ASV::common
 
 #endif /* _DATASERIALIZATION_H_ */
