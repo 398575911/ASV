@@ -25,7 +25,7 @@ int main() {
   };
 
   try {
-    wind _wind(9600, "/dev/ttyr7");  // zone 30n
+    wind _wind(9600, "/dev/ttyr3");  // zone 30n
 
     while (1) {
       _windRTdata = _wind.readwind().getwindRTdata();

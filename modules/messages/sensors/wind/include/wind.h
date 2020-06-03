@@ -38,8 +38,8 @@ class wind {
     uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
         buff_rec, 7, ASV::common::CRC::CRC_16_MODBUS());
 
-    if ((buff_rec[7] == (crc_result >> 8)) &&
-        (buff_rec[8] == (crc_result & 0x00FF))) {
+    if ((buff_rec[8] == (crc_result >> 8)) &&
+        (buff_rec[7] == (crc_result & 0x00FF))) {
       windRTdata_.speed = 0.1 * (buff_rec[4] + buff_rec[3] * 256);
       windRTdata_.orientation = 0.1 * (buff_rec[6] + buff_rec[5] * 256);
     } else {

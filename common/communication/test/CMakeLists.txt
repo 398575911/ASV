@@ -48,3 +48,6 @@ target_include_directories(testtcpclient PRIVATE ${HEADER_DIRECTORY})
 add_executable (serial_test serial_test.cc ${SOURCE_FILES} )
 target_include_directories(serial_test PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(serial_test PRIVATE ${SERIALPORT_LIBRARY})
+
+add_executable (dataserial_test dataserial_test.cc)
+target_include_directories(dataserial_test PRIVATE ${HEADER_DIRECTORY})
