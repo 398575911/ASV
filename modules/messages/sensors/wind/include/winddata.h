@@ -14,8 +14,8 @@
 namespace ASV::messages {
 
 struct windRTdata {
-  double speed;        // m/s
-  double orientation;  // rad
+  float speed;  // m/s
+  uint8_t direction;
 };
 
 }  // namespace ASV::messages

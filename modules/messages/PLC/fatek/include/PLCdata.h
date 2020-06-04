@@ -40,6 +40,10 @@ struct PLCdata {
   float longitude;  // deg
   float heading;    // deg
 
+  // wind
+  float wind_speed;
+  int16_t wind_direction;
+
   /********* from PLC to IPC **********/
   // motor
   uint8_t Thruster_A_status;

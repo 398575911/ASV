@@ -31,8 +31,10 @@ int main() {
   try {
     PLC_link _PLC_link(_PLCdata, 115200, "/dev/ttyUSB0");  // zone 30n
 
-    for (int i = 0; i != 100; i++) {
-      _PLC_link.setupPLCdata(0, 0, 0, 0, 0, 0, 0).PLConestep();
+    for (int i = 0; i != 100; i) {
+      _PLC_link
+          .setupPLCdata(10, -20, 30, 3000, 134.2323232, 31.87342, 270.1, 1.2, 6)
+          .PLConestep();
       long int et = _timer.timeelapsed();
       std::cout << "sample time: " << et << std::endl;
 
