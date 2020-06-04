@@ -27,10 +27,6 @@ class PLC_link {
                     const std::string& _port = "/dev/ttyUSB0")
       : PLCdata_(_PLCdata),
         PLC_serial_(_port, _baud, 100),
-        send_buffer_(""),
-        recv_buffer_(""),
-        bytes_send_(0),
-        bytes_reci_(0),
         connection_count_(0) {
     checkserialstatus();
   }
@@ -39,7 +35,7 @@ class PLC_link {
   // communication with PLC
   PLC_link& PLConestep() {
     checkconnection(connection_count_, PLCdata_);
-    // senddata2PLC(PLCdata_);
+    senddata2PLC(PLCdata_);
     // std::this_thread::sleep_for(
     //     std::chrono::milliseconds(1));  // 对于单片机，最好不要sleep
     if (parsedata_from_PLC(PLCdata_)) {
@@ -74,17 +70,11 @@ class PLC_link {
   }  // setupPLCdata
 
   auto getPLCdata() const noexcept { return PLCdata_; }
-  std::string recv_buffer() const noexcept { return recv_buffer_; }
-  std::string send_buffer() const noexcept { return send_buffer_; }
 
  private:
   PLCdata PLCdata_;
   /** serial data **/
   ASV::common::serialport PLC_serial_;
-  std::string send_buffer_;
-  std::string recv_buffer_;
-  std::size_t bytes_send_;
-  std::size_t bytes_reci_;
 
   int connection_count_;
 
@@ -105,17 +95,45 @@ class PLC_link {
   }
 
   bool parsedata_from_PLC(PLCdata& _PLCdata) {
-    unsigned char read_buffer[100];
+    unsigned char read_buffer[46] = {0x00};
 
-    PLC_serial_.readline(read_buffer, 100);
+    PLC_serial_.readline(read_buffer, 46);
+
+    printf("buffer\n");
+    for (int i = 0; i != 46; ++i) printf("%02x\n", read_buffer[i]);
 
     uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
-        read_buffer, 10, ASV::common::CRC::CRC_16_MODBUS());
+        read_buffer, 44, ASV::common::CRC::CRC_16_MODBUS());
 
-    if ((read_buffer[8] == (crc_result >> 8)) &&
-        (read_buffer[7] == (crc_result & 0x00FF))) {
+    printf("%04x\n", crc_result);
+    if ((read_buffer[45] == (crc_result >> 8)) &&
+        (read_buffer[44] == (crc_result & 0x00FF))) {
+      int16_t Thruster_A_status = 0;
+      int16_t Thruster_A_rpm_feedback = 0;
+      int16_t Thruster_A_azimuth_feedback = 0;
+      int16_t Thruster_B_status = 0;
+      int16_t Thruster_B_rpm_feedback = 0;
+      int16_t Thruster_B_azimuth_feedback = 0;
+
+      ASV::common::unpack(read_buffer, "hhhhhh",
+                          &Thruster_A_status,            // int16_t
+                          &Thruster_A_rpm_feedback,      // int16_t
+                          &Thruster_A_azimuth_feedback,  // int16_t
+                          &Thruster_B_status,            // int16_t
+                          &Thruster_B_rpm_feedback,      // int16_t
+                          &Thruster_B_azimuth_feedback   // int16_t
+      );
+
+      printf("%02x\n", Thruster_A_status);
+      printf("%d\n", Thruster_A_rpm_feedback);
+      printf("%d\n", Thruster_A_azimuth_feedback);
+      printf("%02x\n", Thruster_B_status);
+      printf("%d\n", Thruster_B_rpm_feedback);
+      printf("%d\n", Thruster_B_azimuth_feedback);
+
       // windRTdata_.speed = 0.1 * (buff_rec[4] + buff_rec[3] * 256);
       // windRTdata_.orientation = 0.1 * (buff_rec[6] + buff_rec[5] * 256);
+
       return true;
     } else {
       CLOG(INFO, "PLC-serial") << " checksum error!";
@@ -124,18 +142,20 @@ class PLC_link {
     return false;
   }  // parsedata_from_PLC
 
-  // void senddata2PLC(const stm32data& _stm32data) {
-  //   send_buffer.clear();
-  //   send_buffer = "STM";
-  //   convert2string(_stm32data, send_buffer);
+  void senddata2PLC(const PLCdata& _PLCdata) {
+    unsigned char t_send_buf[100] = {0x00};
+    ASV::common::pack(t_send_buf, "hhhh",
+                      _PLCdata.Thruster_A_rpm_command,      // int16_t
+                      _PLCdata.Thruster_A_azimuth_command,  // int16_t
+                      _PLCdata.Thruster_B_rpm_command,      // int16_t
+                      _PLCdata.Thruster_B_azimuth_command);
 
-  //   uint16_t crc = ASV::common::CRC::Calculate<uint16_t, 16>(
-  //       send_buffer.c_str(), send_buffer.length(),
-  //       ASV::common::CRC::CRC_16_MODBUS());
+    uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
+        t_send_buf, 10, ASV::common::CRC::CRC_16_MODBUS());
 
-  //   send_buffer = "$" + send_buffer + "*" + std::to_string(crc) + "\n";
-  //   bytes_send = stm32_serial.writeline(send_buffer);
-  // }  // senddata2PLC
+    // send_buffer = "$" + send_buffer + "*" + std::to_string(crc) + "\n";
+    PLC_serial_.writeline(t_send_buf, 8);
+  }  // senddata2PLC
 
 };  // end class PLC_link
 
