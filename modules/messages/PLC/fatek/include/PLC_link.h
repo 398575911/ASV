@@ -36,8 +36,7 @@ class PLC_link {
   PLC_link& PLConestep() {
     checkconnection(connection_count_, PLCdata_);
     senddata2PLC(PLCdata_);
-    // std::this_thread::sleep_for(
-    //     std::chrono::milliseconds(1));  // 对于单片机，最好不要sleep
+
     if (parsedata_from_PLC(PLCdata_)) {
       // parse successfully
       connection_count_ = std::min(connection_count_ + 1, 10);
@@ -49,18 +48,18 @@ class PLC_link {
   }  // PLConestep
 
   PLC_link& setupPLCdata(const int Thruster_A_rpm_command,
-                         const int Thruster_A_azimuth_command,
                          const int Thruster_B_rpm_command,
+                         const int Thruster_A_azimuth_command,
                          const int Thruster_B_azimuth_command,
                          const double longitude, const double latitude,
                          const double heading, const float wind_speed,
                          const uint8_t wind_direction) {
     PLCdata_.Thruster_A_rpm_command =
         static_cast<int16_t>(Thruster_A_rpm_command);
-    PLCdata_.Thruster_A_azimuth_command =
-        static_cast<int16_t>(Thruster_A_azimuth_command);
     PLCdata_.Thruster_B_rpm_command =
         static_cast<int16_t>(Thruster_B_rpm_command);
+    PLCdata_.Thruster_A_azimuth_command =
+        static_cast<int16_t>(Thruster_A_azimuth_command);
     PLCdata_.Thruster_B_azimuth_command =
         static_cast<int16_t>(Thruster_B_azimuth_command);
     PLCdata_.longitude = static_cast<float>(longitude);
@@ -96,13 +95,11 @@ class PLC_link {
   }
 
   bool parsedata_from_PLC(PLCdata& _PLCdata) {
+    // read buffer from serial port
     unsigned char read_buffer[46] = {0x00};
-
     PLC_serial_.readline(read_buffer, 46);
 
-    // printf("buffer\n");
-    // for (int i = 0; i != 46; ++i) printf("%02x\n", read_buffer[i]);
-
+    // crc check
     uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
         read_buffer, 44, ASV::common::CRC::CRC_16_MODBUS());
 
@@ -193,8 +190,8 @@ class PLC_link {
     unsigned char t_send_buf[28] = {0x00};
     ASV::common::pack(t_send_buf, "hhhhddddh",
                       _PLCdata.Thruster_A_rpm_command,      // int16_t
-                      _PLCdata.Thruster_A_azimuth_command,  // int16_t
                       _PLCdata.Thruster_B_rpm_command,      // int16_t
+                      _PLCdata.Thruster_A_azimuth_command,  // int16_t
                       _PLCdata.Thruster_B_azimuth_command,  // int16_t
                       _PLCdata.longitude,                   // float
                       _PLCdata.latitude,                    // float

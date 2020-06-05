@@ -33,7 +33,8 @@ int main() {
 
     for (int i = 0; i != 100; i) {
       _PLC_link
-          .setupPLCdata(10, -20, 30, 3000, 134.2323232, 31.87342, 270.1, 1.2, 6)
+          .setupPLCdata(1000, 400, 30, 300, 134.2323232, 31.87342, 270.1, 1.2,
+                        6)
           .PLConestep();
       long int et = _timer.timeelapsed();
       std::cout << "sample time: " << et << std::endl;
