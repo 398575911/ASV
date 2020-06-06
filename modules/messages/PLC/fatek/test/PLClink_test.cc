@@ -32,14 +32,16 @@ int main() {
     PLC_link _PLC_link(_PLCdata, 115200, "/dev/ttyUSB0");  // zone 30n
 
     for (int i = 0; i != 100; i) {
+      // static int speed = 10;
+      // if (speed < 2000) speed += 10;
       _PLC_link
-          .setupPLCdata(1000, 400, 30, 300, 134.2323232, 31.87342, 270.1, 1.2,
+          .setupPLCdata(speed, 400, 30, 300, 134.2323232, 31.87342, 270.1, 1.2,
                         6)
           .PLConestep();
       long int et = _timer.timeelapsed();
       std::cout << "sample time: " << et << std::endl;
 
-      // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(80));
     }
 
   } catch (std::exception& e) {

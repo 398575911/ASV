@@ -154,6 +154,11 @@ class PLC_link {
 
       );
 
+      _PLCdata.power = total_ACPower;
+      _PLCdata.Thruster_A_azimuth_feedback =
+          static_cast<int16_t>(Thruster_A_azimuth_feedback) - 180;
+      _PLCdata.Thruster_B_azimuth_feedback =
+          static_cast<int16_t>(Thruster_B_azimuth_feedback) - 180;
       printf("unpack\n");
       printf("%d\n", Thruster_A_rpm_feedback);
       printf("%d\n", Thruster_B_rpm_feedback);

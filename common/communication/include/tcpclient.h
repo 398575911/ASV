@@ -17,8 +17,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <chrono>
-#include <thread>
+
+#include <string>
 
 class tcpclient {
  public:
@@ -28,8 +28,9 @@ class tcpclient {
   }
   ~tcpclient() { close(sockfd); }
 
-  void senddata(char *recv_buffer, const char *send_buffer, int recv_size,
-                int send_size) {
+  // send and recive data from socket server
+  void TransmitData(char *recv_buffer, const char *send_buffer, int recv_size,
+                    int send_size) {
     int send_bytes = send(sockfd, send_buffer, send_size, 0);
     if (send_bytes == -1) {
       perror("send");
@@ -40,12 +41,13 @@ class tcpclient {
       perror("recv");
       results = 1;
     }
-  }
+  }  // TransmitData
 
   void reconnect() {
     while (1) {
       connect2server();
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      sleep(1);
+      // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   }
 

@@ -183,7 +183,8 @@ class tcpserver {
 
     // keep track of the biggest file descriptor
     fdmax = listener;  // so far, it's this one
-  }
+
+  }  // initializesocket
 };
 
 }  // end namespace ASV

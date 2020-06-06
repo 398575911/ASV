@@ -9,6 +9,7 @@
 */
 
 #include <chrono>
+#include <thread>
 #include "../include/tcpclient.h"
 #define SAMPLES_PER_SPOKE 20
 
@@ -31,7 +32,7 @@ void test() {
   char recv_buffer[recv_size];
   uint8_t spokedata[SAMPLES_PER_SPOKE / 2];
   while (1) {
-    _tcpclient.senddata(recv_buffer, send_buffer, recv_size, send_size);
+    _tcpclient.TransmitData(recv_buffer, send_buffer, recv_size, send_size);
 
     for (int i = 0; i != 44; ++i) _radarmsg.header4[i] = recv_buffer[i];
     for (int i = 0; i != (SAMPLES_PER_SPOKE / 2); ++i) {
