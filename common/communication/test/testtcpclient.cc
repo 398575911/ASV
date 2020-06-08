@@ -31,7 +31,10 @@ void test() {
   char send_buffer[send_size] = "socket";
   char recv_buffer[recv_size];
   uint8_t spokedata[SAMPLES_PER_SPOKE / 2];
-  while (1) {
+
+  for (int i = 0; i != 1000; i++) {
+    _tcpclient.TrytoConnect();
+
     _tcpclient.TransmitData(recv_buffer, send_buffer, recv_size, send_size);
 
     for (int i = 0; i != 44; ++i) _radarmsg.header4[i] = recv_buffer[i];

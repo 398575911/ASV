@@ -23,8 +23,8 @@
 class tcpclient {
  public:
   tcpclient(const std::string &_ip, const std::string &_port)
-      : sockfd(0), results(0), ip_server(_ip), port(_port) {
-    connect2server();
+      : sockfd(0), results(-1), ip_server(_ip), port(_port) {
+    // results = connect2server();
   }
   ~tcpclient() { close(sockfd); }
 
@@ -43,13 +43,12 @@ class tcpclient {
     }
   }  // TransmitData
 
-  void reconnect() {
-    while (1) {
-      connect2server();
+  void TrytoConnect() {
+    if (results != 0) {
+      results = connect2server();
       sleep(1);
-      // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
-  }
+  }  // TrytoConnect
 
   int getsocketresults() const noexcept { return results; }
 
@@ -67,7 +66,7 @@ class tcpclient {
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
   }
 
-  void connect2server() {
+  int connect2server() {
     struct addrinfo hints, *servinfo, *p;
     char s[INET6_ADDRSTRLEN];
     memset(&hints, 0, sizeof hints);
@@ -76,7 +75,7 @@ class tcpclient {
     int rv = getaddrinfo(ip_server.c_str(), port.c_str(), &hints, &servinfo);
     if (rv != 0) {
       fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-      results = 1;
+      return 1;
     }
     // loop through all the results and connect to the first we can
     for (p = servinfo; p != NULL; p = p->ai_next) {
@@ -97,11 +96,13 @@ class tcpclient {
 
     if (p == NULL) {
       fprintf(stderr, "client: failed to connect\n");
-      results = 2;
+      freeaddrinfo(servinfo);
+      return 2;
     }
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s,
               sizeof s);
     printf("client: connecting to %s\n", s);
     freeaddrinfo(servinfo);  // all done with this structure
-  }
+    return 0;
+  }  // connect2server
 };
