@@ -7,11 +7,13 @@
 ***********************************************************************
 */
 
+#ifndef _TCPCLIENT_H_
+#define _TCPCLIENT_H_
+
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -19,26 +21,27 @@
 #include <unistd.h>
 
 #include <string>
+#include "common/logging/include/easylogging++.h"
+
+namespace ASV::common {
 
 class tcpclient {
  public:
   tcpclient(const std::string &_ip, const std::string &_port)
-      : sockfd(0), results(-1), ip_server(_ip), port(_port) {
-    // results = connect2server();
-  }
-  ~tcpclient() { close(sockfd); }
+      : sockfd(0), results(-1), ip_server(_ip), port(_port) {}
+  virtual ~tcpclient() { close(sockfd); }
 
   // send and recive data from socket server
   void TransmitData(char *recv_buffer, const char *send_buffer, int recv_size,
                     int send_size) {
     int send_bytes = send(sockfd, send_buffer, send_size, 0);
     if (send_bytes == -1) {
-      perror("send");
+      CLOG(ERROR, "tcp-client") << "send";
       results = 1;
     }
     int recv_bytes = recv(sockfd, recv_buffer, recv_size, 0);
     if (recv_bytes == -1) {
-      perror("recv");
+      CLOG(ERROR, "tcp-client") << "recv";
       results = 1;
     }
   }  // TransmitData
@@ -74,19 +77,19 @@ class tcpclient {
     hints.ai_socktype = SOCK_STREAM;
     int rv = getaddrinfo(ip_server.c_str(), port.c_str(), &hints, &servinfo);
     if (rv != 0) {
-      fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+      CLOG(ERROR, "tcp-client") << "getaddrinfo: " << gai_strerror(rv);
       return 1;
     }
     // loop through all the results and connect to the first we can
     for (p = servinfo; p != NULL; p = p->ai_next) {
       sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
       if (sockfd == -1) {
-        perror("client: socket");
+        CLOG(ERROR, "tcp-client") << "socket error";
         continue;
       }
 
       if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-        perror("client: connect");
+        CLOG(ERROR, "tcp-client") << "socket connec";
         close(sockfd);
         continue;
       }
@@ -95,14 +98,18 @@ class tcpclient {
     }
 
     if (p == NULL) {
-      fprintf(stderr, "client: failed to connect\n");
+      CLOG(ERROR, "tcp-client") << "fail to connect";
       freeaddrinfo(servinfo);
       return 2;
     }
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s,
               sizeof s);
-    printf("client: connecting to %s\n", s);
+    CLOG(ERROR, "tcp-client") << "connecting to " << std::string(s);
     freeaddrinfo(servinfo);  // all done with this structure
     return 0;
   }  // connect2server
-};
+};   // end class tcpclient
+
+}  // namespace ASV::common
+
+#endif /* _TCPCLIENT_H_ */

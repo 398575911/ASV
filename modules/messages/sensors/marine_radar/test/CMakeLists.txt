@@ -55,3 +55,7 @@ target_include_directories(testMarineRadar PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(testMarineRadar PUBLIC ${NRPCLIENT_LIBRARY})
 target_link_libraries(testMarineRadar PUBLIC ${NRPPPI_LIBRARY})
 target_link_libraries(testMarineRadar PUBLIC ${SQLITE3_LIBRARY})
+
+
+add_executable (testMarineRadarClient testMarineRadarClient.cc ${SOURCE_FILES})
+target_include_directories(testMarineRadarClient PRIVATE ${HEADER_DIRECTORY})

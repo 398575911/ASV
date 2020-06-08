@@ -24,7 +24,7 @@ union radarmsg {
 };
 
 void test() {
-  tcpclient _tcpclient("127.0.0.1", "9340");
+  ASV::common::tcpclient _tcpclient("127.0.0.1", "9340");
   const int recv_size = 45 + SAMPLES_PER_SPOKE / 2;
   const int send_size = 10;
   radarmsg _radarmsg;
@@ -53,4 +53,8 @@ void test() {
   }
 }
 
-int main() { test(); }
+int main() {
+  el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
+  LOG(INFO) << "The program has started!";
+  test();
+}

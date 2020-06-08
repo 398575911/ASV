@@ -25,7 +25,7 @@ union radarmsg {
 };
 
 void testtcpserver() {
-  ASV::tcpserver _tcpserver("9340");
+  ASV::common::tcpserver _tcpserver("9340");
 
   const int recv_size = 10;
   const int send_size = 44 + SAMPLES_PER_SPOKE / 2;

@@ -41,7 +41,7 @@ target_include_directories(simple_crc_test PRIVATE ${HEADER_DIRECTORY})
 add_executable (testtcpserver testtcpserver.cc  ${SOURCE_FILES})
 target_include_directories(testtcpserver PRIVATE ${HEADER_DIRECTORY})
 
-add_executable (testtcpclient testtcpclient.cc)
+add_executable (testtcpclient testtcpclient.cc ${SOURCE_FILES})
 target_include_directories(testtcpclient PRIVATE ${HEADER_DIRECTORY})
 
 

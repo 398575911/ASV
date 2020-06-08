@@ -24,7 +24,7 @@
 
 #include "common/logging/include/easylogging++.h"
 
-namespace ASV {
+namespace ASV::common {
 
 class tcpserver {
  public:
@@ -187,6 +187,6 @@ class tcpserver {
   }  // initializesocket
 };
 
-}  // end namespace ASV
+}  // namespace ASV::common
 
 #endif /*_TCPSERVER_H_*/
