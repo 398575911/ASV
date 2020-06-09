@@ -30,15 +30,16 @@ enum class PLCSTATUS {
 struct PLCdata {
   /********* from IPC to PLC **********/
   // motor
-  int16_t Thruster_A_rpm_command;      // rpm
-  int16_t Thruster_A_azimuth_command;  // deg
-  int16_t Thruster_B_rpm_command;      // rpm
-  int16_t Thruster_B_azimuth_command;  // deg
+  int16_t Thruster_port_rpm_command;      // rpm
+  int16_t Thruster_port_azimuth_command;  // deg
+  int16_t Thruster_star_rpm_command;      // rpm
+  int16_t Thruster_star_azimuth_command;  // deg
 
   // GPS
   float latitude;   // deg
   float longitude;  // deg
   float heading;    // deg
+  float speed;      // m/s
 
   // wind
   float wind_speed;
@@ -46,18 +47,15 @@ struct PLCdata {
 
   /********* from PLC to IPC **********/
   // motor
-  uint8_t Thruster_A_status;
-  int16_t Thruster_A_rpm_feedback;      // rpm
-  int16_t Thruster_A_azimuth_feedback;  // deg
-  uint8_t Thruster_B_status;
-  int16_t Thruster_B_rpm_feedback;      // rpm
-  int16_t Thruster_B_azimuth_feedback;  // deg
+  uint8_t Thruster_port_status;
+  int16_t Thruster_port_rpm_feedback;      // rpm
+  int16_t Thruster_port_azimuth_feedback;  // deg
+  uint8_t Thruster_star_status;
+  int16_t Thruster_star_rpm_feedback;      // rpm
+  int16_t Thruster_star_azimuth_feedback;  // deg
 
   // power generator
   uint16_t power;  // W
-
-  // PLCstatus
-  PLCSTATUS feedback_stm32status;
 
   // link status
   common::LINKSTATUS linkstatus;

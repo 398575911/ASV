@@ -47,24 +47,25 @@ class PLC_link {
     return *this;
   }  // PLConestep
 
-  PLC_link& setupPLCdata(const int Thruster_A_rpm_command,
-                         const int Thruster_B_rpm_command,
-                         const int Thruster_A_azimuth_command,
-                         const int Thruster_B_azimuth_command,
+  PLC_link& setupPLCdata(const int Thruster_port_rpm_command,
+                         const int Thruster_star_rpm_command,
+                         const int Thruster_port_azimuth_command,
+                         const int Thruster_star_azimuth_command,
                          const double longitude, const double latitude,
-                         const double heading, const float wind_speed,
-                         const uint8_t wind_direction) {
-    PLCdata_.Thruster_A_rpm_command =
-        static_cast<int16_t>(Thruster_A_rpm_command);
-    PLCdata_.Thruster_B_rpm_command =
-        static_cast<int16_t>(Thruster_B_rpm_command);
-    PLCdata_.Thruster_A_azimuth_command =
-        static_cast<int16_t>(Thruster_A_azimuth_command);
-    PLCdata_.Thruster_B_azimuth_command =
-        static_cast<int16_t>(Thruster_B_azimuth_command);
+                         const double heading, const double speed,
+                         const float wind_speed, const uint8_t wind_direction) {
+    PLCdata_.Thruster_port_rpm_command =
+        static_cast<int16_t>(Thruster_port_rpm_command);
+    PLCdata_.Thruster_star_rpm_command =
+        static_cast<int16_t>(Thruster_star_rpm_command);
+    PLCdata_.Thruster_port_azimuth_command =
+        static_cast<int16_t>(Thruster_port_azimuth_command);
+    PLCdata_.Thruster_star_azimuth_command =
+        static_cast<int16_t>(Thruster_star_azimuth_command);
     PLCdata_.longitude = static_cast<float>(longitude);
     PLCdata_.latitude = static_cast<float>(latitude);
     PLCdata_.heading = static_cast<float>(heading);
+    PLCdata_.speed = static_cast<float>(speed);
     PLCdata_.wind_speed = static_cast<float>(wind_speed);
     PLCdata_.wind_direction = static_cast<int16_t>(wind_direction);
 
@@ -96,19 +97,20 @@ class PLC_link {
 
   bool parsedata_from_PLC(PLCdata& _PLCdata) {
     // read buffer from serial port
-    unsigned char read_buffer[46] = {0x00};
-    PLC_serial_.readline(read_buffer, 46);
+    static const size_t buffer_size = 46;
+    unsigned char read_buffer[buffer_size] = {0x00};
+    PLC_serial_.readline(read_buffer, buffer_size);
 
     // crc check
     uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
-        read_buffer, 44, ASV::common::CRC::CRC_16_MODBUS());
+        read_buffer, buffer_size - 2, ASV::common::CRC::CRC_16_MODBUS());
 
-    if ((read_buffer[45] == (crc_result >> 8)) &&
-        (read_buffer[44] == (crc_result & 0x00FF))) {
-      uint16_t Thruster_A_rpm_feedback = 0;
-      uint16_t Thruster_A_azimuth_feedback = 0;
-      uint16_t Thruster_B_rpm_feedback = 0;
-      uint16_t Thruster_B_azimuth_feedback = 0;
+    if ((read_buffer[buffer_size - 1] == (crc_result >> 8)) &&
+        (read_buffer[buffer_size - 2] == (crc_result & 0x00FF))) {
+      uint16_t Thruster_port_rpm_feedback = 0;
+      uint16_t Thruster_star_rpm_feedback = 0;
+      uint16_t Thruster_port_azimuth_feedback = 0;
+      uint16_t Thruster_star_azimuth_feedback = 0;
       uint16_t A_voltagte = 0;
       uint16_t B_voltagte = 0;
       uint16_t C_voltagte = 0;
@@ -125,63 +127,91 @@ class PLC_link {
       uint16_t B_ACPower = 0;
       uint16_t C_ACPower = 0;
       uint16_t total_ACPower = 0;
-      uint16_t register_status1 = 0;
-      uint16_t register_status2 = 0;
-
-      ASV::common::unpack(read_buffer, "HHHHHHHHHHHHHHHHHHHHHH",
-                          &Thruster_A_rpm_feedback,      // uint16_t
-                          &Thruster_B_rpm_feedback,      // uint16_t
-                          &Thruster_A_azimuth_feedback,  // uint16_t
-                          &Thruster_B_azimuth_feedback,  // uint16_t
-                          &A_voltagte,                   // uint16_t
-                          &B_voltagte,                   // uint16_t
-                          &C_voltagte,                   // uint16_t
-                          &AB_voltagte,                  // uint16_t
-                          &BC_voltagte,                  // uint16_t
-                          &CA_voltagte,                  // uint16_t
-                          &A_current,                    // uint16_t
-                          &B_current,                    // uint16_t
-                          &C_current,                    // uint16_t
-                          &A_Power,                      // uint16_t
-                          &B_Power,                      // uint16_t
-                          &C_Power,                      // uint16_t
-                          &A_ACPower,                    // uint16_t
-                          &B_ACPower,                    // uint16_t
-                          &C_ACPower,                    // uint16_t
-                          &total_ACPower,                // uint16_t
-                          &register_status1,             // uint16_t
-                          &register_status2              // uint16_t
-
+      uint8_t port_register_status1 = 0;
+      uint8_t port_register_status2 = 0;
+      uint8_t star_register_status1 = 0;
+      uint8_t star_register_status2 = 0;
+      ASV::common::unpack(read_buffer, "HHHHHHHHHHHHHHHHHHHHCCCC",
+                          &Thruster_port_rpm_feedback,      // uint16_t
+                          &Thruster_star_rpm_feedback,      // uint16_t
+                          &Thruster_port_azimuth_feedback,  // uint16_t
+                          &Thruster_star_azimuth_feedback,  // uint16_t
+                          &A_voltagte,                      // uint16_t
+                          &B_voltagte,                      // uint16_t
+                          &C_voltagte,                      // uint16_t
+                          &AB_voltagte,                     // uint16_t
+                          &BC_voltagte,                     // uint16_t
+                          &CA_voltagte,                     // uint16_t
+                          &A_current,                       // uint16_t
+                          &B_current,                       // uint16_t
+                          &C_current,                       // uint16_t
+                          &A_Power,                         // uint16_t
+                          &B_Power,                         // uint16_t
+                          &C_Power,                         // uint16_t
+                          &A_ACPower,                       // uint16_t
+                          &B_ACPower,                       // uint16_t
+                          &C_ACPower,                       // uint16_t
+                          &total_ACPower,                   // uint16_t
+                          &port_register_status1,           // uint8_t
+                          &port_register_status2,           // uint8_t
+                          &star_register_status1,           // uint8_t
+                          &star_register_status2            // uint8_t
       );
 
       _PLCdata.power = total_ACPower;
-      _PLCdata.Thruster_A_azimuth_feedback =
-          static_cast<int16_t>(Thruster_A_azimuth_feedback) - 180;
-      _PLCdata.Thruster_B_azimuth_feedback =
-          static_cast<int16_t>(Thruster_B_azimuth_feedback) - 180;
-      printf("unpack\n");
-      printf("%d\n", Thruster_A_rpm_feedback);
-      printf("%d\n", Thruster_B_rpm_feedback);
-      printf("%d\n", Thruster_A_azimuth_feedback);
-      printf("%d\n", Thruster_B_azimuth_feedback);
-      printf("%d\n", A_voltagte);
-      printf("%d\n", B_voltagte);
-      printf("%d\n", C_voltagte);
-      printf("%d\n", AB_voltagte);
-      printf("%d\n", BC_voltagte);
-      printf("%d\n", CA_voltagte);
-      printf("%d\n", A_current);
-      printf("%d\n", B_current);
-      printf("%d\n", C_current);
-      printf("%d\n", A_Power);
-      printf("%d\n", B_Power);
-      printf("%d\n", C_Power);
-      printf("%d\n", A_ACPower);
-      printf("%d\n", B_ACPower);
-      printf("%d\n", C_ACPower);
-      printf("%d\n", total_ACPower);
-      printf("%04x\n", register_status1);
-      printf("%04x\n", register_status2);
+      _PLCdata.Thruster_port_azimuth_feedback =
+          static_cast<int16_t>(Thruster_port_azimuth_feedback) - 180;
+      _PLCdata.Thruster_star_azimuth_feedback =
+          static_cast<int16_t>(Thruster_star_azimuth_feedback) - 180;
+
+      switch (port_register_status1 & 0xf) {
+        case 0x1:
+          _PLCdata.Thruster_port_status = 0x01;
+          _PLCdata.Thruster_port_rpm_feedback =
+              static_cast<int16_t>(Thruster_port_rpm_feedback);
+          break;
+        case 0x2:
+          _PLCdata.Thruster_port_status = 0x02;
+          _PLCdata.Thruster_port_rpm_feedback =
+              -static_cast<int16_t>(Thruster_port_rpm_feedback);
+          break;
+        case 0x3:
+          _PLCdata.Thruster_port_status = 0x03;
+          _PLCdata.Thruster_port_rpm_feedback = 0;
+          break;
+        case 0x4:
+          _PLCdata.Thruster_port_status = 0x04;
+          _PLCdata.Thruster_port_rpm_feedback = 0;
+          break;
+        default:
+          _PLCdata.Thruster_port_status = 0x00;
+          _PLCdata.Thruster_port_rpm_feedback = 0;
+          break;
+      };
+      switch (star_register_status1 & 0xf) {
+        case 0x1:
+          _PLCdata.Thruster_star_status = 0x01;
+          _PLCdata.Thruster_star_rpm_feedback =
+              static_cast<int16_t>(Thruster_star_rpm_feedback);
+          break;
+        case 0x2:
+          _PLCdata.Thruster_star_status = 0x02;
+          _PLCdata.Thruster_star_rpm_feedback =
+              -static_cast<int16_t>(Thruster_star_rpm_feedback);
+          break;
+        case 0x3:
+          _PLCdata.Thruster_star_status = 0x03;
+          _PLCdata.Thruster_star_rpm_feedback = 0;
+          break;
+        case 0x4:
+          _PLCdata.Thruster_star_status = 0x04;
+          _PLCdata.Thruster_star_rpm_feedback = 0;
+          break;
+        default:
+          _PLCdata.Thruster_star_status = 0x00;
+          _PLCdata.Thruster_star_rpm_feedback = 0;
+          break;
+      };
 
       return true;
     } else {
@@ -192,25 +222,28 @@ class PLC_link {
   }  // parsedata_from_PLC
 
   void senddata2PLC(const PLCdata& _PLCdata) {
-    unsigned char t_send_buf[28] = {0x00};
-    ASV::common::pack(t_send_buf, "hhhhddddh",
-                      _PLCdata.Thruster_A_rpm_command,      // int16_t
-                      _PLCdata.Thruster_B_rpm_command,      // int16_t
-                      _PLCdata.Thruster_A_azimuth_command,  // int16_t
-                      _PLCdata.Thruster_B_azimuth_command,  // int16_t
-                      _PLCdata.longitude,                   // float
-                      _PLCdata.latitude,                    // float
-                      _PLCdata.heading,                     // float
-                      _PLCdata.wind_speed,                  // float
-                      _PLCdata.wind_direction               // int16_t
+    static const size_t buffer_size = 32;
+
+    unsigned char t_send_buf[buffer_size] = {0x00};
+    ASV::common::pack(t_send_buf, "hhhhdddddh",
+                      _PLCdata.Thruster_port_rpm_command,      // int16_t
+                      _PLCdata.Thruster_star_rpm_command,      // int16_t
+                      _PLCdata.Thruster_port_azimuth_command,  // int16_t
+                      _PLCdata.Thruster_star_azimuth_command,  // int16_t
+                      _PLCdata.longitude,                      // float
+                      _PLCdata.latitude,                       // float
+                      _PLCdata.heading,                        // float
+                      _PLCdata.speed,                          // float
+                      _PLCdata.wind_speed,                     // float
+                      _PLCdata.wind_direction                  // int16_t
     );
 
     uint16_t crc_result = ASV::common::CRC::Calculate<uint16_t, 16>(
-        t_send_buf, 26, ASV::common::CRC::CRC_16_MODBUS());
-    t_send_buf[26] = crc_result & 0x00FF;
-    t_send_buf[27] = crc_result >> 8;
+        t_send_buf, buffer_size - 2, ASV::common::CRC::CRC_16_MODBUS());
+    t_send_buf[buffer_size - 2] = crc_result & 0x00FF;
+    t_send_buf[buffer_size - 1] = crc_result >> 8;
 
-    PLC_serial_.writeline(t_send_buf, 28);
+    PLC_serial_.writeline(t_send_buf, buffer_size);
   }  // senddata2PLC
 
 };  // end class PLC_link
