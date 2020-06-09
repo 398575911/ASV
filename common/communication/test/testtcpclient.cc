@@ -15,21 +15,21 @@
 
 union lidarmsg {
   double double_msg[5];
-  char char_msg[40];
+  unsigned char char_msg[40];
 };
 
 union radarmsg {
   uint32_t header32[11];
-  char header4[44];
+  unsigned char header4[44];
 };
 
 void test() {
   ASV::common::tcpclient _tcpclient("127.0.0.1", "9340");
-  const int recv_size = 45 + SAMPLES_PER_SPOKE / 2;
-  const int send_size = 10;
+  const size_t recv_size = 45 + SAMPLES_PER_SPOKE / 2;
+  const size_t send_size = 10;
   radarmsg _radarmsg;
-  char send_buffer[send_size] = "socket";
-  char recv_buffer[recv_size];
+  unsigned char send_buffer[send_size] = "socket";
+  unsigned char recv_buffer[recv_size];
   uint8_t spokedata[SAMPLES_PER_SPOKE / 2];
 
   for (int i = 0; i != 1000; i++) {

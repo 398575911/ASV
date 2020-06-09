@@ -26,19 +26,25 @@ namespace ASV::messages {
 class MarineRadarClient : public ASV::common::tcpclient {
  public:
   MarineRadarClient(const std::string &_ip, const std::string &_port)
-      : ASV::common::tcpclient(_ip, _port), {}
+      : ASV::common::tcpclient(_ip, _port) {}
   ~MarineRadarClient() {}
 
   void DataTransmission() {
-    static const int recv_size = 1024;
-    static const int send_size = 50;
+    static const size_t recv_size = 520;
+    static const size_t send_size = 50;
 
-    char recv_buffer[recv_size] = {0x00};
-    char send_buffer[send_size] = {0x00};
+    unsigned char recv_buffer[recv_size] = {0x00};
+    unsigned char send_buffer[send_size] = {0x00};
 
     ASV::common::tcpclient::TrytoConnect();
     ASV::common::tcpclient::TransmitData(recv_buffer, send_buffer, recv_size,
                                          send_size);
+
+    float azimuth = 0;
+    ASV::common::unpack(recv_buffer, "d", &azimuth);
+
+    printf("azimuth: %f\n", azimuth);
+    for (int i = 0; i != 512; ++i) printf("%02x\n", recv_buffer[i + 4]);
   }
 
  private:

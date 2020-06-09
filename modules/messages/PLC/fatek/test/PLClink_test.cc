@@ -57,13 +57,17 @@ int main() {
       _PLCdata = _PLC_link.getPLCdata();
       long int et = _timer.timeelapsed();
 
-      printf("%02x\n", _PLCdata.Thruster_port_status);
-      printf("%d\n", _PLCdata.Thruster_port_rpm_feedback);
-      printf("%d\n", _PLCdata.Thruster_port_azimuth_feedback);
-      printf("%02x\n", _PLCdata.Thruster_star_status);
-      printf("%d\n", _PLCdata.Thruster_star_rpm_feedback);
-      printf("%d\n", _PLCdata.Thruster_star_azimuth_feedback);
-      printf("%d\n", _PLCdata.power);
+      printf("Thruster_port_status: %02x\n", _PLCdata.Thruster_port_status);
+      printf("Thruster_port_rpm_feedback: %d\n",
+             _PLCdata.Thruster_port_rpm_feedback);
+      printf("Thruster_port_azimuth_feedback: %d\n",
+             _PLCdata.Thruster_port_azimuth_feedback);
+      printf("Thruster_star_status: %02x\n", _PLCdata.Thruster_star_status);
+      printf("Thruster_star_rpm_feedback: %d\n",
+             _PLCdata.Thruster_star_rpm_feedback);
+      printf("Thruster_star_azimuth_feedback: %d\n",
+             _PLCdata.Thruster_star_azimuth_feedback);
+      printf("power: %d\n", _PLCdata.power);
       printf("%d\n", static_cast<int>(_PLCdata.linkstatus));
 
       std::cout << "sample time: " << et << std::endl;

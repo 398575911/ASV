@@ -32,8 +32,9 @@ class tcpclient {
   virtual ~tcpclient() { close(sockfd); }
 
   // send and recive data from socket server
-  void TransmitData(char *recv_buffer, const char *send_buffer, int recv_size,
-                    int send_size) {
+  void TransmitData(unsigned char *recv_buffer,
+                    const unsigned char *send_buffer, size_t recv_size,
+                    size_t send_size) {
     int send_bytes = send(sockfd, send_buffer, send_size, 0);
     if (send_bytes == -1) {
       CLOG(ERROR, "tcp-client") << "send";

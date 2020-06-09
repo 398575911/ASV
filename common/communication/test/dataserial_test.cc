@@ -7,6 +7,7 @@
 * by Hu.ZH(CrossOcean.ai)
 *******************************************************************************
 */
+#include <stdio.h>
 #include "../include/dataserialization.h"
 
 #define DEBUG

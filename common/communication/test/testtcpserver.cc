@@ -16,26 +16,26 @@
 
 union lidarmsg {
   double double_msg[5];
-  char char_msg[40];
+  unsigned char char_msg[40];
 };
 
 union radarmsg {
   uint32_t header32[11];
-  char header4[44];
+  unsigned char header4[44];
 };
 
 void testtcpserver() {
   ASV::common::tcpserver _tcpserver("9340");
 
-  const int recv_size = 10;
-  const int send_size = 44 + SAMPLES_PER_SPOKE / 2;
+  const size_t recv_size = 10;
+  const size_t send_size = 44 + SAMPLES_PER_SPOKE / 2;
 
   static int count = 0;
-  char recv_buffer[recv_size];
+  unsigned char recv_buffer[recv_size];
   radarmsg _radarmsg = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   uint8_t spokedata[SAMPLES_PER_SPOKE / 2] = {0xff, 0xff, 0x09, 0xff, 0xff,
                                               0xfa, 0xff, 0xac, 0x10, 0x16};
-  char sendmsg[send_size];
+  unsigned char sendmsg[send_size];
   while (1) {
     if (++count > 100) count = 0;
     _radarmsg.header32[0] = 1;          // vessel x

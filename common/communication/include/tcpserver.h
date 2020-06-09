@@ -34,8 +34,9 @@ class tcpserver {
   }
   virtual ~tcpserver() = default;
 
-  void selectserver(char *recv_buffer, const char *send_buffer, int recv_size,
-                    int send_size) {
+  void selectserver(unsigned char *recv_buffer,
+                    const unsigned char *send_buffer, size_t recv_size,
+                    size_t send_size) {
     read_fds = master;  // copy it
     if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) {
       CLOG(ERROR, "tcp-server") << "select: " << strerror(errno);
