@@ -41,10 +41,9 @@ class MarineRadarClient : public ASV::common::tcpclient {
                                          send_size);
 
     float azimuth = 0;
-    ASV::common::unpack(recv_buffer, "d", &azimuth);
-
+    ASV::common::unpack(recv_buffer + 512, "f", &azimuth);
     printf("azimuth: %f\n", azimuth);
-    for (int i = 0; i != 512; ++i) printf("%02x\n", recv_buffer[i + 4]);
+    for (int i = 0; i != 512; ++i) printf("%02x\n", recv_buffer[i]);
   }
 
  private:
