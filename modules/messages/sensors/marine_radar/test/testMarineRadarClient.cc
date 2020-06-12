@@ -14,7 +14,7 @@ int main() {
   el::Loggers::addFlag(el::LoggingFlag::CreateLoggerAutomatically);
   LOG(INFO) << "The program has started!";
 
-  ASV::messages::MarineRadarClient _MarineRadarClient("192.168.127.51", "9340");
+  ASV::messages::MarineRadarClient _MarineRadarClient("127.0.0.1", "9340");
 
   while (1) {
     _MarineRadarClient.DataTransmission();

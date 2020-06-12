@@ -46,3 +46,7 @@ add_executable (testdatabase ${SOURCE_FILES})
 target_include_directories(testdatabase PRIVATE ${HEADER_DIRECTORY})
 target_link_libraries(testdatabase PUBLIC ${SQLITE3_LIBRARY})
 
+
+add_executable (fast_test "fast_test.cc")
+target_include_directories(fast_test PRIVATE ${HEADER_DIRECTORY})
+target_link_libraries(fast_test PUBLIC ${SQLITE3_LIBRARY})
